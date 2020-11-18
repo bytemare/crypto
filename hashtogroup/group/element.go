@@ -23,6 +23,6 @@ type Element interface {
 	// Decode decodes the input an sets the current element to its value, and returns it.
 	Decode(in []byte) (Element, error)
 
-	// Bytes returns the byte encoding of the element.
+	// Bytes returns the compressed byte encoding of the element.
 	Bytes() []byte
 }

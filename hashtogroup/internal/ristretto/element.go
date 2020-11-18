@@ -3,7 +3,6 @@ package ristretto
 
 import (
 	"fmt"
-
 	"github.com/gtank/ristretto255"
 
 	"github.com/bytemare/cryptotools/hashtogroup/group"
@@ -105,7 +104,7 @@ func (e *Element) Decode(in []byte) (group.Element, error) {
 	return e, nil
 }
 
-// Bytes returns the byte encoding of the element.
+// Bytes returns the compressed byte encoding of the element.
 func (e *Element) Bytes() []byte {
 	return e.element.Encode(nil)
 }

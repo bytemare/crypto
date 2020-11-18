@@ -4,6 +4,7 @@ package hash2curve
 import (
 	nist "crypto/elliptic"
 	"fmt"
+	"log"
 	"math/big"
 
 	Curve "github.com/armfazh/h2c-go-ref/curve"
@@ -62,6 +63,8 @@ func (p *Point) Mult(scalar group.Scalar) group.Element {
 	// 	panic("different scalar fields")
 	// }
 
+	log.Printf("Multiplying:\n\tElement: %v\n\tScalar: %v\n", p.point, sc.s)
+
 	return &Point{
 		Hash2Curve: p.Hash2Curve,
 		point:      p.GetCurve().ScalarMult(p.point, sc.s.Polynomial()[0]),
@@ -90,7 +93,7 @@ func (p *Point) Copy() group.Element {
 	}
 }
 
-// Bytes returns the byte encoding of the element.
+// Bytes returns the compressed byte encoding of the element.
 func (p *Point) Bytes() []byte {
 	x := p.point.X().Polynomial()[0]
 	y := p.point.Y().Polynomial()[0]
@@ -104,8 +107,7 @@ func (p *Point) Bytes() []byte {
 
 // Decode decodes the input an sets the current element to its value, and returns it.
 func (p *Point) Decode(input []byte) (e group.Element, err error) {
-	switch p.id {
-	case Curve.P256, Curve.P384, Curve.P521:
+	if p.id == Curve.P256 || p.id == Curve.P384 || p.id == Curve.P521 {
 		x, y := nist.UnmarshalCompressed(h2cToNist(p.id), input)
 		if x == nil {
 			return nil, errParamDecPoint

@@ -9,7 +9,7 @@ const (
 	DstRecommendedMinLength = 16
 )
 
-// Group designates the mathematical Group allowing operations relevant for PAKEs.
+// Group abstracts operations in elliptic-curve prime-order groups.
 type Group interface {
 	// NewScalar returns a new, empty, scalar.
 	NewScalar() Scalar
