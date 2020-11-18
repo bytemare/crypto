@@ -94,6 +94,8 @@ func (h *ExtensibleHash) Hash(size int, in ...[]byte) []byte {
 		panic(errSmallOutputSize)
 	}
 
+	h.Reset()
+
 	for _, i := range in {
 		_, _ = h.XOF.Write(i)
 	}
