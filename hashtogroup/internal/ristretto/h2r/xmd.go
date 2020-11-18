@@ -9,6 +9,24 @@ import (
 	"github.com/bytemare/cryptotools/utils"
 )
 
+func (h *HashToRistretto) dstPrime() []byte {
+	return append(h.dst, byte(len(h.dst)))
+}
+
+func (h *HashToRistretto) msgPrime(input []byte, length int) []byte {
+	lib := encoding.I2OSP2(uint(length))
+	dstPrime := h.dstPrime()
+
+	if h.Extensible() {
+		return utils.Concatenate(0, input, lib, dstPrime)
+	}
+
+	zPad := make([]byte, h.Hash.BlockSize())
+	zeroByte := []byte{0}
+
+	return utils.Concatenate(0, zPad, input, lib, zeroByte, dstPrime)
+}
+
 // expandMessageXMD implements https://www.ietf.org/id/draft-irtf-cfrg-hash-to-curve-09.html#name-expand_message_xmd
 func (h *HashToRistretto) expandMessageXMD(input []byte, length int) []byte {
 	b := h.Hash.OutputSize()
@@ -19,7 +37,7 @@ func (h *HashToRistretto) expandMessageXMD(input []byte, length int) []byte {
 		panic(fmt.Errorf("ell is > 255, i.e. the hash function's output length is too low: %d/%d", b, length))
 	}
 
-	dstPrime := utils.Concatenate(len(h.dst)+1, h.dst, encoding.I2OSP1(uint(len(h.dst))))
+	dstPrime := h.dstPrime()
 	zPad := make([]byte, blockSize)
 	lib := encoding.I2OSP2(uint(length))
 	zeroByte := []byte{0}
@@ -42,14 +60,13 @@ func (h *HashToRistretto) expandMessageXMD(input []byte, length int) []byte {
 // xmd expands the message digest until it reaches the desirable length.
 func (h *HashToRistretto) xmd(b0, b1, dstPrime []byte, ell uint, length int) []byte {
 	uniformBytes := make([]byte, 0, length)
-	copy(uniformBytes, b1)
-
+	uniformBytes = append(uniformBytes, b1...)
 	bi := make([]byte, len(b1))
 	copy(bi, b1)
 
 	for i := uint(2); i <= ell; i++ {
 		xor := xorSlices(bi, b0)
-		bi := h.Hash.Hash(0, xor, []byte{1}, dstPrime)
+		bi = h.Hash.Hash(0, xor, []byte{byte(i)}, dstPrime)
 		uniformBytes = append(uniformBytes, bi...)
 	}
 
