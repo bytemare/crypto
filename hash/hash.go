@@ -41,8 +41,8 @@ const (
 	maxID
 
 	// string IDs for the hash functions.
-	sha256s   = "SHA2-256"
-	sha512s   = "SHA2-512"
+	sha256s   = "SHA256"
+	sha512s   = "SHA512"
 	sha3_256s = "SHA3-256"
 	sha3_512s = "SHA3-512"
 	shake128  = "SHAKE128"
