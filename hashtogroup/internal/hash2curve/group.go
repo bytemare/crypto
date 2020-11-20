@@ -3,7 +3,6 @@ package hash2curve
 
 import (
 	"github.com/armfazh/h2c-go-ref"
-
 	"github.com/bytemare/cryptotools/hashtogroup/group"
 	"github.com/bytemare/cryptotools/utils"
 )
@@ -32,7 +31,7 @@ func New(id h2c.SuiteID, dst []byte) *Hash2Curve {
 
 // NewScalar returns a new, empty, scalar.
 func (h *Hash2Curve) NewScalar() group.Scalar {
-	return scalar(h.GetHashToScalar().GetScalarField())
+		return scalar(h.GetCurve().Field())
 }
 
 // NewElement returns a new, empty, element.
@@ -63,7 +62,8 @@ func (h *Hash2Curve) HashToGroup(input ...[]byte) group.Element {
 func (h *Hash2Curve) HashToScalar(input ...[]byte) group.Scalar {
 	return &Scalar{
 		s: h.GetHashToScalar().Hash(utils.Concatenate(0, input...)),
-		f: h.GetHashToScalar().GetScalarField(),
+		//f: h.GetHashToScalar().GetScalarField(),
+		f: h.GetCurve().Field(),
 	}
 }
 
