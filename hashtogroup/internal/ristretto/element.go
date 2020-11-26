@@ -3,6 +3,7 @@ package ristretto
 
 import (
 	"fmt"
+
 	"github.com/gtank/ristretto255"
 
 	"github.com/bytemare/cryptotools/hashtogroup/group"

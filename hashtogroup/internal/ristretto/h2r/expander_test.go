@@ -5,13 +5,14 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/bytemare/cryptotools/hash"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
 	"testing"
+
+	"github.com/bytemare/cryptotools/hash"
+	"github.com/stretchr/testify/assert"
 )
 
 type vector struct {
@@ -102,7 +103,6 @@ func (s *set) run(t *testing.T) {
 			}
 
 			x := h.Expand(v.msg, v.lenInBytes)
-			//if !bytes.Equal(v.uniformBytes, x) {
 			if !assert.Equal(t, v.uniformBytes, x) {
 				t.Fatalf("%d : invalid hash (length %d vs %d).", i, len(x), v.lenInBytes)
 			}

@@ -46,7 +46,7 @@ type h2c struct {
 var h2cR255 = []*h2c{
 	{
 		Identifier: hash.SHA256,
-		hash:       "12f5a667dcce6c5b74577200b06e30d2525b2b613e6b32b57bc2ebe0d0945254",
+		hash:       "f890112b9ac4945a4db5e9dcaac23603e6201b58387017f0b858f7b76ea02e4e",
 		h2cID:      "ristretto255_XMD:SHA256_R255MAP_RO_",
 	},
 	{
@@ -56,7 +56,7 @@ var h2cR255 = []*h2c{
 	},
 	{
 		Identifier: hash.SHA3_256,
-		hash:       "9631ddcb74632a510422db5a7188df57e602d214fd87d17823a3b0f6bd10ae43",
+		hash:       "32c55e0b6167dc01288f84ab864103aef0fb05151409439db9e49bd760e50953",
 		h2cID:      "ristretto255_XMD:SHA3-256_R255MAP_RO_",
 	},
 	{
