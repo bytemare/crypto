@@ -83,7 +83,7 @@ func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
 	return s
 }
 
-// Invert sets the current scalar to is inverse ( 1 / scalar ) and returns it.
+// Invert returns the inverse ( 1 / scalar ) of the scalar.
 func (s *Scalar) Invert() group.Scalar {
 	return &Scalar{
 		s: s.f.Inv(s.s),

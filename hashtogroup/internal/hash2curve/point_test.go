@@ -3,7 +3,7 @@ package hash2curve
 import (
 	"testing"
 
-	"github.com/armfazh/h2c-go-ref"
+	H2C "github.com/armfazh/h2c-go-ref"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,36 +29,45 @@ func TestPointEncoding(t *testing.T) {
 	}
 }
 
-func TestPointArithmetic(t *testing.T) {
-	g := New(h2c.Edwards25519_XMDSHA512_ELL2_RO_, []byte("dst"))
-	input := []byte("input")
+func testPointArithmetic(t *testing.T, suite H2C.SuiteID, input, dst []byte) {
+	g := New(suite, dst)
 
 	// Test Addition and Subtraction
-	p := g.Base()
-	c := p.Copy()
-	assert.Panics(t, func() { p.Add(nil) })
-	a := p.Add(p)
+	base := g.Base()
+	c := base.Copy()
+	assert.Panics(t, func() { base.Add(nil) })
+	a := base.Add(base)
 	assert.Panics(t, func() { a.Sub(nil) })
 	r := a.Sub(c)
 	assert.Equal(t, r.Bytes(), c.Bytes())
 
 	// Test Multiplication and inversion
-	p = g.Base()
+	base = g.Base()
 	s := g.HashToScalar(input)
-	penc := p.Bytes()
+	penc := base.Bytes()
 	senc := s.Bytes()
-	m := p.Mult(s)
+	m := base.Mult(s)
 	e, err := g.MultBytes(senc, penc)
 	if err != nil {
 		t.Error(err)
 	}
 	assert.Equal(t, m.Bytes(), e.Bytes())
-	assert.Panics(t, func() { m.InvertMult(nil) })
+	assert.PanicsWithError(t, errParamNilScalar.Error(), func() { m.InvertMult(nil) })
 	i := m.InvertMult(s)
-	assert.Equal(t, i.Bytes(), p.Bytes())
+	assert.Equal(t, i.Bytes(), base.Bytes())
 
 	// Test identity
-	p = p.Sub(p)
-	assert.True(t, p.IsIdentity())
-	assert.Equal(t, p.Bytes(), g.Identity().Bytes())
+	id := base.Sub(base)
+	assert.True(t, id.IsIdentity())
+}
+
+func TestPointArithmetic(t *testing.T) {
+	dst := []byte("dst")
+	input := []byte("input")
+
+	for id := range curves {
+		t.Run(string(id), func(t *testing.T) {
+			testPointArithmetic(t, id, input, dst)
+		})
+	}
 }

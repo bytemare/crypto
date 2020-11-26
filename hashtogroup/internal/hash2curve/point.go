@@ -4,7 +4,6 @@ package hash2curve
 import (
 	nist "crypto/elliptic"
 	"fmt"
-	"log"
 	"math/big"
 
 	Curve "github.com/armfazh/h2c-go-ref/curve"
@@ -59,11 +58,9 @@ func (p *Point) Mult(scalar group.Scalar) group.Element {
 		panic("could not cast to hash2curve scalar")
 	}
 
-	// if !p.GetCurve().Field().IsEqual(sc.f) {
-	// 	panic("different scalar fields")
-	// }
-
-	log.Printf("Multiplying:\n\tElement: %v\n\tScalar: %v\n", p.point, sc.s)
+	if !p.GetHashToScalar().GetScalarField().IsEqual(sc.f) {
+		panic("cannot multiply with scalar from a different field")
+	}
 
 	return &Point{
 		Hash2Curve: p.Hash2Curve,

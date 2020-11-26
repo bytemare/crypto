@@ -31,7 +31,7 @@ func New(id h2c.SuiteID, dst []byte) *Hash2Curve {
 
 // NewScalar returns a new, empty, scalar.
 func (h *Hash2Curve) NewScalar() group.Scalar {
-		return scalar(h.GetCurve().Field())
+	return scalar(h.GetHashToScalar().GetScalarField())
 }
 
 // NewElement returns a new, empty, element.
@@ -62,8 +62,7 @@ func (h *Hash2Curve) HashToGroup(input ...[]byte) group.Element {
 func (h *Hash2Curve) HashToScalar(input ...[]byte) group.Scalar {
 	return &Scalar{
 		s: h.GetHashToScalar().Hash(utils.Concatenate(0, input...)),
-		//f: h.GetHashToScalar().GetScalarField(),
-		f: h.GetCurve().Field(),
+		f: h.GetHashToScalar().GetScalarField(),
 	}
 }
 
