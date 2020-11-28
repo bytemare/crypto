@@ -3,6 +3,7 @@ package hash2curve
 
 import (
 	"crypto/rand"
+	"errors"
 	"math/big"
 
 	"github.com/armfazh/tozan-ecc/field"
@@ -101,7 +102,16 @@ func (s *Scalar) Copy() group.Scalar {
 
 // Decode decodes the input an sets the current scalar to its value, and returns it.
 func (s *Scalar) Decode(in []byte) (group.Scalar, error) {
-	s.s = s.f.Elt(new(big.Int).SetBytes(in))
+	e := new(big.Int).SetBytes(in)
+	if e.Sign() < 0 {
+		return nil, errors.New("negative scalar")
+	}
+	if s.f.Order().Cmp(e) <= 0 {
+		return nil, errors.New("scalar too big")
+	}
+
+	s.s = s.f.Elt(e)
+
 	return s, nil
 }
 
