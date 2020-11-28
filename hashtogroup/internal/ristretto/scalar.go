@@ -75,8 +75,8 @@ func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
 
 // Invert returns the scalar's modular inverse ( 1 / scalar ).
 func (s *Scalar) Invert() group.Scalar {
-	s.Scalar.Invert(s.Scalar)
-	return s
+	sc := s.copy().Scalar.Invert(s.Scalar)
+	return  &Scalar{sc}
 }
 
 func (s *Scalar) copy() *Scalar {
