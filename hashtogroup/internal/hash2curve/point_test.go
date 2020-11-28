@@ -7,14 +7,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPointEncoding(t *testing.T) {
-	dst := "Test-V00-CS123"
-	input := "input datafqverqvbdbq"
+var (
+	dst = []byte("Test-V00-CS123")
+	testInput = []byte("input datafqverqvbdbq")
+)
 
+func TestPointEncoding(t *testing.T) {
 	for id := range curves {
 		t.Run(string(id), func(t *testing.T) {
-			h := New(id, []byte(dst))
-			e := h.HashToGroup([]byte(input))
+			h := New(id, dst)
+			e := h.HashToGroup(testInput)
 			b := e.Bytes()
 			n, err := h.NewElement().Decode(b)
 			if err != nil {
@@ -47,9 +49,10 @@ func testPointArithmetic(t *testing.T, suite H2C.SuiteID, input, dst []byte) {
 	penc := base.Bytes()
 	senc := s.Bytes()
 	m := base.Mult(s)
+	assert.False(t, m.IsIdentity(), "base mult s is identity")
 	e, err := g.MultBytes(senc, penc)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	assert.Equal(t, m.Bytes(), e.Bytes())
 	assert.PanicsWithError(t, errParamNilScalar.Error(), func() { m.InvertMult(nil) })
@@ -62,12 +65,9 @@ func testPointArithmetic(t *testing.T, suite H2C.SuiteID, input, dst []byte) {
 }
 
 func TestPointArithmetic(t *testing.T) {
-	dst := []byte("dst")
-	input := []byte("input")
-
 	for id := range curves {
 		t.Run(string(id), func(t *testing.T) {
-			testPointArithmetic(t, id, input, dst)
+			testPointArithmetic(t, id, testInput, dst)
 		})
 	}
 }

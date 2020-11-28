@@ -34,6 +34,7 @@ type testGroup struct {
 
 var (
 	hashAlgs = []hash.Identifier{hash.SHA256, hash.SHA512, hash.SHA3_256, hash.SHA3_512, hash.SHAKE128, hash.SHAKE256}
+	testDst = "TestApp-V00-CS123"
 	h2cInput = "H2C Input"
 )
 
@@ -404,7 +405,7 @@ func TestMultiplication(t *testing.T) {
 }
 
 func TestScalarArithmetic(t *testing.T) {
-	g := New(hash.SHA512, []byte("dst"))
+	g := New(hash.SHA512, []byte(testDst))
 
 	// Test Addition and Substraction
 	s := g.NewScalar().Random()
@@ -425,8 +426,8 @@ func TestScalarArithmetic(t *testing.T) {
 }
 
 func TestPointArithmetic(t *testing.T) {
-	g := New(hash.SHA512, []byte("dst"))
-	input := []byte("input")
+	g := New(hash.SHA512, []byte(testDst))
+	input := []byte(h2cInput)
 
 	// Test Addition and Subtraction
 	p := g.Base()
