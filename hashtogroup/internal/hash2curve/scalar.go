@@ -84,7 +84,7 @@ func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
 	return s
 }
 
-// Invert returns the inverse ( 1 / scalar ) of the scalar.
+// Invert returns the scalar's modular inverse ( 1 / scalar ).
 func (s *Scalar) Invert() group.Scalar {
 	return &Scalar{
 		s: s.f.Inv(s.s),
@@ -106,6 +106,7 @@ func (s *Scalar) Decode(in []byte) (group.Scalar, error) {
 	if e.Sign() < 0 {
 		return nil, errors.New("negative scalar")
 	}
+
 	if s.f.Order().Cmp(e) <= 0 {
 		return nil, errors.New("scalar too big")
 	}

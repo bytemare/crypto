@@ -73,20 +73,14 @@ func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
 	return s
 }
 
-// Invert sets the current scalar to is inverse ( 1 / scalar ) and returns it.
-// todo: don't set the current element to it
+// Invert returns the scalar's modular inverse ( 1 / scalar ).
 func (s *Scalar) Invert() group.Scalar {
 	s.Scalar.Invert(s.Scalar)
 	return s
 }
 
 func (s *Scalar) copy() *Scalar {
-	sc := ristretto255.NewScalar()
-	if err := sc.Decode(s.Scalar.Encode(nil)); err != nil {
-		panic(err)
-	}
-
-	return &Scalar{sc}
+	return &Scalar{ristretto255.NewScalar().Add(ristretto255.NewScalar(), s.Scalar)}
 }
 
 // Copy returns a copy of the Scalar.

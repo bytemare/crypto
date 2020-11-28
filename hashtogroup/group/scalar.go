@@ -14,7 +14,7 @@ type Scalar interface {
 	// Mult multiplies the argument with the receiver, sets the receiver to the result and returns it.
 	Mult(scalar Scalar) Scalar
 
-	// Invert sets the current scalar to is inverse ( 1 / scalar ) and returns it.
+	// Invert returns the scalar's modular inverse ( 1 / scalar ).
 	Invert() Scalar
 
 	// Copy returns a copy of the Scalar.
