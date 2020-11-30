@@ -69,7 +69,7 @@ const (
 )
 
 var (
-	errHmacKeySize  = errors.New("hmac key length is different than output size")
+	errHmacKeySize  = errors.New("hmac key length is larger than hash output size")
 	errForbiddenXOF = errors.New("function not supported with XOF")
 )
 

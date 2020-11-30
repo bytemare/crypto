@@ -48,7 +48,7 @@ func (h *FixedHash) Hash(_ int, in ...[]byte) []byte {
 
 // Hmac wraps the built-in hmac.
 func (h *FixedHash) Hmac(message, key []byte) []byte {
-	if len(key) != h.size {
+	if len(key) > h.size {
 		panic(errHmacKeySize)
 	}
 
