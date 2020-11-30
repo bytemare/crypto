@@ -25,7 +25,7 @@ func (s *Scalar) Random() group.Scalar {
 	return s
 }
 
-// Add adds the argument to the receiver, sets the receiver to the result and returns it.
+// Add returns the sum of the scalars, and does not change the receiver.
 func (s *Scalar) Add(scalar group.Scalar) group.Scalar {
 	if scalar == nil {
 		return s
@@ -33,15 +33,13 @@ func (s *Scalar) Add(scalar group.Scalar) group.Scalar {
 
 	sc, ok := scalar.(*Scalar)
 	if !ok {
-		panic("could not cast to same group scalar : wrong group ?")
+		panic(errCastScalar)
 	}
 
-	s.Scalar = s.Scalar.Add(s.Scalar, sc.Scalar)
-
-	return s
+	return &Scalar{Scalar: ristretto255.NewScalar().Add(s.Scalar, sc.Scalar)}
 }
 
-// Sub subtracts the argument from the receiver, sets the receiver to the result and returns it.
+// Sub returns the difference between the scalars, and does not change the receiver.
 func (s *Scalar) Sub(scalar group.Scalar) group.Scalar {
 	if scalar == nil {
 		return s
@@ -52,12 +50,10 @@ func (s *Scalar) Sub(scalar group.Scalar) group.Scalar {
 		panic("could not cast to same group scalar : wrong group ?")
 	}
 
-	s.Scalar = s.Scalar.Subtract(s.Scalar, sc.Scalar)
-
-	return s
+	return &Scalar{Scalar: ristretto255.NewScalar().Subtract(s.Scalar, sc.Scalar)}
 }
 
-// Mult multiplies the argument with the receiver, sets the receiver to the result and returns it.
+// Mult returns the multiplication of the scalars, and does not change the receiver.
 func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
 	if scalar == nil {
 		panic("multiplying scalar with nil element")
@@ -75,8 +71,7 @@ func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
 
 // Invert returns the scalar's modular inverse ( 1 / scalar ).
 func (s *Scalar) Invert() group.Scalar {
-	sc := s.copy().Scalar.Invert(s.Scalar)
-	return  &Scalar{sc}
+	return  &Scalar{ristretto255.NewScalar().Invert(s.Scalar)}
 }
 
 func (s *Scalar) copy() *Scalar {

@@ -30,18 +30,16 @@ func TestScalarArithmetic(t *testing.T) {
 
 	// Test Addition and Substraction
 	s := g.NewScalar().Random()
-	c := s.Copy()
 	assert.Equal(t, s.Add(nil).Bytes(), s.Bytes())
 	a := s.Add(s)
 	assert.Equal(t, a.Sub(nil).Bytes(), a.Bytes())
-	r := a.Sub(c)
-	assert.Equal(t, r.Bytes(), c.Bytes())
+	r := a.Sub(s)
+	assert.Equal(t, r.Bytes(), s.Bytes())
 
 	// Test Multiplication and inversion
 	s = g.NewScalar().Random()
-	c = s.Copy()
-	cc := c.Copy()
-	m := s.Mult(c)
-	i := c.Invert().Mult(m)
-	assert.Equal(t, i.Bytes(), cc.Bytes())
+	m := s.Mult(s)
+	i := s.Invert().Mult(m)
+	//i := m.Mult(s.Invert())
+	assert.Equal(t, i.Bytes(), s.Bytes())
 }

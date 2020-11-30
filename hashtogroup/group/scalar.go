@@ -5,13 +5,13 @@ type Scalar interface {
 	// Random sets the current scalar to a new random scalar and returns it.
 	Random() Scalar
 
-	// Add adds the argument to the receiver, sets the receiver to the result and returns it.
+	// Add returns the sum of the scalars, and does not change the receiver.
 	Add(scalar Scalar) Scalar
 
-	// Sub subtracts the argument from the receiver, sets the receiver to the result and returns it.
+	// Sub returns the difference between the scalars, and does not change the receiver.
 	Sub(scalar Scalar) Scalar
 
-	// Mult multiplies the argument with the receiver, sets the receiver to the result and returns it.
+	// Mult returns the multiplication of the scalars, and does not change the receiver.
 	Mult(scalar Scalar) Scalar
 
 	// Invert returns the scalar's modular inverse ( 1 / scalar ).

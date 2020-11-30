@@ -68,7 +68,7 @@ func h2cToNist(id C.ID) elliptic.Curve {
 	case C.P521:
 		return elliptic.P521()
 	default:
-		panic("invalid id")
+		panic("not a nist curve")
 	}
 }
 

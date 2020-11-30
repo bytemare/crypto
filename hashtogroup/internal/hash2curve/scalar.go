@@ -36,7 +36,7 @@ func (s *Scalar) Random() group.Scalar {
 	return s
 }
 
-// Add adds the argument to the receiver, sets the receiver to the result and returns it.
+// Add returns the sum of the scalars, and does not change the receiver.
 func (s *Scalar) Add(scalar group.Scalar) group.Scalar {
 	if scalar == nil {
 		return s
@@ -47,12 +47,13 @@ func (s *Scalar) Add(scalar group.Scalar) group.Scalar {
 		panic("could not cast to same group scalar : wrong group ?")
 	}
 
-	s.s = s.f.Add(s.s, sc.s)
-
-	return s
+	return &Scalar{
+		s: s.f.Add(s.s, sc.s),
+		f: s.f,
+	}
 }
 
-// Sub subtracts the argument from the receiver, sets the receiver to the result and returns it.
+// Sub returns the difference between the scalars, and does not change the receiver.
 func (s *Scalar) Sub(scalar group.Scalar) group.Scalar {
 	if scalar == nil {
 		return s
@@ -63,12 +64,13 @@ func (s *Scalar) Sub(scalar group.Scalar) group.Scalar {
 		panic("could not cast to same group scalar : wrong group ?")
 	}
 
-	s.s = s.f.Sub(s.s, sc.s)
-
-	return s
+	return &Scalar{
+		s: s.f.Sub(s.s, sc.s),
+		f: s.f,
+	}
 }
 
-// Mult multiplies the argument with the receiver, sets the receiver to the result and returns it.
+// Mult returns the multiplication of the scalars, and does not change the receiver.
 func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
 	if scalar == nil {
 		panic("multiplying scalar with nil element")
@@ -79,9 +81,11 @@ func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
 		panic("could not cast to same group scalar : wrong group ?")
 	}
 
-	s.s = s.f.Mul(s.s, sc.s)
 
-	return s
+	return &Scalar{
+		s: s.f.Mul(s.s, sc.s),
+		f: s.f,
+	}
 }
 
 // Invert returns the scalar's modular inverse ( 1 / scalar ).
