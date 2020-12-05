@@ -44,8 +44,7 @@ func (r *Ristretto) Identity() group.Element {
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the group.
 func (r *Ristretto) HashToGroup(input ...[]byte) group.Element {
-	i := utils.Concatenate(0, input...)
-	uniform := r.h2r.Expand(i, ristrettoInputLength)
+	uniform := r.h2r.Expand(utils.Concatenate(0, input...), ristrettoInputLength)
 
 	return &Element{
 		HashToRistretto: r.h2r,
@@ -55,7 +54,6 @@ func (r *Ristretto) HashToGroup(input ...[]byte) group.Element {
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.
 func (r *Ristretto) HashToScalar(input ...[]byte) group.Scalar {
-	// todo: This Hash-to-scalar most definitively needs confirmation
 	hashed := r.h2r.Expand(utils.Concatenate(0, input...), ristrettoInputLength)
 	return &Scalar{Scalar: ristretto255.NewScalar().FromUniformBytes(hashed)}
 }
