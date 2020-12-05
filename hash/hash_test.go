@@ -39,7 +39,9 @@ func TestAvailability(t *testing.T) {
 	}
 }
 
-func TestShortHmacKey(t *testing.T) {
+func TestLongHmacKey(t *testing.T) {
+	longHMACKey := []byte("Length65aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+
 	for _, params := range registered {
 		h := params.id.Get()
 
@@ -49,7 +51,7 @@ func TestShortHmacKey(t *testing.T) {
 		}
 
 		assert.PanicsWithError(t, errHmacKeySize.Error(), func() {
-			_ = h.Hmac(testData.message, testData.secret)
+			_ = h.Hmac(testData.message, longHMACKey)
 		})
 	}
 }
