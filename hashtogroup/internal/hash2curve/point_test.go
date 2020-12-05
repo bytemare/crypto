@@ -36,12 +36,13 @@ func testPointArithmetic(t *testing.T, suite H2C.SuiteID, input, dst []byte) {
 
 	// Test Addition and Subtraction
 	base := g.Base()
-	c := base.Copy()
 	assert.Panics(t, func() { base.Add(nil) })
+
 	a := base.Add(base)
 	assert.Panics(t, func() { a.Sub(nil) })
-	r := a.Sub(c)
-	assert.Equal(t, r.Bytes(), c.Bytes())
+
+	sub := a.Sub(base)
+	assert.Equal(t, sub.Bytes(), base.Bytes())
 
 	// Test Multiplication and inversion
 	base = g.Base()

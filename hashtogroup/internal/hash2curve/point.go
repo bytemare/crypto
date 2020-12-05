@@ -30,9 +30,10 @@ func (p *Point) Add(element group.Element) group.Element {
 		panic("could not cast to same group element : wrong group ?")
 	}
 
-	p.point = p.GetCurve().Add(p.point, po.point)
-
-	return p
+	return &Point{
+		Hash2Curve: p.Hash2Curve,
+		point:      p.GetCurve().Add(p.point, po.point),
+	}
 }
 
 // Sub subtracts the argument from the receiver, sets the receiver to the result and returns it.
@@ -46,9 +47,10 @@ func (p *Point) Sub(element group.Element) group.Element {
 		panic("could not cast to same group element : wrong group ?")
 	}
 
-	p.point = p.GetCurve().Add(p.point, p.GetCurve().Neg(pt.point))
-
-	return p
+	return &Point{
+		Hash2Curve: p.Hash2Curve,
+		point:      p.GetCurve().Add(p.point, p.GetCurve().Neg(pt.point)),
+	}
 }
 
 // Mult returns the scalar multiplication of the receiver element with the given scalar.

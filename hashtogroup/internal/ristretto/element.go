@@ -27,9 +27,10 @@ func (e *Element) Add(element group.Element) group.Element {
 		panic(errCastElement)
 	}
 
-	e.element = e.element.Add(e.element, ele.element)
-
-	return e
+	return &Element{
+		HashToRistretto: e.HashToRistretto,
+		element:         ristretto255.NewElement().Add(e.element, ele.element),
+	}
 }
 
 // Sub subtracts the argument from the receiver, sets the receiver to the result and returns it.
@@ -43,9 +44,10 @@ func (e *Element) Sub(element group.Element) group.Element {
 		panic(errCastElement)
 	}
 
-	e.element = e.element.Subtract(e.element, ele.element)
-
-	return e
+	return &Element{
+		HashToRistretto: e.HashToRistretto,
+		element:         ristretto255.NewElement().Subtract(e.element, ele.element),
+	}
 }
 
 // Mult returns the scalar multiplication of the receiver element with the given scalar.

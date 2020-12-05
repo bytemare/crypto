@@ -2,10 +2,10 @@ package group
 
 // Element interface abstracts common operations on elements in a Group.
 type Element interface {
-	// Add adds the argument to the receiver, sets the receiver to the result and returns it.
+	// Add returns the sum of the Elements, and does not change the receiver.
 	Add(Element) Element
 
-	// Sub subtracts the argument from the receiver, sets the receiver to the result and returns it.
+	// Sub returns the difference between the scalars, and does not change the receiver.
 	Sub(Element) Element
 
 	// Mult returns the scalar multiplication of the receiver element with the given scalar.
