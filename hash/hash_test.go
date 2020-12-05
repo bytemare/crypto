@@ -105,19 +105,39 @@ func TestHKDF(t *testing.T) {
 	}
 }
 
-func TestDeriveKey(t *testing.T) {
+func TestHKDFExtract(t *testing.T) {
 	for _, params := range registered {
 		h := params.id.Get()
 
 		if h.Extensible() {
-			assert.PanicsWithError(t, errForbiddenXOF.Error(), func() { _ = h.DeriveKey(nil, nil, 0) })
+			assert.PanicsWithError(t, errForbiddenXOF.Error(), func() { _ = h.HKDFExtract(nil, nil) })
+			continue
+		}
+
+		for _, l := range []int{0, h.OutputSize()} {
+			// Build a pseudorandom key
+			prk := h.HKDFExtract(testData.secret, testData.salt)
+
+			if len(prk) != h.OutputSize() {
+				t.Errorf("#%v : invalid key length (length argument = %d)", h.id, l)
+			}
+		}
+	}
+}
+
+func TestHKDFExpand(t *testing.T) {
+	for _, params := range registered {
+		h := params.id.Get()
+
+		if h.Extensible() {
+			assert.PanicsWithError(t, errForbiddenXOF.Error(), func() { _ = h.HKDFExpand(nil, nil, 0) })
 			continue
 		}
 
 		for _, l := range []int{0, h.OutputSize()} {
 			// Build a pseudorandom key
 			prk := h.HKDF(testData.secret, testData.salt, testData.info, l)
-			key := h.DeriveKey(prk, testData.info, l)
+			key := h.HKDFExpand(prk, testData.info, l)
 
 			if len(key) != h.OutputSize() {
 				t.Errorf("#%v : invalid key length (length argument = %d)", h.id, l)

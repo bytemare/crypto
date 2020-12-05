@@ -73,9 +73,15 @@ func (h *FixedHash) HKDF(secret, salt, info []byte, length int) []byte {
 	return dst
 }
 
-// DeriveKey is an "expand" only HKDF, where the key should be an already random/hashed input,
-// and info specific usage identifying information.
-func (h *FixedHash) DeriveKey(pseudorandomKey, info []byte, length int) []byte {
+// HKDFExtract is an "extract" only HKDF, where the secret and salt are used to generate a pseudorandom key. This key
+// can then be used in multiple HKDFExpand calls to derive individual different keys.
+func (h *FixedHash) HKDFExtract(secret, salt []byte) []byte {
+	return hkdf.Extract(h.hash, secret, salt)
+}
+
+// HKDFExpand is an "expand" only HKDF, where the key should be an already random/hashed input,
+// and info specific key usage identifying information.
+func (h *FixedHash) HKDFExpand(pseudorandomKey, info []byte, length int) []byte {
 	if length == 0 {
 		length = h.size
 	}

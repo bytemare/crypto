@@ -129,7 +129,8 @@ type hashFunc interface {
 	Hash(size int, in ...[]byte) []byte
 	Hmac(message, key []byte) []byte
 	HKDF(secret, salt, info []byte, length int) []byte
-	DeriveKey(pseudorandomKey, info []byte, length int) []byte
+	HKDFExtract(secret, salt []byte) []byte
+	HKDFExpand(pseudorandomKey, info []byte, length int) []byte
 	outputSize() int
 }
 

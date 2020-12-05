@@ -116,8 +116,13 @@ func (h *ExtensibleHash) HKDF(_, _, _ []byte, _ int) []byte {
 	panic(errForbiddenXOF)
 }
 
-// DeriveKey can't be used with extensible output functions.
-func (h *ExtensibleHash) DeriveKey(_, _ []byte, _ int) []byte {
+// HKDFExtract can't be used with extensible output functions.
+func (h *ExtensibleHash) HKDFExtract(_, _ []byte) []byte {
+	panic(errForbiddenXOF)
+}
+
+// HKDFExpand can't be used with extensible output functions.
+func (h *ExtensibleHash) HKDFExpand(_, _ []byte, _ int) []byte {
 	panic(errForbiddenXOF)
 }
 
