@@ -62,23 +62,33 @@ func TestPatchCiphersuite(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
-	// Should error on nil or empty dst
-	if _, err := New(nil, nil); err == nil {
-		t.Error("expected error on nil dst")
-	}
+	// Should error on nil, empty, or short dst
+	_, err := New(nil, nil)
+	assert.EqualError(t, err, errShortDST.Error(), "expected error on nil dst")
 
-	if _, err := New(nil, []byte("")); err == nil {
-		t.Error("expected error on empty dst")
-	}
+	_, err = New(nil, []byte(""))
+	assert.EqualError(t, err, errShortDST.Error(), "expected error on empty dst")
+
+	_, err = New(nil, shortDST)
+	assert.EqualError(t, err, errShortDST.Error(), "expected error on short dst")
 
 	// Should error on invalid group identifier
 	invalidCSP := &Parameters{Group: 64}
-	if _, err := New(invalidCSP, shortDST); err == nil {
-		t.Error("expected error on invalid Encoding")
-	}
+	_, err = New(invalidCSP, normalDST)
+	assert.EqualError(t, err, errInvalidGroupID.Error(), "expected error on invalid Encoding")
+
+	// Should error on invalid hash identifier
+	invalidCSP = &Parameters{Hash: 64}
+	_, err = New(invalidCSP, normalDST)
+	assert.Error(t, errInvalidHashID, "expected error on invalid Encoding")
+
+	// Should error on invalid IHF identifier
+	invalidCSP = &Parameters{IHF: 64}
+	_, err = New(invalidCSP, normalDST)
+	assert.Error(t, errInvalidIHFID, "expected error on invalid Encoding")
 
 	// Should succeed
-	if _, err := New(nil, shortDST); err != nil {
+	if _, err := New(nil, normalDST); err != nil {
 		t.Errorf("unexpected error on valid input : %q", err)
 	}
 }

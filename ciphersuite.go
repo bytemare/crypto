@@ -125,7 +125,7 @@ func patchCipherSuite(p *Parameters) (*Parameters, error) {
 		}, nil
 	}
 
-	// todo: somehow fail if some values are set but not others (i.e.e all 0 or not)
+	// todo: somehow fail if some values are set but not others (i.e. all 0 or not)
 
 	if p.Group == 0 {
 		p.Group = defGroup
