@@ -74,9 +74,11 @@ func (i Ciphersuite) Get(dst []byte) group.Group {
 		panic(errInvalidID)
 	}
 
-	if len(dst) == group.DstMinLength {
-		panic(errZeroLenDST)
-	} else if len(dst) < group.DstRecommendedMinLength {
+	if len(dst) < group.DstRecommendedMinLength {
+		if len(dst) == group.DstMinLength {
+			panic(errZeroLenDST)
+		}
+
 		panic(errShortDST)
 	}
 
