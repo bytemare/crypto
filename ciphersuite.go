@@ -65,7 +65,7 @@ func (p *Parameters) Encode() CiphersuiteEncoding {
 // components will be used. The structure can be only partially
 // filled with desired components, and unset values will be set to strong defaults.
 func New(csp *Parameters, dst []byte) (*Ciphersuite, error) {
-	if len(dst) <= group.DstMinLength {
+	if len(dst) <= group.DstRecommendedMinLength {
 		return nil, errShortDST
 	}
 

@@ -10,7 +10,10 @@ import (
 	"github.com/bytemare/cryptotools/ihf"
 )
 
-var shortDST = []byte("shortDST")
+var (
+	shortDST = []byte("shortDST")
+	normalDST = []byte("CryptoTools-Test00")
+)
 
 func TestPatchCiphersuite(t *testing.T) {
 	defaultCSP := &Parameters{
@@ -81,7 +84,7 @@ func TestNew(t *testing.T) {
 }
 
 var (
-	defCipherSuite, _ = New(nil, shortDST)
+	defCipherSuite, _ = New(nil, normalDST)
 	defEncoding       = [4]byte{1, 4, 1, 64}
 )
 
