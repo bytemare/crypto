@@ -6,21 +6,21 @@ import (
 	"github.com/bytemare/cryptotools/hash"
 	"github.com/bytemare/cryptotools/hashtogroup"
 	"github.com/bytemare/cryptotools/hashtogroup/group"
-	"github.com/bytemare/cryptotools/ihf"
+	"github.com/bytemare/cryptotools/mhf"
 	"github.com/bytemare/cryptotools/internal"
 )
 
 const (
 	defGroup  = hashtogroup.Default
 	defHash   = hash.Default
-	defIHF    = ihf.Default
-	defIHFLen = ihf.DefaultLength
+	defMHF    = mhf.Default
+	defMHFLen = mhf.DefaultLength
 )
 
 var (
 	errInvalidGroupID = internal.ParameterError("invalid HashToGroup identifier")
 	errInvalidHashID  = internal.ParameterError("invalid Hash identifier")
-	errInvalidIHFID   = internal.ParameterError("invalid IHF identifier")
+	errInvalidMHFID   = internal.ParameterError("invalid MHF identifier")
 	errShortDST       = internal.ParameterError("DST is too short (nil or zero-length)")
 )
 
@@ -30,15 +30,15 @@ type Ciphersuite struct {
 
 	group.Group
 	*hash.Hash
-	IHF ihf.PasswordKDF
+	MHF mhf.PasswordKDF
 }
 
 // Parameters identifies the components of a Ciphersuite.
 type Parameters struct {
 	Group  hashtogroup.Ciphersuite `json:"group"`
 	Hash   hash.Identifier         `json:"hash"`
-	IHF    ihf.Identifier          `json:"ihf"`
-	IHFLen byte                    `json:"len"`
+	MHF    mhf.Identifier          `json:"mhf"`
+	MHFLen byte                    `json:"len"`
 }
 
 // CiphersuiteEncoding is the 4-byte representation of a ciphersuite.
@@ -47,7 +47,7 @@ type CiphersuiteEncoding = [4]byte
 // String implements the Stringer() interface. It joins string representations of the parameters if available,
 // and returns the resulting string.
 func (p *Parameters) String() string {
-	return fmt.Sprintf("%s-%s-%s-%v", p.Group, p.Hash, p.IHF, p.IHFLen)
+	return fmt.Sprintf("%s-%s-%s-%v", p.Group, p.Hash, p.MHF, p.MHFLen)
 }
 
 // Encode returns the 4-byte representation of the ciphersuite parameters.
@@ -55,8 +55,8 @@ func (p *Parameters) Encode() CiphersuiteEncoding {
 	return CiphersuiteEncoding{
 		byte(p.Group),
 		byte(p.Hash),
-		byte(p.IHF),
-		p.IHFLen,
+		byte(p.MHF),
+		p.MHFLen,
 	}
 }
 
@@ -77,12 +77,12 @@ func New(csp *Parameters, dst []byte) (*Ciphersuite, error) {
 	return &Ciphersuite{
 		Parameters: csp,
 		Group:      csp.Group.Get(dst),
-		IHF:        csp.IHF.Get(int(csp.IHFLen)),
+		MHF:        csp.MHF.Get(int(csp.MHFLen)),
 		Hash:       csp.Hash.Get(),
 	}, nil
 }
 
-func checkValues(g hashtogroup.Ciphersuite, h hash.Identifier, i ihf.Identifier) error {
+func checkValues(g hashtogroup.Ciphersuite, h hash.Identifier, i mhf.Identifier) error {
 	if !g.Available() {
 		return errInvalidGroupID
 	}
@@ -92,7 +92,7 @@ func checkValues(g hashtogroup.Ciphersuite, h hash.Identifier, i ihf.Identifier)
 	}
 
 	if !i.Available() {
-		return errInvalidIHFID
+		return errInvalidMHFID
 	}
 
 	return nil
@@ -103,15 +103,15 @@ func ReadCiphersuite(suite CiphersuiteEncoding) (*Parameters, error) {
 	if err := checkValues(
 		hashtogroup.Ciphersuite(suite[0]),
 		hash.Identifier(suite[1]),
-		ihf.Identifier(suite[2])); err != nil {
+		mhf.Identifier(suite[2])); err != nil {
 		return nil, err
 	}
 
 	return &Parameters{
 		Group:  hashtogroup.Ciphersuite(suite[0]),
 		Hash:   hash.Identifier(suite[1]),
-		IHF:    ihf.Identifier(suite[2]),
-		IHFLen: suite[3],
+		MHF:    mhf.Identifier(suite[2]),
+		MHFLen: suite[3],
 	}, nil
 }
 
@@ -120,8 +120,8 @@ func patchCipherSuite(p *Parameters) (*Parameters, error) {
 		return &Parameters{
 			Group:  defGroup,
 			Hash:   defHash,
-			IHF:    defIHF,
-			IHFLen: defIHFLen,
+			MHF:    defMHF,
+			MHFLen: defMHFLen,
 		}, nil
 	}
 
@@ -135,15 +135,15 @@ func patchCipherSuite(p *Parameters) (*Parameters, error) {
 		p.Hash = defHash
 	}
 
-	if p.IHF == 0 {
-		p.IHF = defIHF
+	if p.MHF == 0 {
+		p.MHF = defMHF
 	}
 
-	if p.IHFLen == 0 {
-		p.IHFLen = defIHFLen
+	if p.MHFLen == 0 {
+		p.MHFLen = defMHFLen
 	}
 
-	if err := checkValues(p.Group, p.Hash, p.IHF); err != nil {
+	if err := checkValues(p.Group, p.Hash, p.MHF); err != nil {
 		return nil, err
 	}
 

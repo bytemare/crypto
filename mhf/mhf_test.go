@@ -1,10 +1,10 @@
-package ihf
+package mhf
 
 import (
 	"bytes"
 	"testing"
 
-	"github.com/bytemare/cryptotools/ihf/internal/argon2id"
+	"github.com/bytemare/cryptotools/mhf/internal/argon2id"
 
 	"github.com/stretchr/testify/assert"
 
@@ -90,7 +90,7 @@ func TestAvailability(t *testing.T) {
 	}
 }
 
-func TestIHF(t *testing.T) {
+func TestMHF(t *testing.T) {
 	assert.PanicsWithError(t, argon2id.ErrKeyLen.Error(), func() { Argon2id.Get(-1) }, "Argon2id : expected error on negative key length")
 	assert.PanicsWithError(t, argon2id.ErrKeyLen.Error(), func() { Argon2id.Get(1 << 32) }, "Argon2id : expected error on high integer")
 

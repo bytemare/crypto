@@ -9,7 +9,7 @@ Available interfaces are:
 
 - Hash: interface to hashing primitives and exposing common functions such as hashing, hmac, HKDF, and expand-only HKDF.
 
-- IHF: for iterative hash function, a.k.a. password key derivation functions.
+- MHF: for memory hard function, a.k.a. password key derivation functions.
 
 - Encoding: for encoding and decoding to and from different formats.
 

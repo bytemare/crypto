@@ -19,7 +19,7 @@ const (
 	uint32Max = (1 << 32) - 1
 )
 
-// Argon2id holds the parameters to the argon2id IHF.
+// Argon2id holds the parameters to the argon2id MHF.
 type Argon2id struct {
 	Time    uint32
 	Memory  uint32
@@ -43,7 +43,7 @@ func New(keylen int) *Argon2id {
 	}
 }
 
-// Hash runs the IHF over the input and internal parameters.
+// Hash runs the MHF over the input and internal parameters.
 func (a *Argon2id) Hash(password, salt []byte) []byte {
 	return argon2.IDKey(password, salt, a.Time, a.Memory, a.Threads, uint32(a.Keylen))
 }

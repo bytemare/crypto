@@ -21,7 +21,7 @@ const (
 	// maxInt = int(^uint(0) >> 1).
 )
 
-// Scrypt holds the parameters to the scrypt IHF.
+// Scrypt holds the parameters to the scrypt MHF.
 type Scrypt struct {
 	N      int
 	R      int
@@ -52,7 +52,7 @@ func New(keylen int) *Scrypt {
 	return s
 }
 
-// Hash runs the IHF over the input and internal parameters.
+// Hash runs the MHF over the input and internal parameters.
 func (s *Scrypt) Hash(password, salt []byte) []byte {
 	k, err := scrypt.Key(password, salt, s.N, s.R, s.P, s.Keylen)
 	if err != nil {

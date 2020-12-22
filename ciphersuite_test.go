@@ -7,7 +7,7 @@ import (
 
 	"github.com/bytemare/cryptotools/hash"
 	"github.com/bytemare/cryptotools/hashtogroup"
-	"github.com/bytemare/cryptotools/ihf"
+	"github.com/bytemare/cryptotools/mhf"
 )
 
 var (
@@ -19,8 +19,8 @@ func TestPatchCiphersuite(t *testing.T) {
 	defaultCSP := &Parameters{
 		Group:  defGroup,
 		Hash:   defHash,
-		IHF:    defIHF,
-		IHFLen: defIHFLen,
+		MHF:    defMHF,
+		MHFLen: defMHFLen,
 	}
 
 	emptyCSP := &Parameters{}
@@ -54,10 +54,10 @@ func TestPatchCiphersuite(t *testing.T) {
 		t.Error("expected error on invalid hash function")
 	}
 
-	var invalidIHF ihf.Identifier = 64
-	csp = &Parameters{IHF: invalidIHF}
+	var invalidMHF mhf.Identifier = 64
+	csp = &Parameters{MHF: invalidMHF}
 	if _, err := patchCipherSuite(csp); err == nil {
-		t.Error("expected error on invalid IHF")
+		t.Error("expected error on invalid MHF")
 	}
 }
 
@@ -82,10 +82,10 @@ func TestNew(t *testing.T) {
 	_, err = New(invalidCSP, normalDST)
 	assert.Error(t, errInvalidHashID, "expected error on invalid Encoding")
 
-	// Should error on invalid IHF identifier
-	invalidCSP = &Parameters{IHF: 64}
+	// Should error on invalid MHF identifier
+	invalidCSP = &Parameters{MHF: 64}
 	_, err = New(invalidCSP, normalDST)
-	assert.Error(t, errInvalidIHFID, "expected error on invalid Encoding")
+	assert.Error(t, errInvalidMHFID, "expected error on invalid Encoding")
 
 	// Should succeed
 	if _, err := New(nil, normalDST); err != nil {

@@ -1,13 +1,13 @@
-// Package ihf provides an interface to iterated/password hashing functions..
-package ihf
+// Package mhf provides an interface to memory hard functions.
+package mhf
 
 import (
 	"github.com/bytemare/cryptotools/encoding"
-	"github.com/bytemare/cryptotools/ihf/internal/argon2id"
-	"github.com/bytemare/cryptotools/ihf/internal/scrypt"
+	"github.com/bytemare/cryptotools/mhf/internal/argon2id"
+	"github.com/bytemare/cryptotools/mhf/internal/scrypt"
 )
 
-// Identifier is used to specify the iterative/password hashing function to be used.
+// Identifier is used to specify the memory hard function to be used.
 type Identifier byte
 
 const (
@@ -29,7 +29,7 @@ const (
 	DefaultLength = 64
 )
 
-var registered = make([]newIHF, maxID)
+var registered = make([]newMHF, maxID)
 
 // Get returns a newly instantiated PasswordKDF with keyLen output length.
 func (i Identifier) Get(keyLen int) PasswordKDF {
@@ -55,24 +55,24 @@ func (i Identifier) String() string {
 	}
 }
 
-func (i Identifier) register(n newIHF) {
+func (i Identifier) register(n newMHF) {
 	registered[i] = n
 }
 
-type newIHF func(keylen int) PasswordKDF
+type newMHF func(keylen int) PasswordKDF
 
 func init() {
 	Argon2id.register(newArgon2id())
 	Scrypt.register(newScrypt())
 }
 
-func newArgon2id() newIHF {
+func newArgon2id() newMHF {
 	return func(keylen int) PasswordKDF {
 		return argon2id.New(keylen)
 	}
 }
 
-func newScrypt() newIHF {
+func newScrypt() newMHF {
 	return func(keylen int) PasswordKDF {
 		return scrypt.New(keylen)
 	}
@@ -81,7 +81,7 @@ func newScrypt() newIHF {
 // PasswordKDF defines the interface to access supported password hashing functions.
 type PasswordKDF interface {
 
-	// Hash operates the underlying iterative/password hashing function over the password using the salt.
+	// Hash operates the underlying memory hard function over the password using the salt.
 	Hash(password, salt []byte) []byte
 
 	// HashVar is a wrapper to Hash but allows variadic input for the salt that will be concatenated before hashing.
