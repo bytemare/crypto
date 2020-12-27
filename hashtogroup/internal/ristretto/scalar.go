@@ -64,9 +64,7 @@ func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
 		panic("could not cast to same group scalar : wrong group ?")
 	}
 
-	s.Scalar = ristretto255.NewScalar().Multiply(s.Scalar, sc.Scalar)
-
-	return s
+	return &Scalar{Scalar: ristretto255.NewScalar().Multiply(s.Scalar, sc.Scalar)}
 }
 
 // Invert returns the scalar's modular inverse ( 1 / scalar ).
