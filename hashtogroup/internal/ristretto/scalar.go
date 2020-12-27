@@ -64,7 +64,7 @@ func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
 		panic("could not cast to same group scalar : wrong group ?")
 	}
 
-	s.Scalar = s.Scalar.Multiply(s.Scalar, sc.Scalar)
+	s.Scalar = ristretto255.NewScalar().Multiply(s.Scalar, sc.Scalar)
 
 	return s
 }
