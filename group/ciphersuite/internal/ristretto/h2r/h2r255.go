@@ -2,8 +2,9 @@
 package h2r
 
 import (
-	"github.com/bytemare/cryptotools/group"
 	"math"
+
+	"github.com/bytemare/cryptotools/group"
 
 	"github.com/bytemare/cryptotools/hash"
 	"github.com/bytemare/cryptotools/internal"
@@ -39,9 +40,11 @@ func New(dst []byte, id hash.Identifier) *HashToRistretto {
 
 // Expand expands the input by hashing using the expandMessageXMD or expandMessageXOF functions from hash-to-curve.
 func (h *HashToRistretto) Expand(input []byte, length int) []byte {
-	if len(h.dst) == group.DstMinLength {
-		panic(errZeroLenDST)
-	} else if len(h.dst) < group.DstRecommendedMinLength {
+	if len(h.dst) < group.DstRecommendedMinLength {
+		if len(h.dst) == group.DstMinLength {
+			panic(errZeroLenDST)
+		}
+
 		panic(errShortDST)
 	}
 

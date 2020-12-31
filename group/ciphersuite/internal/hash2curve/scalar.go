@@ -3,12 +3,11 @@ package hash2curve
 
 import (
 	"crypto/rand"
-	"errors"
 	"math/big"
 
 	"github.com/armfazh/tozan-ecc/field"
 
-	"github.com/bytemare/cryptotools/hashtogroup/group"
+	"github.com/bytemare/cryptotools/group"
 )
 
 // Scalar implements the Scalar interface for Hash-to-Curve field elements.
@@ -81,7 +80,6 @@ func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
 		panic("could not cast to same group scalar : wrong group ?")
 	}
 
-
 	return &Scalar{
 		s: s.f.Mul(s.s, sc.s),
 		f: s.f,
@@ -108,11 +106,11 @@ func (s *Scalar) Copy() group.Scalar {
 func (s *Scalar) Decode(in []byte) (group.Scalar, error) {
 	e := new(big.Int).SetBytes(in)
 	if e.Sign() < 0 {
-		return nil, errors.New("negative scalar")
+		return nil, errParamNegScalar
 	}
 
 	if s.f.Order().Cmp(e) <= 0 {
-		return nil, errors.New("scalar too big")
+		return nil, errParamScalarTooBig
 	}
 
 	s.s = s.f.Elt(e)

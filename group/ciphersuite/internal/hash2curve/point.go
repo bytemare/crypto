@@ -10,7 +10,7 @@ import (
 	C "github.com/armfazh/tozan-ecc/curve"
 	"github.com/armfazh/tozan-ecc/field"
 
-	"github.com/bytemare/cryptotools/hashtogroup/group"
+	"github.com/bytemare/cryptotools/group"
 )
 
 // Point implements the Element interface for Hash-to-Curve points.

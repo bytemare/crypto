@@ -34,7 +34,7 @@ type testGroup struct {
 
 var (
 	hashAlgs = []hash.Identifier{hash.SHA256, hash.SHA512, hash.SHA3_256, hash.SHA3_512, hash.SHAKE128, hash.SHAKE256}
-	testDst = "TestApp-V00-CS123"
+	testDst  = "TestApp-V00-CS123"
 	h2cInput = "H2C Input"
 )
 
@@ -153,18 +153,6 @@ func TestNewSucced(t *testing.T) {
 			New(h, dst)
 		}, "Should not panic with valid parameters")
 	}
-}
-
-func TestNewFail(t *testing.T) {
-	// New fails on h2c suite creation with nil dst
-	assert.Panics(t, func() {
-		New(tests[0].hashID, nil)
-	}, "Should panic with nil DST")
-
-	// New fails on h2c suite creation with empty dst
-	assert.Panics(t, func() {
-		New(tests[0].hashID, []byte(""))
-	}, "Should panic with empty DST")
 }
 
 func TestNilScalar(t *testing.T) {

@@ -3,15 +3,16 @@ package cryptotools
 import (
 	"fmt"
 
+	"github.com/bytemare/cryptotools/group/ciphersuite"
+
+	"github.com/bytemare/cryptotools/group"
 	"github.com/bytemare/cryptotools/hash"
-	"github.com/bytemare/cryptotools/hashtogroup"
-	"github.com/bytemare/cryptotools/hashtogroup/group"
-	"github.com/bytemare/cryptotools/mhf"
 	"github.com/bytemare/cryptotools/internal"
+	"github.com/bytemare/cryptotools/mhf"
 )
 
 const (
-	defGroup  = hashtogroup.Default
+	defGroup  = ciphersuite.Default
 	defHash   = hash.Default
 	defMHF    = mhf.Default
 	defMHFLen = mhf.DefaultLength
@@ -35,10 +36,10 @@ type Ciphersuite struct {
 
 // Parameters identifies the components of a Ciphersuite.
 type Parameters struct {
-	Group  hashtogroup.Ciphersuite `json:"group"`
-	Hash   hash.Identifier         `json:"hash"`
-	MHF    mhf.Identifier          `json:"mhf"`
-	MHFLen byte                    `json:"len"`
+	Group  ciphersuite.Identifier `json:"group"`
+	Hash   hash.Identifier        `json:"hash"`
+	MHF    mhf.Identifier         `json:"mhf"`
+	MHFLen byte                   `json:"len"`
 }
 
 // CiphersuiteEncoding is the 4-byte representation of a ciphersuite.
@@ -82,7 +83,7 @@ func New(csp *Parameters, dst []byte) (*Ciphersuite, error) {
 	}, nil
 }
 
-func checkValues(g hashtogroup.Ciphersuite, h hash.Identifier, i mhf.Identifier) error {
+func checkValues(g ciphersuite.Identifier, h hash.Identifier, i mhf.Identifier) error {
 	if !g.Available() {
 		return errInvalidGroupID
 	}
@@ -101,14 +102,14 @@ func checkValues(g hashtogroup.Ciphersuite, h hash.Identifier, i mhf.Identifier)
 // ReadCiphersuite interprets a ciphersuite encoding.
 func ReadCiphersuite(suite CiphersuiteEncoding) (*Parameters, error) {
 	if err := checkValues(
-		hashtogroup.Ciphersuite(suite[0]),
+		ciphersuite.Identifier(suite[0]),
 		hash.Identifier(suite[1]),
 		mhf.Identifier(suite[2])); err != nil {
 		return nil, err
 	}
 
 	return &Parameters{
-		Group:  hashtogroup.Ciphersuite(suite[0]),
+		Group:  ciphersuite.Identifier(suite[0]),
 		Hash:   hash.Identifier(suite[1]),
 		MHF:    mhf.Identifier(suite[2]),
 		MHFLen: suite[3],

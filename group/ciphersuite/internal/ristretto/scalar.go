@@ -4,7 +4,7 @@ package ristretto
 import (
 	"github.com/gtank/ristretto255"
 
-	"github.com/bytemare/cryptotools/hashtogroup/group"
+	"github.com/bytemare/cryptotools/group"
 	"github.com/bytemare/cryptotools/utils"
 )
 
@@ -69,7 +69,7 @@ func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
 
 // Invert returns the scalar's modular inverse ( 1 / scalar ).
 func (s *Scalar) Invert() group.Scalar {
-	return  &Scalar{ristretto255.NewScalar().Invert(s.Scalar)}
+	return &Scalar{ristretto255.NewScalar().Invert(s.Scalar)}
 }
 
 func (s *Scalar) copy() *Scalar {

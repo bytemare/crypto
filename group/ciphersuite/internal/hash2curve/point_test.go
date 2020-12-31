@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	dst = []byte("Test-V00-CS123")
+	dst       = []byte("TestApp-V00-CS123")
 	testInput = []byte("input datafqverqvbdbq")
 )
 

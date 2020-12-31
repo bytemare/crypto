@@ -4,9 +4,9 @@ package ristretto
 import (
 	"github.com/gtank/ristretto255"
 
+	"github.com/bytemare/cryptotools/group"
+	"github.com/bytemare/cryptotools/group/ciphersuite/internal/ristretto/h2r"
 	"github.com/bytemare/cryptotools/hash"
-	"github.com/bytemare/cryptotools/hashtogroup/group"
-	"github.com/bytemare/cryptotools/hashtogroup/internal/ristretto/h2r"
 	"github.com/bytemare/cryptotools/utils"
 )
 

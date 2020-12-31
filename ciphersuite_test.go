@@ -3,15 +3,16 @@ package cryptotools
 import (
 	"testing"
 
+	"github.com/bytemare/cryptotools/group/ciphersuite"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/bytemare/cryptotools/hash"
-	"github.com/bytemare/cryptotools/hashtogroup"
 	"github.com/bytemare/cryptotools/mhf"
 )
 
 var (
-	shortDST = []byte("shortDST")
+	shortDST  = []byte("shortDST")
 	normalDST = []byte("CryptoTools-Test00")
 )
 
@@ -42,7 +43,7 @@ func TestPatchCiphersuite(t *testing.T) {
 	}
 
 	// Test Invalid values
-	var invalidGroup hashtogroup.Ciphersuite = 64
+	var invalidGroup ciphersuite.Identifier = 64
 	csp = &Parameters{Group: invalidGroup}
 	if _, err := patchCipherSuite(csp); err == nil {
 		t.Error("expected error on invalid group")

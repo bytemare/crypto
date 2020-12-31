@@ -1,23 +1,26 @@
-package hashtogroup
+// Package ciphersuite identifies a list of prime-order elliptic curve groups coupled with hashing functions implemening
+// group operations over elliptic curves, as well as HashToGroup() and HashToScalar() per Hash-to-curve.
+package ciphersuite
 
 import (
-	"errors"
 	"fmt"
+
+	"github.com/bytemare/cryptotools/internal"
 
 	H2C "github.com/armfazh/h2c-go-ref"
 
+	"github.com/bytemare/cryptotools/group"
+	"github.com/bytemare/cryptotools/group/ciphersuite/internal/hash2curve"
+	"github.com/bytemare/cryptotools/group/ciphersuite/internal/ristretto"
 	"github.com/bytemare/cryptotools/hash"
-	"github.com/bytemare/cryptotools/hashtogroup/group"
-	"github.com/bytemare/cryptotools/hashtogroup/internal/hash2curve"
-	"github.com/bytemare/cryptotools/hashtogroup/internal/ristretto"
 )
 
-// Ciphersuite defines registered groups for use in the implementation.
-type Ciphersuite byte
+// Identifier defines registered groups for use in the implementation.
+type Identifier byte
 
 const (
 	// Ristretto255Sha512 identifies the Ristretto255 group with SHA2-512 hash-to-group hashing.
-	Ristretto255Sha512 Ciphersuite = 1 + iota
+	Ristretto255Sha512 Identifier = 1 + iota
 
 	// Ristretto255Sha3512 identifies the Ristretto255 group with SHA3-512 hash-to-group hashing.
 	Ristretto255Sha3512
@@ -61,38 +64,28 @@ const (
 const dstfmt = "%s-V%s-CS%s-%s"
 
 var (
-	registered       map[Ciphersuite]*params
-	errInvalidID     = errors.New("invalid ciphersuite identifier")
-	errUnavailableID = errors.New("ciphersuite unavailable")
-	errZeroLenDST    = errors.New("zero-length DST")
-	errShortDST      = errors.New("DST is shorter than recommended length")
+	registered       map[Identifier]*params
+	errInvalidID     = internal.ParameterError("invalid ciphersuite identifier")
+	errUnavailableID = internal.ParameterError("ciphersuite unavailable")
 )
 
 // Get returns a Group interface implementing struct to the given cipher suite.
-func (i Ciphersuite) Get(dst []byte) group.Group {
+func (i Identifier) Get(dst []byte) group.Group {
 	if i == 0 || i >= maxID {
 		panic(errInvalidID)
-	}
-
-	if len(dst) < group.DstRecommendedMinLength {
-		if len(dst) == group.DstMinLength {
-			panic(errZeroLenDST)
-		}
-
-		panic(errShortDST)
 	}
 
 	return registered[i].newGroup(dst)
 }
 
-// Available reports whether the given Ciphersuite is linked into the binary.
-func (i Ciphersuite) Available() bool {
+// Available reports whether the given Identifier is linked into the binary.
+func (i Identifier) Available() bool {
 	return i > 0 && i < maxID && registered[i] != nil
 }
 
 // MakeDST builds a domain separation tag in the form of <app>-V<version>-CS<id>-<hash-to-curve-ID>, or returns an error.
-func (i Ciphersuite) MakeDST(app, version string) ([]byte, error) {
-	if i == Ciphersuite(0) || i >= maxID {
+func (i Identifier) MakeDST(app, version string) ([]byte, error) {
+	if i == Identifier(0) || i >= maxID {
 		return nil, errInvalidID
 	}
 
@@ -106,8 +99,8 @@ func (i Ciphersuite) MakeDST(app, version string) ([]byte, error) {
 }
 
 // String returns the hash-to-curve string identifier of the ciphersuite.
-func (i Ciphersuite) String() string {
-	if i == Ciphersuite(0) || i >= maxID {
+func (i Identifier) String() string {
+	if i == Identifier(0) || i >= maxID {
 		panic(errInvalidID)
 	}
 
@@ -119,12 +112,12 @@ func (i Ciphersuite) String() string {
 type newGroup func(dst []byte) group.Group
 
 type params struct {
-	id    Ciphersuite
+	id    Identifier
 	h2cID H2C.SuiteID
 	newGroup
 }
 
-func (i Ciphersuite) register(identifier H2C.SuiteID, g newGroup) {
+func (i Identifier) register(identifier H2C.SuiteID, g newGroup) {
 	registered[i] = &params{
 		id:       i,
 		h2cID:    identifier,
@@ -145,7 +138,7 @@ func newCurve(id H2C.SuiteID) (H2C.SuiteID, newGroup) {
 }
 
 func init() {
-	registered = make(map[Ciphersuite]*params)
+	registered = make(map[Identifier]*params)
 
 	Ristretto255Sha512.register("ristretto255_XMD:SHA-512_R255MAP_RO_", newRistretto(hash.SHA512))
 	Ristretto255Sha3512.register("ristretto255_XMD:SHA3-512_R255MAP_RO_", newRistretto(hash.SHA3_512))

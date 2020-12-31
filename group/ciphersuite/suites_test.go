@@ -1,9 +1,10 @@
 package ciphersuite
 
 import (
+	"testing"
+
 	"github.com/bytemare/cryptotools/group"
 	"github.com/bytemare/cryptotools/internal"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 )

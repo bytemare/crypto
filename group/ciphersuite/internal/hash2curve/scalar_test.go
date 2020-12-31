@@ -40,6 +40,6 @@ func TestScalarArithmetic(t *testing.T) {
 	s = g.NewScalar().Random()
 	m := s.Mult(s)
 	i := s.Invert().Mult(m)
-	//i := m.Mult(s.Invert())
+	// i := m.Mult(s.Invert())
 	assert.Equal(t, i.Bytes(), s.Bytes())
 }
