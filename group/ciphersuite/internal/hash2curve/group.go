@@ -3,7 +3,7 @@ package hash2curve
 
 import (
 	"github.com/armfazh/h2c-go-ref"
-	"github.com/bytemare/cryptotools/hashtogroup/group"
+	"github.com/bytemare/cryptotools/group"
 	"github.com/bytemare/cryptotools/utils"
 )
 
@@ -52,6 +52,8 @@ func (h *Hash2Curve) Identity() group.Element {
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
 func (h *Hash2Curve) HashToGroup(input ...[]byte) group.Element {
+	h.checkDSTLen()
+
 	return &Point{
 		Hash2Curve: h,
 		point:      h.Hash(utils.Concatenate(0, input...)),
@@ -60,6 +62,8 @@ func (h *Hash2Curve) HashToGroup(input ...[]byte) group.Element {
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.
 func (h *Hash2Curve) HashToScalar(input ...[]byte) group.Scalar {
+	h.checkDSTLen()
+
 	return &Scalar{
 		s: h.GetHashToScalar().Hash(utils.Concatenate(0, input...)),
 		f: h.GetHashToScalar().GetScalarField(),
@@ -89,4 +93,14 @@ func (h *Hash2Curve) MultBytes(scalar, element []byte) (group.Element, error) {
 // DST returns the domain separation tag the group has been instantiated with.
 func (h *Hash2Curve) DST() string {
 	return string(h.dst)
+}
+
+func (h *Hash2Curve) checkDSTLen() {
+	if len(h.dst) < group.DstRecommendedMinLength {
+		if len(h.dst) == group.DstMinLength {
+			panic(errParamZeroLenDST)
+		}
+
+		panic(errParamShortDST)
+	}
 }
