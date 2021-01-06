@@ -18,41 +18,30 @@ type Ed25519 struct {
 func NewEd25519() *Ed25519 {
 	return &Ed25519{
 		sk: nil,
-		pk: make([]byte, ed25519.PublicKeySize),
+		pk: nil,
 	}
 }
 
-func (ed *Ed25519) extractPublicKey() {
-	if ed.sk == nil {
-		panic("Ed25519 private key is not set")
-	}
-
-	copy(ed.pk, ed.sk[ed25519.PublicKeySize:])
-}
-
-func (ed *Ed25519) setKeys(sk []byte) {
-	ed.sk = sk
-	ed.extractPublicKey()
-}
-
-// LoadKey loads the given key. Will not fail if the key is invalid, but it might later.
-func (ed *Ed25519) LoadKey(privateKey []byte) {
-	if len(privateKey) != ed25519.PrivateKeySize {
+// SetPrivateKey loads the given private key and sets the public key accordingly.
+func (ed *Ed25519) SetPrivateKey(privateKey []byte) {
+	if len(privateKey) != ed25519.SeedSize {
 		panic("Ed25519 invalid private key size")
 	}
 
-	ed.setKeys(privateKey)
+	ed.sk = ed25519.NewKeyFromSeed(privateKey)
+	ed.pk = make([]byte, ed25519.PublicKeySize)
+	copy(ed.pk, ed.sk[ed25519.PublicKeySize:])
 }
 
-// GenerateKey generates a fresh signing key and stores it in ed.
+// GenerateKey generates a fresh private/public key pair and stores it in ed.
 func (ed *Ed25519) GenerateKey() error {
 	var err error
-	_, ed.sk, err = ed25519.GenerateKey(nil)
+	ed.pk, ed.sk, err = ed25519.GenerateKey(nil)
 
 	return err
 }
 
-// GetPrivateKey returns the private key's seed, reducing by half the needed storage.
+// GetPrivateKey returns the private key (without the public key part).
 func (ed *Ed25519) GetPrivateKey() []byte {
 	return ed.sk.Seed()
 }
@@ -65,12 +54,6 @@ func (ed *Ed25519) GetPublicKey() []byte {
 // Public implements the Signer.Public() function.
 func (ed *Ed25519) Public() crypto.PublicKey {
 	return crypto.PublicKey(ed.pk)
-}
-
-// Seed re-calculates the private key from the seed for compatible schemes. Implementations can only retain a seed
-// to reduce storage size.
-func (ed *Ed25519) Seed(seed []byte) {
-	ed.setKeys(ed25519.NewKeyFromSeed(seed))
 }
 
 // SignMessage uses the private key in ed to sign the input. The input doesn't need to be hashed beforehand.

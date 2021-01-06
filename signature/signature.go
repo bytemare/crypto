@@ -22,9 +22,6 @@ const (
 // Signature abstracts digital signature operations, wrapping built-in implementations.
 type Signature interface {
 
-	// LoadKey loads the given key. Will not fail if the key is invalid, but it might later.
-	LoadKey(privateKey []byte)
-
 	// GenerateKey generates a fresh signing key and keeps it internally.
 	GenerateKey() error
 
@@ -37,9 +34,8 @@ type Signature interface {
 	// Public implements the Signer.Public() function.
 	Public() crypto.PublicKey
 
-	// Seed re-calculates the private key from the seed for compatible schemes. Implementations can only retain a seed
-	// to reduce storage size.
-	Seed(seed []byte)
+	// SetPrivateKey loads the given private key and sets the public key accordingly.
+	SetPrivateKey(privateKey []byte)
 
 	// SignMessage uses the internal private key to sign the message. The message argument doesn't need to be hashed beforehand.
 	SignMessage(message ...[]byte) []byte
@@ -64,7 +60,7 @@ func (i Identifier) New() Signature {
 // Sign returns the signature of message (concatenated, if using a variadic argument) using secretKey.
 func (i Identifier) Sign(secretKey []byte, message ...[]byte) []byte {
 	s := i.New()
-	s.LoadKey(secretKey)
+	s.SetPrivateKey(secretKey)
 
 	return s.SignMessage(message...)
 }
