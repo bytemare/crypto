@@ -9,14 +9,11 @@ import (
 )
 
 // Identifier indicates the signature scheme to be used.
-type Identifier string
+type Identifier byte
 
 const (
 	// Ed25519 indicates usage of the Ed25519 signature scheme.
-	Ed25519 Identifier = "Ed25519"
-
-	//
-	// Ed448 Identifier = "Ed448".
+	Ed25519 Identifier = iota + 1
 )
 
 // Signature abstracts digital signature operations, wrapping built-in implementations.
