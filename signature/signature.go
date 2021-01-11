@@ -16,6 +16,16 @@ const (
 	Ed25519 Identifier = iota + 1
 )
 
+// String implements the Stringer() interface for the Signature algoritm.
+func (i Identifier) String() string {
+	switch i {
+	case Ed25519:
+		return "Ed25519"
+	default:
+		return ""
+	}
+}
+
 // Signature abstracts digital signature operations, wrapping built-in implementations.
 type Signature interface {
 
