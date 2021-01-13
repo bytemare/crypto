@@ -15,7 +15,6 @@ const (
 	defGroup  = ciphersuite.Default
 	defHash   = hash.Default
 	defMHF    = mhf.Default
-	defMHFLen = mhf.DefaultLength
 )
 
 var (
@@ -31,24 +30,23 @@ type Ciphersuite struct {
 
 	group.Group
 	*hash.Hash
-	MHF mhf.PasswordKDF
+	mhf.MHF
 }
 
 // Parameters identifies the components of a Ciphersuite.
 type Parameters struct {
 	Group  ciphersuite.Identifier `json:"group"`
 	Hash   hash.Identifier        `json:"hash"`
-	MHF    mhf.Identifier         `json:"mhf"`
-	MHFLen byte                   `json:"len"`
+	MHF    mhf.MHF                `json:"mhf"`
 }
 
-// CiphersuiteEncoding is the 4-byte representation of a ciphersuite.
-type CiphersuiteEncoding = [4]byte
+// CiphersuiteEncoding is the 3-byte representation of a ciphersuite.
+type CiphersuiteEncoding = [3]byte
 
 // String implements the Stringer() interface. It joins string representations of the parameters if available,
 // and returns the resulting string.
 func (p *Parameters) String() string {
-	return fmt.Sprintf("%s-%s-%s-%v", p.Group, p.Hash, p.MHF, p.MHFLen)
+	return fmt.Sprintf("%s-%s-%s", p.Group, p.Hash, p.MHF)
 }
 
 // Encode returns the 4-byte representation of the ciphersuite parameters.
@@ -57,7 +55,6 @@ func (p *Parameters) Encode() CiphersuiteEncoding {
 		byte(p.Group),
 		byte(p.Hash),
 		byte(p.MHF),
-		p.MHFLen,
 	}
 }
 
@@ -78,12 +75,12 @@ func New(csp *Parameters, dst []byte) (*Ciphersuite, error) {
 	return &Ciphersuite{
 		Parameters: csp,
 		Group:      csp.Group.Get(dst),
-		MHF:        csp.MHF.Get(int(csp.MHFLen)),
+		MHF:        csp.MHF,
 		Hash:       csp.Hash.Get(),
 	}, nil
 }
 
-func checkValues(g ciphersuite.Identifier, h hash.Identifier, i mhf.Identifier) error {
+func checkValues(g ciphersuite.Identifier, h hash.Identifier, i mhf.MHF) error {
 	if !g.Available() {
 		return errInvalidGroupID
 	}
@@ -104,15 +101,14 @@ func ReadCiphersuite(suite CiphersuiteEncoding) (*Parameters, error) {
 	if err := checkValues(
 		ciphersuite.Identifier(suite[0]),
 		hash.Identifier(suite[1]),
-		mhf.Identifier(suite[2])); err != nil {
+		mhf.MHF(suite[2])); err != nil {
 		return nil, err
 	}
 
 	return &Parameters{
 		Group:  ciphersuite.Identifier(suite[0]),
 		Hash:   hash.Identifier(suite[1]),
-		MHF:    mhf.Identifier(suite[2]),
-		MHFLen: suite[3],
+		MHF:    mhf.MHF(suite[2]),
 	}, nil
 }
 
@@ -122,7 +118,6 @@ func patchCipherSuite(p *Parameters) (*Parameters, error) {
 			Group:  defGroup,
 			Hash:   defHash,
 			MHF:    defMHF,
-			MHFLen: defMHFLen,
 		}, nil
 	}
 
@@ -138,10 +133,6 @@ func patchCipherSuite(p *Parameters) (*Parameters, error) {
 
 	if p.MHF == 0 {
 		p.MHF = defMHF
-	}
-
-	if p.MHFLen == 0 {
-		p.MHFLen = defMHFLen
 	}
 
 	if err := checkValues(p.Group, p.Hash, p.MHF); err != nil {

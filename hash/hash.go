@@ -65,7 +65,7 @@ const (
 	blockSHAKE256 = 1088 / 8
 
 	// Default hash to use.
-	Default = SHA3_512
+	Default = SHA512
 )
 
 var (

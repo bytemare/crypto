@@ -21,7 +21,6 @@ func TestPatchCiphersuite(t *testing.T) {
 		Group:  defGroup,
 		Hash:   defHash,
 		MHF:    defMHF,
-		MHFLen: defMHFLen,
 	}
 
 	emptyCSP := &Parameters{}
@@ -55,7 +54,7 @@ func TestPatchCiphersuite(t *testing.T) {
 		t.Error("expected error on invalid hash function")
 	}
 
-	var invalidMHF mhf.Identifier = 64
+	var invalidMHF mhf.MHF = 64
 	csp = &Parameters{MHF: invalidMHF}
 	if _, err := patchCipherSuite(csp); err == nil {
 		t.Error("expected error on invalid MHF")
@@ -96,10 +95,10 @@ func TestNew(t *testing.T) {
 
 var (
 	defCipherSuite, _ = New(nil, normalDST)
-	defEncoding       = [4]byte{1, 4, 1, 64}
+	defEncoding       = [3]byte{1, 2, 1}
 )
 
-const defString = "ristretto255_XMD:SHA-512_R255MAP_RO_-SHA3-512-Argon2id-64"
+const defString = "ristretto255_XMD:SHA-512_R255MAP_RO_-SHA512-Argon2id"
 
 func TestEncode(t *testing.T) {
 	p := defCipherSuite.Parameters
@@ -117,7 +116,7 @@ func TestReadCiphersuite(t *testing.T) {
 	assert.Equal(t, defCipherSuite.Parameters, params)
 
 	// Should fail
-	invalid := [4]byte{0, 0, 0, 0}
+	invalid := [3]byte{0, 0, 0}
 
 	params, err = ReadCiphersuite(invalid)
 	if err == nil {

@@ -1,26 +1,31 @@
-// Package mhf provides an interface to memory hard functions.
+// Package mhf provides an interface to memory hard functions, a.k.a password key derivation functions.
 package mhf
 
 import (
+	"errors"
+
 	"github.com/bytemare/cryptotools/encoding"
-	"github.com/bytemare/cryptotools/mhf/internal/argon2id"
-	"github.com/bytemare/cryptotools/mhf/internal/scrypt"
 )
 
-// Identifier is used to specify the memory hard function to be used.
-type Identifier byte
+var errAssertMHF = errors.New("could not assert to MHF")
+
+// MHF is used to specify the memory hard function to be used.
+type MHF byte
 
 const (
-	// Argon2id password hash function.
-	Argon2id Identifier = 1 + iota
+	// Argon2id password kdf function.
+	Argon2id MHF = 1 + iota
 
-	// Scrypt password hash function.
+	// Scrypt password kdf function.
 	Scrypt
 
-	maxID
+	// PBKDF2Sha512 PBKDF2 password kdf function using SHA-512.
+	PBKDF2Sha512
 
-	argon2ids = "Argon2id"
-	scrypts   = "Scrypt"
+	// Bcrypt password kdf function.
+	Bcrypt
+
+	maxID
 
 	// Default is set to Argon2id.
 	Default = Argon2id
@@ -29,86 +34,89 @@ const (
 	DefaultLength = 64
 )
 
-var registered = make([]newMHF, maxID)
+var (
+	names                [maxID - 1]string
+	params               [maxID - 1]parameters
+	functions            [maxID - 1]kdf
+	defaultHashFunctions [maxID - 1]defaultHash
+)
 
-// Get returns a newly instantiated PasswordKDF with keyLen output length.
-func (i Identifier) Get(keyLen int) PasswordKDF {
-	return registered[i](keyLen)
+type (
+	kdf         func(password, salt []byte, time, memory, threads, length int) []byte
+	parameters  func() *Parameters
+	defaultHash func(password, salt []byte, length int) []byte
+)
+
+// Available reports whether the given kdf function is linked into the binary.
+func (i MHF) Available() bool {
+	return i > 0 && i < maxID
 }
 
-// Available reports whether the given hash function is linked into the binary.
-func (i Identifier) Available() bool {
-	return (i == Argon2id || i == Scrypt) && registered[i] != nil
+// Hash uses default parameters for the key derivation function over the input password and salt.
+func (i MHF) Hash(password, salt []byte, length int) []byte {
+	return defaultHashFunctions[i-1](password, salt, length)
+}
+
+// HashParam wraps and calls the key derivation function
+func (i MHF) HashParam(password, salt []byte, time, memory, threads, length int) []byte {
+	return functions[i-1](password, salt, time, memory, threads, length)
+}
+
+// DefaultParameters returns a pointer to a MHF struct containing
+// the standard recommended default parameters for the kdf.
+func (i MHF) DefaultParameters() *Parameters {
+	return params[i-1]()
 }
 
 // String returns the string name of the hashing function.
-func (i Identifier) String() string {
-	switch i {
-	case Argon2id:
-		return argon2ids
-
-	case Scrypt:
-		return scrypts
-
-	default:
-		panic("unknown identifier")
-	}
+func (i MHF) String() string {
+	return names[i-1]
 }
 
-func (i Identifier) register(n newMHF) {
-	registered[i] = n
+func (i MHF) register(def defaultHash, k kdf, p parameters, name string) {
+	defaultHashFunctions[i-1] = def
+	functions[i-1] = k
+	params[i-1] = p
+	names[i-1] = name
 }
-
-type newMHF func(keylen int) PasswordKDF
 
 func init() {
-	Argon2id.register(newArgon2id())
-	Scrypt.register(newScrypt())
+	Argon2id.register(defaultArgon2id, argon2id, argon2idParams, argon2ids)
+	Scrypt.register(defaultScrypt, scryptf, scryptParams, scrypts)
+	PBKDF2Sha512.register(defaultPBKDF2, pbkdf, pbkdfParams, pbkdf2s)
+	Bcrypt.register(defaultBcrypt, bcryptf, bcryptParams, bcrypts)
 }
 
-func newArgon2id() newMHF {
-	return func(keylen int) PasswordKDF {
-		return argon2id.New(keylen)
-	}
+// Parameters represents a memory-hard functions and its parameters.
+type Parameters struct {
+	ID        MHF `json:"i"`
+	Time      int `json:"n"`
+	Memory    int `json:"r"`
+	Threads   int `json:"p"`
+	KeyLength int `json:"l"`
 }
 
-func newScrypt() newMHF {
-	return func(keylen int) PasswordKDF {
-		return scrypt.New(keylen)
-	}
+// Hash calls the underlying memory hard function with the internally stored parameters on the given arguments.
+func (m *Parameters) Hash(password, salt []byte) []byte {
+	return m.ID.HashParam(password, salt, m.Time, m.Memory, m.Threads, m.KeyLength)
 }
 
-// PasswordKDF defines the interface to access supported password hashing functions.
-type PasswordKDF interface {
-
-	// Hash operates the underlying memory hard function over the password using the salt.
-	Hash(password, salt []byte) []byte
-
-	// HashVar is a wrapper to Hash but allows variadic input for the salt that will be concatenated before hashing.
-	HashVar(password []byte, salt ...[]byte) []byte
+// Encode encodes m to the given encoding, allowing for storage of the parameters.
+func (m *Parameters) Encode(enc encoding.Encoding) ([]byte, error) {
+	return enc.Encode(m)
 }
 
-func (i Identifier) getStruct() PasswordKDF {
-	switch i {
-	case Argon2id:
-		return &argon2id.Argon2id{}
-
-	case Scrypt:
-		return &scrypt.Scrypt{}
-
-	default:
-		panic("unknown identifier")
-	}
-}
-
-// Decode attempts to reconstruct the encoded PasswordKDF and returns it.
-func (i Identifier) Decode(encoded []byte, enc encoding.Encoding) (PasswordKDF, error) {
-	s := i.getStruct()
-
-	a, err := enc.Decode(encoded, s)
+// Decode attempts to reconstruct the encoded MHF and its parameters.
+func Decode(encoded []byte, enc encoding.Encoding) (*Parameters, error) {
+	d, err := enc.Decode(encoded, &Parameters{})
 	if err != nil {
 		return nil, err
 	}
 
-	return a.(PasswordKDF), nil
+	m, ok := d.(*Parameters)
+	if !ok {
+		return nil, errAssertMHF
+	}
+
+	return m, nil
 }

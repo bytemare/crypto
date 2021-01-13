@@ -8,5 +8,5 @@ require (
 	github.com/gtank/ristretto255 v0.1.2
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
-	golang.org/x/sys v0.0.0-20201223074533-0d417f636930 // indirect
+	golang.org/x/sys v0.0.0-20210113131315-ba0562f347e0 // indirect
 )
