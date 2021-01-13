@@ -18,9 +18,9 @@ var (
 
 func TestPatchCiphersuite(t *testing.T) {
 	defaultCSP := &Parameters{
-		Group:  defGroup,
-		Hash:   defHash,
-		MHF:    defMHF,
+		Group: defGroup,
+		Hash:  defHash,
+		MHF:   defMHF,
 	}
 
 	emptyCSP := &Parameters{}

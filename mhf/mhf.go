@@ -97,13 +97,30 @@ type Parameters struct {
 }
 
 // Hash calls the underlying memory hard function with the internally stored parameters on the given arguments.
-func (m *Parameters) Hash(password, salt []byte) []byte {
-	return m.ID.HashParam(password, salt, m.Time, m.Memory, m.Threads, m.KeyLength)
+func (p *Parameters) Hash(password, salt []byte) []byte {
+	return p.ID.HashParam(password, salt, p.Time, p.Memory, p.Threads, p.KeyLength)
 }
 
 // Encode encodes m to the given encoding, allowing for storage of the parameters.
-func (m *Parameters) Encode(enc encoding.Encoding) ([]byte, error) {
-	return enc.Encode(m)
+func (p *Parameters) Encode(enc encoding.Encoding) ([]byte, error) {
+	return enc.Encode(p)
+}
+
+// String implements the Stringer() interface. It joins string representations of the parameters if available,
+// and returns the resulting string.
+func (p *Parameters) String() string {
+	switch p.ID {
+	case Argon2id:
+		return argon2idString(p)
+	case Scrypt:
+		return scryptString(p)
+	case PBKDF2Sha512:
+		return pbkdfString(p)
+	case Bcrypt:
+		return bcryptString(p)
+	default:
+		return ""
+	}
 }
 
 // Decode attempts to reconstruct the encoded MHF and its parameters.

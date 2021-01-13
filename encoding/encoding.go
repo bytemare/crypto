@@ -26,6 +26,9 @@ const (
 
 	// Default is the default encoding used when none specified.
 	Default = JSON
+
+	sJSON = "JSON"
+	sGob  = "Gob"
 )
 
 type (
@@ -67,6 +70,18 @@ func (e Encoding) Encode(v interface{}) ([]byte, error) {
 // Decode returns the receiver struct filled with the decoding of the encoded input. Returns an error if it fails.
 func (e Encoding) Decode(encoded []byte, receiver interface{}) (interface{}, error) {
 	return decoders[e](encoded, receiver)
+}
+
+// String implements the Stringer() interface.
+func (e Encoding) String() string {
+	switch e {
+	case JSON:
+		return sJSON
+	case Gob:
+		return sGob
+	default:
+		return ""
+	}
 }
 
 func init() {

@@ -2,6 +2,7 @@ package mhf
 
 import (
 	"crypto/sha512"
+	"fmt"
 
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -9,6 +10,7 @@ import (
 const (
 	defaultPBKDF2iterations = 10000
 	pbkdf2s                 = "PBKDF2"
+	pbkdf2Format            = "%s(%d-%d)"
 )
 
 var defaultPBKDF2Hash = sha512.New
@@ -19,6 +21,10 @@ func defaultPBKDF2(password, salt []byte, length int) []byte {
 
 func pbkdf(password, salt []byte, iterations, _, _, length int) []byte {
 	return pbkdf2.Key(password, salt, iterations, length, defaultPBKDF2Hash)
+}
+
+func pbkdfString(p *Parameters) string {
+	return fmt.Sprintf(pbkdf2Format, pbkdf2s, p.Time, p.KeyLength)
 }
 
 func pbkdfParams() *Parameters {

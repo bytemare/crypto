@@ -1,10 +1,13 @@
 package mhf
 
 import (
+	"fmt"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
 const (
+	bcryptFormat      = "%s(%d)"
 	bcrypts           = "Bcrypt"
 	defaultBcryptCost = 10
 )
@@ -20,6 +23,10 @@ func bcryptf(password, _ []byte, time, _, _, _ int) []byte {
 	}
 
 	return h
+}
+
+func bcryptString(p *Parameters) string {
+	return fmt.Sprintf(bcryptFormat, bcrypts, p.Time)
 }
 
 func bcryptParams() *Parameters {

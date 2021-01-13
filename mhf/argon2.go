@@ -1,8 +1,15 @@
 package mhf
 
-import "golang.org/x/crypto/argon2"
+import (
+	"fmt"
 
-const argon2ids = "Argon2id"
+	"golang.org/x/crypto/argon2"
+)
+
+const (
+	argon2ids      = "Argon2id"
+	argon2idFormat = "%s(%d-%d-%d-%d)"
+)
 
 var (
 	defaultArgon2idTime    = 1
@@ -16,6 +23,10 @@ func defaultArgon2id(password, salt []byte, length int) []byte {
 
 func argon2id(password, salt []byte, time, memory, threads, length int) []byte {
 	return argon2.IDKey(password, salt, uint32(time), uint32(memory), uint8(threads), uint32(length))
+}
+
+func argon2idString(p *Parameters) string {
+	return fmt.Sprintf(argon2idFormat, argon2ids, p.Time, p.Memory, p.Threads, p.KeyLength)
 }
 
 func argon2idParams() *Parameters {

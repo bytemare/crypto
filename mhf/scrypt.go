@@ -6,7 +6,10 @@ import (
 	"golang.org/x/crypto/scrypt"
 )
 
-const scrypts = "Scrypt"
+const (
+	scrypts      = "Scrypt"
+	scryptFormat = "%s(%d-%d-%d-%d)"
+)
 
 var (
 	defaultScryptTime    = 32768
@@ -25,6 +28,10 @@ func scryptf(password, salt []byte, time, memory, threads, length int) []byte {
 	}
 
 	return k
+}
+
+func scryptString(p *Parameters) string {
+	return fmt.Sprintf(scryptFormat, scrypts, p.Time, p.Memory, p.Threads, p.KeyLength)
 }
 
 func scryptParams() *Parameters {
