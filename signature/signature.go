@@ -14,13 +14,15 @@ type Identifier byte
 const (
 	// Ed25519 indicates usage of the Ed25519 signature scheme.
 	Ed25519 Identifier = iota + 1
+
+	sEd25519 = "Ed25519"
 )
 
-// String implements the Stringer() interface for the Signature algoritm.
+// String implements the Stringer() interface for the Signature algorithm.
 func (i Identifier) String() string {
 	switch i {
 	case Ed25519:
-		return "Ed25519"
+		return sEd25519
 	default:
 		return ""
 	}

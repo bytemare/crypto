@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	defGroup  = ciphersuite.Default
-	defHash   = hash.Default
-	defMHF    = mhf.Default
+	defGroup = ciphersuite.Default
+	defHash  = hash.Default
+	defMHF   = mhf.Default
 )
 
 var (
@@ -35,9 +35,9 @@ type Ciphersuite struct {
 
 // Parameters identifies the components of a Ciphersuite.
 type Parameters struct {
-	Group  ciphersuite.Identifier `json:"group"`
-	Hash   hash.Identifier        `json:"hash"`
-	MHF    mhf.MHF                `json:"mhf"`
+	Group ciphersuite.Identifier `json:"group"`
+	Hash  hash.Identifier        `json:"hash"`
+	MHF   mhf.MHF                `json:"mhf"`
 }
 
 // CiphersuiteEncoding is the 3-byte representation of a ciphersuite.
@@ -106,18 +106,18 @@ func ReadCiphersuite(suite CiphersuiteEncoding) (*Parameters, error) {
 	}
 
 	return &Parameters{
-		Group:  ciphersuite.Identifier(suite[0]),
-		Hash:   hash.Identifier(suite[1]),
-		MHF:    mhf.MHF(suite[2]),
+		Group: ciphersuite.Identifier(suite[0]),
+		Hash:  hash.Identifier(suite[1]),
+		MHF:   mhf.MHF(suite[2]),
 	}, nil
 }
 
 func patchCipherSuite(p *Parameters) (*Parameters, error) {
 	if p == nil {
 		return &Parameters{
-			Group:  defGroup,
-			Hash:   defHash,
-			MHF:    defMHF,
+			Group: defGroup,
+			Hash:  defHash,
+			MHF:   defMHF,
 		}, nil
 	}
 

@@ -13,13 +13,9 @@ const (
 // RandomBytes returns random bytes of length len (wrapper for crypto/rand).
 func RandomBytes(length int) []byte {
 	r := make([]byte, length)
-	for {
-		if _, err := rand.Read(r); err != nil {
-			// We can as well not panic and try again through the loop
-			panic(fmt.Errorf("unexpected error in generating random bytes : %w", err))
-		}
-
-		break
+	if _, err := rand.Read(r); err != nil {
+		// We can as well not panic and try again in a loop
+		panic(fmt.Errorf("unexpected error in generating random bytes : %w", err))
 	}
 
 	return r
