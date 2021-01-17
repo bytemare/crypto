@@ -34,11 +34,9 @@ func (ed *Ed25519) SetPrivateKey(privateKey []byte) {
 }
 
 // GenerateKey generates a fresh private/public key pair and stores it in ed.
-func (ed *Ed25519) GenerateKey() error {
-	var err error
-	ed.pk, ed.sk, err = ed25519.GenerateKey(nil)
-
-	return err
+func (ed *Ed25519) GenerateKey() {
+	seed := utils.RandomBytes(ed25519.SeedSize)
+	ed.SetPrivateKey(seed)
 }
 
 // GetPrivateKey returns the private key (without the public key part).

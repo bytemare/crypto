@@ -2,7 +2,7 @@
 package utils
 
 import (
-	"crypto/rand"
+	cryptorand "crypto/rand"
 	"fmt"
 )
 
@@ -13,7 +13,7 @@ const (
 // RandomBytes returns random bytes of length len (wrapper for crypto/rand).
 func RandomBytes(length int) []byte {
 	r := make([]byte, length)
-	if _, err := rand.Read(r); err != nil {
+	if _, err := cryptorand.Read(r); err != nil {
 		// We can as well not panic and try again in a loop
 		panic(fmt.Errorf("unexpected error in generating random bytes : %w", err))
 	}
