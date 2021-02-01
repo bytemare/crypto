@@ -9,8 +9,10 @@ import (
 	"github.com/bytemare/cryptotools/utils"
 )
 
-var mhfs = []MHF{Argon2id, Scrypt, PBKDF2Sha512, Bcrypt}
-var strings = []string{"Argon2id(1-65536-4-64)", "Scrypt(32768-8-1-64)", "PBKDF2(10000-64)", "Bcrypt(10)"}
+var (
+	mhfs    = []MHF{Argon2id, Scrypt, PBKDF2Sha512, Bcrypt}
+	strings = []string{"Argon2id(1-65536-4-64)", "Scrypt(32768-8-1-64)", "PBKDF2(10000-64)", "Bcrypt(10)"}
+)
 
 func TestAvailability(t *testing.T) {
 	for _, i := range mhfs {
