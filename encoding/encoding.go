@@ -2,11 +2,10 @@
 package encoding
 
 import (
-	"bytes"
-	"encoding/gob"
 	"encoding/json"
 
 	"github.com/bytemare/cryptotools/internal"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 // Encoding identifies referenced encoding formats.
@@ -20,15 +19,15 @@ const (
 	// Gob encoding.
 	Gob
 
+	// MessagePack encoding.
+	MessagePack
+
 	maxID
 
 	// todo : add hex and protobuf.
 
 	// Default is the default encoding used when none specified.
 	Default = JSON
-
-	sJSON = "JSON"
-	sGob  = "Gob"
 )
 
 type (
@@ -79,6 +78,8 @@ func (e Encoding) String() string {
 		return sJSON
 	case Gob:
 		return sGob
+	case MessagePack:
+		return sMsgPack
 	default:
 		return ""
 	}
@@ -90,32 +91,5 @@ func init() {
 
 	JSON.register(json.Marshal, jsonDecode)
 	Gob.register(gobEncode, gobDecode)
-}
-
-func jsonDecode(encoded []byte, receiver interface{}) (interface{}, error) {
-	err := json.Unmarshal(encoded, receiver)
-
-	return receiver, err
-}
-
-func gobEncode(v interface{}) ([]byte, error) {
-	var buf bytes.Buffer
-
-	enc := gob.NewEncoder(&buf)
-	if err := enc.Encode(v); err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
-}
-
-func gobDecode(encoded []byte, receiver interface{}) (interface{}, error) {
-	buffer := bytes.NewBuffer(encoded)
-
-	dec := gob.NewDecoder(buffer)
-	if err := dec.Decode(receiver); err != nil {
-		return nil, err
-	}
-
-	return receiver, nil
+	MessagePack.register(msgpack.Marshal, msgPackDecode)
 }
