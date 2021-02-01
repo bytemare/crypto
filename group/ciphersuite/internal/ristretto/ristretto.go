@@ -29,6 +29,11 @@ func (r *Ristretto) NewScalar() group.Scalar {
 	return &Scalar{Scalar: ristretto255.NewScalar()}
 }
 
+// ElementLength returns the byte size of an encoded element.
+func (r *Ristretto) ElementLength() int {
+	return canonicalEncodingLength
+}
+
 // NewElement returns a new, empty, element.
 func (r *Ristretto) NewElement() group.Element {
 	return &Element{HashToRistretto: r.h2r, element: ristretto255.NewElement()}

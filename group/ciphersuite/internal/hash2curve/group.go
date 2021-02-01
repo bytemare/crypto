@@ -34,6 +34,11 @@ func (h *Hash2Curve) NewScalar() group.Scalar {
 	return scalar(h.GetHashToScalar().GetScalarField())
 }
 
+// ElementLength returns the byte size of an encoded element.
+func (h *Hash2Curve) ElementLength() int {
+	return pointLen(h.GetCurve().Field().BitLen())
+}
+
 // NewElement returns a new, empty, element.
 func (h *Hash2Curve) NewElement() group.Element {
 	return &Point{

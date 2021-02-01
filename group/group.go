@@ -17,6 +17,9 @@ type Group interface {
 	// NewElement returns a new, empty, element.
 	NewElement() Element
 
+	// ElementLength returns the byte size of an encoded element.
+	ElementLength() int
+
 	// Identity returns the group's identity element.
 	Identity() Element
 
