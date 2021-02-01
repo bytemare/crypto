@@ -101,7 +101,7 @@ func (p *Point) Bytes() []byte {
 		return encodeEd25519(x, y)
 	}
 
-	return encodeSignPrefix(x, y, p.GetCurve().Field().BitLen())
+	return encodeSignPrefix(x, y, pointLen(p.GetCurve().Field().BitLen()))
 }
 
 // Decode decodes the input an sets the current element to its value, and returns it.

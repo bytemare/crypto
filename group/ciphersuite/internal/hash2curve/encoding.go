@@ -7,9 +7,13 @@ import (
 
 const ed25519PointSize = 32
 
-func encodeSignPrefix(x, y *big.Int, bitLen int) []byte {
+func pointLen(bitLen int) int {
 	byteLen := (bitLen + 7) / 8
-	compressed := make([]byte, 1+byteLen)
+	return 1+byteLen
+}
+
+func encodeSignPrefix(x, y *big.Int, pointLen int) []byte {
+	compressed := make([]byte, pointLen)
 	compressed[0] = byte(y.Bit(0)) | 2
 	x.FillBytes(compressed[1:])
 
