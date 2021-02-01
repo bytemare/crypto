@@ -54,6 +54,11 @@ func (ed *Ed25519) Public() crypto.PublicKey {
 	return crypto.PublicKey(ed.pk)
 }
 
+// SignatureLength returns the byte size of a signature.
+func (ed *Ed25519) SignatureLength() uint {
+	return ed25519.SignatureSize
+}
+
 // SignMessage uses the private key in ed to sign the input. The input doesn't need to be hashed beforehand.
 func (ed *Ed25519) SignMessage(message ...[]byte) []byte {
 	m := utils.Concatenate(0, message...)

@@ -46,6 +46,9 @@ type Signature interface {
 	// SetPrivateKey loads the given private key and sets the public key accordingly.
 	SetPrivateKey(privateKey []byte)
 
+	// SignatureLength returns the byte size of a signature.
+	SignatureLength() uint
+
 	// SignMessage uses the internal private key to sign the message. The message argument doesn't need to be hashed beforehand.
 	SignMessage(message ...[]byte) []byte
 
