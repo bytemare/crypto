@@ -81,3 +81,8 @@ func (i Identifier) Sign(secretKey []byte, message ...[]byte) []byte {
 func (i Identifier) Verify(publicKey, message, signature []byte) bool {
 	return i.New().Verify(publicKey, message, signature)
 }
+
+// SignatureLength returns the byte size of a signature.
+func (i Identifier) SignatureLength() uint {
+	return i.New().SignatureLength()
+}
