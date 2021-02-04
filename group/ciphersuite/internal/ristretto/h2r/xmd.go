@@ -14,7 +14,7 @@ func (h *HashToRistretto) dstPrime() []byte {
 }
 
 func (h *HashToRistretto) msgPrime(input []byte, length int) []byte {
-	lib := encoding.I2OSP2(uint(length))
+	lib := encoding.I2OSP(length, 2)
 	dstPrime := h.dstPrime()
 
 	if h.Extensible() {
@@ -39,7 +39,7 @@ func (h *HashToRistretto) expandMessageXMD(input []byte, length int) []byte {
 
 	dstPrime := h.dstPrime()
 	zPad := make([]byte, blockSize)
-	lib := encoding.I2OSP2(uint(length))
+	lib := encoding.I2OSP(length, 2)
 	zeroByte := []byte{0}
 
 	// Hash to b0
