@@ -5,13 +5,6 @@ import (
 	"errors"
 )
 
-const (
-	i2ospMaxInt8  = (1 << 8) - 1  // FF = 255
-	i2ospMaxInt16 = (1 << 16) - 1 // FFFF = 65535
-	i2ospMaxInt24 = (1 << 24) - 1 // FF FFFF = 16777215
-	i2ospMaxInt32 = (1 << 32) - 1 // FFFF FFFF = 4294967295
-)
-
 var (
 	errInputNegative  = errors.New("negative input")
 	errInputLarge32   = errors.New("integer too large : > 2^32")
@@ -23,30 +16,8 @@ var (
 	errInputTooLarge = errors.New("input too large for integer")
 )
 
-func i2osp2(in, size, max uint) []byte {
-	if in > max {
-		panic(errInputLarge)
-	}
-
-	out := make([]byte, 2)
-
-	binary.BigEndian.PutUint16(out, uint16(in))
-
-	return out[2-size:]
-}
-
-// I2OSP1 Integer to Octet Stream Primitive on 1 byte.
-func I2OSP1(in uint) []byte {
-	return i2osp2(in, 1, i2ospMaxInt8)
-}
-
-// I2OSP2 Integer to Octet Stream Primitive on 2 bytes.
-func I2OSP2(in uint) []byte {
-	return i2osp2(in, 2, i2ospMaxInt16)
-}
-
 // I2OSP 32 bit Integer to Octet Stream Primitive on maximum 4 bytes.
-func I2OSP(input, length int) []byte {
+func I2OSP(value, length int) []byte {
 	if length <= 0 {
 		panic(errLengthNegative)
 	}
@@ -57,32 +28,24 @@ func I2OSP(input, length int) []byte {
 
 	out := make([]byte, 4)
 
-	switch in := input; {
-	case in < 0:
+	switch v := value; {
+	case v < 0:
 		panic(errInputNegative)
-
-	case in >= 1<<(8*length):
+	case v >= 1<<(8*length):
 		panic(errInputLarge)
-
-	case in <= i2ospMaxInt8:
-		binary.BigEndian.PutUint16(out, uint16(in))
+	case length == 1:
+		binary.BigEndian.PutUint16(out, uint16(v))
 
 		return out[1:2]
-	case in <= i2ospMaxInt16:
-		binary.BigEndian.PutUint16(out, uint16(in))
-
-		return out[:2]
-	case in <= i2ospMaxInt24:
-		binary.BigEndian.PutUint32(out, uint32(in))
-
-		return out[:3]
-	case in <= i2ospMaxInt32:
-		binary.BigEndian.PutUint32(out, uint32(in))
-
-		return out
+	case length == 2:
+		binary.BigEndian.PutUint16(out, uint16(v))
+	case length == 3 || length == 4:
+		binary.BigEndian.PutUint32(out, uint32(v))
 	default:
 		panic(errInputLarge32)
 	}
+
+	return out[:length]
 }
 
 // I2OSP Octet Stream to Integer Primitive on maximum 4 bytes / 32 bits.
