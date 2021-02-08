@@ -52,13 +52,13 @@ func (i MHF) Available() bool {
 	return i > 0 && i < maxID
 }
 
-// Hash uses default parameters for the key derivation function over the input password and salt.
-func (i MHF) Hash(password, salt []byte, length int) []byte {
+// Harden uses default parameters for the key derivation function over the input password and salt.
+func (i MHF) Harden(password, salt []byte, length int) []byte {
 	return defaultHashFunctions[i-1](password, salt, length)
 }
 
-// HashParam wraps and calls the key derivation function
-func (i MHF) HashParam(password, salt []byte, time, memory, threads, length int) []byte {
+// HardenParam wraps and calls the key derivation function
+func (i MHF) HardenParam(password, salt []byte, time, memory, threads, length int) []byte {
 	return functions[i-1](password, salt, time, memory, threads, length)
 }
 
@@ -98,7 +98,7 @@ type Parameters struct {
 
 // Hash calls the underlying memory hard function with the internally stored parameters on the given arguments.
 func (p *Parameters) Hash(password, salt []byte) []byte {
-	return p.ID.HashParam(password, salt, p.Time, p.Memory, p.Threads, p.KeyLength)
+	return p.ID.HardenParam(password, salt, p.Time, p.Memory, p.Threads, p.KeyLength)
 }
 
 // Encode encodes m to the given encoding, allowing for storage of the parameters.
