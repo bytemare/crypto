@@ -9,6 +9,25 @@ import (
 
 var errAssertMHF = errors.New("could not assert to MHF")
 
+// MemoryHardFunction present MHF for other definitions outside this package.
+type MemoryHardFunction interface {
+	// Available reports whether the given kdf function is linked into the binary.
+	Available() bool
+
+	// Harden uses default parameters for the key derivation function over the input password and salt.
+	Harden(password, salt []byte, length int) []byte
+
+	// HardenParam wraps and calls the key derivation function
+	HardenParam(password, salt []byte, time, memory, threads, length int) []byte
+
+	// DefaultParameters returns a pointer to a MHF struct containing
+	// the standard recommended default parameters for the kdf.
+	DefaultParameters() *Parameters
+
+	// String returns the string name of the hashing function.
+	String() string
+}
+
 // MHF is used to specify the memory hard function to be used.
 type MHF byte
 
