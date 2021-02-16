@@ -5,7 +5,7 @@ import (
 	"encoding/gob"
 )
 
-const sGob  = "Gob"
+const sGob = "Gob"
 
 func gobEncode(v interface{}) ([]byte, error) {
 	var buf bytes.Buffer
