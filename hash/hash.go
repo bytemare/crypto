@@ -15,13 +15,15 @@ type parameters struct {
 	blockSize  int
 	outputSize int
 	security   int
-	id         identifier
+	id         Identifier
 	name       string
 }
 
-type identifier interface {
+// Identifier exposes general information about hashing functions.
+type Identifier interface {
 	Available() bool
 	BlockSize() int
+	Extensible() bool
 	SecurityLevel() int
 	String() string
 }

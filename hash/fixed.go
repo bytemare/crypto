@@ -73,6 +73,16 @@ func (i Hashing) BlockSize() int {
 	return registeredHashing[i].blockSize
 }
 
+// Extensible returns whether the hash function is extensible, therefore always false.
+func (i Hashing) Extensible() bool {
+	return false
+}
+
+// Hash returns the hash of the input arguments.
+func (i Hashing) Hash(input ...[]byte) []byte {
+	return i.Get().Hash(input...)
+}
+
 // OutputSize returns the hash's output size in bytes for SHA2 and SHA3 hashes,
 // and the minimum output for full security strength if it is a XOF.
 func (i Hashing) OutputSize() int {

@@ -65,6 +65,21 @@ func (e Extensible) BlockSize() int {
 	return registeredXOF[e].blockSize
 }
 
+// Extensible returns whether the hash function is extensible, therefore always true.
+func (e Extensible) Extensible() bool {
+	return true
+}
+
+// Hash returns the hash of the input arguments.
+func (e Extensible) Hash(size int, input ...[]byte) []byte {
+	return e.Get().Hash(size, input...)
+}
+
+// MinOutputSize returns the minimal output length necessary to guarantee its bit security level.
+func (e Extensible) MinOutputSize() int {
+	return e.Get().minOutputSize
+}
+
 // SecurityLevel returns the hash function's bit security level.
 func (e Extensible) SecurityLevel() int {
 	return registeredXOF[e].security
@@ -170,22 +185,22 @@ func newBlake2xs() newXOF {
 	}
 }
 
-// ExtensibleHash implements the the hashFunc interface for extensible output functions.
+// ExtensibleHash wraps extensible output functions.
 type ExtensibleHash struct {
 	Extensible
 	XOF
 	minOutputSize int
 }
 
-// Hash returns the hash of the in argument with size output length.
-func (h *ExtensibleHash) Hash(size int, in ...[]byte) []byte {
+// Hash returns the hash of the input argument with size output length.
+func (h *ExtensibleHash) Hash(size int, input ...[]byte) []byte {
 	if size < h.minOutputSize {
 		panic(errSmallOutputSize)
 	}
 
 	h.Reset()
 
-	for _, i := range in {
+	for _, i := range input {
 		_, _ = h.Write(i)
 	}
 
