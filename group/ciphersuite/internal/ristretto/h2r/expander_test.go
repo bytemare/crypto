@@ -77,13 +77,14 @@ func mapHash(name string) hash.Identifier {
 	case "SHAKE128":
 		return hash.SHAKE128
 	default:
-		return 0
+		return nil
 	}
 }
 
 func (s *set) run(t *testing.T) {
 	dst := []byte(s.DST)
-	h := New(dst, mapHash(s.Hash))
+	id := mapHash(s.Hash)
+	h := New(dst, id)
 
 	for i, test := range s.Tests {
 		t.Run(fmt.Sprintf("%s : Vector %d", s.Hash, i), func(t *testing.T) {
@@ -92,12 +93,12 @@ func (s *set) run(t *testing.T) {
 				t.Fatalf("%d : %v", i, err)
 			}
 
-			dstPrime := h.dstPrime()
+			dstPrime := dstPrime(h.dst)
 			if !bytes.Equal(v.dstPrime, dstPrime) {
 				t.Fatalf("%d : invalid DST prime.", i)
 			}
 
-			msgPrime := h.msgPrime(v.msg, v.lenInBytes)
+			msgPrime := msgPrime(id, v.msg, h.dst, v.lenInBytes)
 			if !bytes.Equal(v.msgPrime, msgPrime) {
 				t.Fatalf("%d : invalid msg prime.", i)
 			}

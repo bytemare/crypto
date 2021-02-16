@@ -22,9 +22,6 @@ const (
 	// Ristretto255Sha512 identifies the Ristretto255 group with SHA2-512 hash-to-group hashing.
 	Ristretto255Sha512 Identifier = 1 + iota
 
-	// Ristretto255Sha3512 identifies the Ristretto255 group with SHA3-512 hash-to-group hashing.
-	Ristretto255Sha3512
-
 	// P256Sha256 identifies a group over P256 with SHA2-512 hash-to-group hashing.
 	P256Sha256
 
@@ -141,7 +138,6 @@ func init() {
 	registered = make(map[Identifier]*params)
 
 	Ristretto255Sha512.register("ristretto255_XMD:SHA-512_R255MAP_RO_", newRistretto(hash.SHA512))
-	Ristretto255Sha3512.register("ristretto255_XMD:SHA3-512_R255MAP_RO_", newRistretto(hash.SHA3_512))
 	P256Sha256.register(newCurve(H2C.P256_XMDSHA256_SSWU_RO_))
 	P384Sha512.register(newCurve(H2C.P384_XMDSHA512_SSWU_RO_))
 	P521Sha512.register(newCurve(H2C.P521_XMDSHA512_SSWU_RO_))

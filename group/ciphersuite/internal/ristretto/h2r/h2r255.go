@@ -2,9 +2,9 @@
 package h2r
 
 import (
-	"math"
-
+	"github.com/bytemare/cryptotools/encoding"
 	"github.com/bytemare/cryptotools/group"
+	"github.com/bytemare/cryptotools/utils"
 
 	"github.com/bytemare/cryptotools/hash"
 	"github.com/bytemare/cryptotools/internal"
@@ -20,20 +20,30 @@ var (
 	errShortDST   = internal.ParameterError("DST is shorter than recommended length")
 )
 
+type Expander interface {
+	expandMessage(input, dst []byte, length int) []byte
+	vetDST(dst []byte) []byte
+}
+
 // HashToRistretto allows hash-to-curve compatible hashing or arbitrary input into the Ristretto255 group.
 type HashToRistretto struct {
-	*hash.Hash
+	Expander
 	originalDST []byte
 	dst         []byte
 }
 
 // New returns a newly instantiated HashToRistretto structure.
 func New(dst []byte, id hash.Identifier) *HashToRistretto {
-	h := &HashToRistretto{
-		Hash:        id.Get(),
-		originalDST: dst,
+	h := &HashToRistretto{}
+	switch id.Extensible() {
+	case true:
+		h.Expander = &XOF{id.(hash.Extensible)}
+	case false:
+		h.Expander = &XMD{id.(hash.Hashing)}
 	}
-	h.setDST(dst)
+
+	h.originalDST = dst
+	h.dst = h.vetDST(dst)
 
 	return h
 }
@@ -49,34 +59,25 @@ func (h *HashToRistretto) Expand(input []byte, length int) []byte {
 	}
 
 	// todo: what happens when input is nil ?
-	if h.Extensible() {
-		return h.expandMessageXOF(input, length)
-	}
-
-	return h.expandMessageXMD(input, length)
-}
-
-func (h *HashToRistretto) setDST(dst []byte) {
-	if len(dst) <= dstMaxLength {
-		h.dst = dst
-		return
-	}
-
-	// If the tag length exceeds 255 bytes, compute a shorter tag by hashing it
-	ext := append([]byte(dstLongPrefix), dst...)
-
-	size := h.OutputSize()
-
-	if h.Extensible() {
-		k := h.SecurityLevel()
-		size = int(math.Ceil(float64(2 * k / 8)))
-	}
-
-	h.dst = h.Hash.Hash(size, ext)
+	return h.expandMessage(input, h.dst, length)
 }
 
 // GetOriginalDST returns the DST as given as input on instantiating of h.
-// If the DST was too long it has been hashed afterwards in setDST. This returns the unmodified DST.
+// If the DST was too long, then it has been hashed afterwards in setDST. This function returns the unmodified DST.
 func (h *HashToRistretto) GetOriginalDST() string {
 	return string(h.originalDST)
+}
+
+func msgPrime(h hash.Identifier, input, dst []byte, length int) []byte {
+	lib := encoding.I2OSP(length, 2)
+	dstPrime := dstPrime(dst)
+
+	if h.Extensible() {
+		return utils.Concatenate(0, input, lib, dstPrime)
+	}
+
+	zPad := make([]byte, h.BlockSize())
+	zeroByte := []byte{0}
+
+	return utils.Concatenate(0, zPad, input, lib, zeroByte, dstPrime)
 }

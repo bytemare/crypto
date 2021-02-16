@@ -9,7 +9,7 @@ const ed25519PointSize = 32
 
 func pointLen(bitLen int) int {
 	byteLen := (bitLen + 7) / 8
-	return 1+byteLen
+	return 1 + byteLen
 }
 
 func encodeSignPrefix(x, y *big.Int, pointLen int) []byte {

@@ -25,7 +25,7 @@ const (
 
 type testGroup struct {
 	name            string
-	hashID          hash.Identifier
+	hashID          hash.Hashing
 	app             string
 	version         string
 	scalar, element string // hex encoding of a scalar and element
@@ -295,13 +295,13 @@ func TestElement(t *testing.T) {
 
 func TestHashToCurveSucceed(t *testing.T) {
 	for _, h := range h2cR255 {
-		t.Run(string(h.Identifier), func(t *testing.T) {
+		t.Run(h.Identifier.String(), func(t *testing.T) {
 			dst := dst(testApp, testVersion, testCiphersuite, 0x02)
 
 			// Grab the bytes of the encoding
 			encoding, err := hex.DecodeString(h.hash)
 			if err != nil {
-				t.Fatalf("%v: bad hex encoding in test vector: %v", h.Identifier, err)
+				t.Fatalf("%s: bad hex encoding in test vector: %v", h.Identifier, err)
 			}
 
 			g := New(h.Identifier, dst)
