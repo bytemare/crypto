@@ -70,9 +70,9 @@ func (e Extensible) Extensible() bool {
 	return true
 }
 
-// Hash returns the hash of the input arguments.
-func (e Extensible) Hash(size int, input ...[]byte) []byte {
-	return e.Get().Hash(size, input...)
+// Hash returns the hash of the input arguments on the hash's secure minimum output length.
+func (e Extensible) Hash(input ...[]byte) []byte {
+	return e.Get().Hash(e.MinOutputSize(), input...)
 }
 
 // MinOutputSize returns the minimal output length necessary to guarantee its bit security level.

@@ -24,6 +24,7 @@ type Identifier interface {
 	Available() bool
 	BlockSize() int
 	Extensible() bool
+	Hash(input ...[]byte) []byte
 	SecurityLevel() int
 	String() string
 }

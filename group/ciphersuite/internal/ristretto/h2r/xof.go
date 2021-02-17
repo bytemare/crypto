@@ -16,7 +16,7 @@ func (x *XOF) expandMessage(input, dst []byte, length int) []byte {
 	len2o := encoding.I2OSP(length, 2)
 	dstLen2o := encoding.I2OSP(len(dst), 1)
 
-	return x.Hash(length, input, len2o, dst, dstLen2o)
+	return x.Get().Hash(length, input, len2o, dst, dstLen2o)
 }
 
 func (x *XOF) vetDST(dst []byte) []byte {
@@ -32,5 +32,5 @@ func (x *XOF) vetDST(dst []byte) []byte {
 	k := x.SecurityLevel()
 	size = int(math.Ceil(float64(2 * k / 8)))
 
-	return x.Hash(size, ext)
+	return x.Get().Hash(size, ext)
 }
