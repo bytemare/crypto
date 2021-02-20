@@ -13,6 +13,10 @@ type XMD struct {
 	hash.Hashing
 }
 
+func (x *XMD) Identifier() hash.Identifier {
+	return x.Hashing
+}
+
 // expandMessageXMD implements https://www.ietf.org/id/draft-irtf-cfrg-hash-to-curve-09.html#name-expand_message_xmd
 func (x *XMD) expandMessage(input, dst []byte, length int) []byte {
 	h := x.Hashing.Get()

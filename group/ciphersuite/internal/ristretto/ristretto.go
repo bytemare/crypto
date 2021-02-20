@@ -7,7 +7,6 @@ import (
 	"github.com/bytemare/cryptotools/group"
 	"github.com/bytemare/cryptotools/group/ciphersuite/internal/ristretto/h2r"
 	"github.com/bytemare/cryptotools/hash"
-	"github.com/bytemare/cryptotools/utils"
 )
 
 const ristrettoInputLength = 64
@@ -48,18 +47,32 @@ func (r *Ristretto) Identity() group.Element {
 }
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the group.
-func (r *Ristretto) HashToGroup(input ...[]byte) group.Element {
-	uniform := r.h2r.Expand(utils.Concatenate(0, input...), ristrettoInputLength)
+func (r *Ristretto) HashToGroup(input, dst []byte) group.Element {
+	var h *h2r.HashToRistretto
+	if dst == nil {
+		h = r.h2r
+	} else {
+		h = h2r.New(dst, r.h2r.Identifier())
+	}
+
+	uniform := h.Expand(input, ristrettoInputLength)
 
 	return &Element{
-		HashToRistretto: r.h2r,
+		HashToRistretto: h,
 		element:         ristretto255.NewElement().FromUniformBytes(uniform),
 	}
 }
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.
-func (r *Ristretto) HashToScalar(input ...[]byte) group.Scalar {
-	hashed := r.h2r.Expand(utils.Concatenate(0, input...), ristrettoInputLength)
+func (r *Ristretto) HashToScalar(input, dst []byte) group.Scalar {
+	var h *h2r.HashToRistretto
+	if dst == nil {
+		h = r.h2r
+	} else {
+		h = h2r.New(dst, r.h2r.Identifier())
+	}
+
+	hashed := h.Expand(input, ristrettoInputLength)
 	return &Scalar{Scalar: ristretto255.NewScalar().FromUniformBytes(hashed)}
 }
 

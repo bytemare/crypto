@@ -23,6 +23,7 @@ var (
 type Expander interface {
 	expandMessage(input, dst []byte, length int) []byte
 	vetDST(dst []byte) []byte
+	Identifier() hash.Identifier
 }
 
 // HashToRistretto allows hash-to-curve compatible hashing or arbitrary input into the Ristretto255 group.

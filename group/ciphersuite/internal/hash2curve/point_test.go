@@ -16,7 +16,7 @@ func TestPointEncoding(t *testing.T) {
 	for id := range curves {
 		t.Run(string(id), func(t *testing.T) {
 			h := New(id, dst)
-			e := h.HashToGroup(testInput)
+			e := h.HashToGroup(testInput, nil)
 			b := e.Bytes()
 			n, err := h.NewElement().Decode(b)
 			if err != nil {
@@ -46,7 +46,7 @@ func testPointArithmetic(t *testing.T, suite H2C.SuiteID, input, dst []byte) {
 
 	// Test Multiplication and inversion
 	base = g.Base()
-	s := g.HashToScalar(input)
+	s := g.HashToScalar(input, nil)
 	penc := base.Bytes()
 	senc := s.Bytes()
 	m := base.Mult(s)

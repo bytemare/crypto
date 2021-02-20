@@ -34,3 +34,7 @@ func (x *XOF) vetDST(dst []byte) []byte {
 
 	return x.Get().Hash(size, ext)
 }
+
+func (x *XOF) Identifier() hash.Identifier {
+	return x.Extensible
+}

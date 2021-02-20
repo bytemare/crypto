@@ -305,7 +305,7 @@ func TestHashToCurveSucceed(t *testing.T) {
 			}
 
 			g := New(h.Identifier, dst)
-			m := g.HashToGroup([]byte(h2cInput))
+			m := g.HashToGroup([]byte(h2cInput), nil)
 
 			if !bytes.Equal(encoding, m.Bytes()) {
 				t.Fatalf("encodings do not match. expected %v, got %v", hex.EncodeToString(encoding), hex.EncodeToString(m.Bytes()))
@@ -407,7 +407,7 @@ func TestPointArithmetic(t *testing.T) {
 
 	// Test Multiplication and inversion
 	p = g.Base()
-	s := g.HashToScalar(input)
+	s := g.HashToScalar(input, nil)
 	penc := p.Bytes()
 	senc := s.Bytes()
 	m := p.Mult(s)

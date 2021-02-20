@@ -4,11 +4,11 @@ package hash2curve
 import (
 	"github.com/armfazh/h2c-go-ref"
 	"github.com/bytemare/cryptotools/group"
-	"github.com/bytemare/cryptotools/utils"
 )
 
 // Hash2Curve implements the Group interface to Hash-to-Curve primitives.
 type Hash2Curve struct {
+	suite h2c.SuiteID
 	h2c.HashToPoint
 	*curve
 	dst []byte
@@ -26,7 +26,7 @@ func New(id h2c.SuiteID, dst []byte) *Hash2Curve {
 		panic(errParamNotRandomOracle)
 	}
 
-	return &Hash2Curve{h, curves[id].New(h.GetCurve()), dst}
+	return &Hash2Curve{id, h, curves[id].New(h.GetCurve()), dst}
 }
 
 // NewScalar returns a new, empty, scalar.
@@ -56,22 +56,36 @@ func (h *Hash2Curve) Identity() group.Element {
 }
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
-func (h *Hash2Curve) HashToGroup(input ...[]byte) group.Element {
-	h.checkDSTLen()
+func (h *Hash2Curve) HashToGroup(input, dst []byte) group.Element {
+	var htp *Hash2Curve
+	if dst == nil {
+		htp = h
+	} else {
+		htp = New(h.suite, dst)
+	}
+
+	htp.checkDSTLen()
 
 	return &Point{
-		Hash2Curve: h,
-		point:      h.Hash(utils.Concatenate(0, input...)),
+		Hash2Curve: htp,
+		point:      htp.Hash(input),
 	}
 }
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.
-func (h *Hash2Curve) HashToScalar(input ...[]byte) group.Scalar {
-	h.checkDSTLen()
+func (h *Hash2Curve) HashToScalar(input, dst []byte) group.Scalar {
+	var htp *Hash2Curve
+	if dst == nil {
+		htp = h
+	} else {
+		htp = New(h.suite, dst)
+	}
+
+	htp.checkDSTLen()
 
 	return &Scalar{
-		s: h.GetHashToScalar().Hash(utils.Concatenate(0, input...)),
-		f: h.GetHashToScalar().GetScalarField(),
+		s: htp.GetHashToScalar().Hash(input),
+		f: htp.GetHashToScalar().GetScalarField(),
 	}
 }
 
