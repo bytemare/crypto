@@ -24,10 +24,10 @@ type Group interface {
 	Identity() Element
 
 	// HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
-	HashToGroup(input ...[]byte) Element
+	HashToGroup(input, dst []byte) Element
 
 	// HashToScalar allows arbitrary input to be safely mapped to the field.
-	HashToScalar(input ...[]byte) Scalar
+	HashToScalar(input, dst []byte) Scalar
 
 	// Base returns the group's base point a.k.a. canonical generator.
 	Base() Element
