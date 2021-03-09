@@ -8,7 +8,7 @@ import (
 
 const (
 	argon2ids      = "Argon2id"
-	argon2idFormat = "%s(%d-%d-%d-%d)"
+	argon2idFormat = "%s(%d-%d-%d)"
 )
 
 var (
@@ -17,24 +17,37 @@ var (
 	defaultArgon2idThreads = 4
 )
 
-func defaultArgon2id(password, salt []byte, length int) []byte {
-	return argon2id(password, salt, defaultArgon2idTime, defaultArgon2idMemory, defaultArgon2idThreads, length)
+type argon2mhf struct {
+	time, memory, threads int
 }
 
-func argon2id(password, salt []byte, time, memory, threads, length int) []byte {
-	return argon2.IDKey(password, salt, uint32(time), uint32(memory), uint8(threads), uint32(length))
-}
-
-func argon2idString(p *Parameters) string {
-	return fmt.Sprintf(argon2idFormat, argon2ids, p.Time, p.Memory, p.Threads, p.KeyLength)
-}
-
-func argon2idParams() *Parameters {
-	return &Parameters{
-		ID:        Argon2id,
-		Time:      defaultArgon2idTime,
-		Memory:    defaultArgon2idMemory,
-		Threads:   defaultArgon2idThreads,
-		KeyLength: DefaultLength,
+func argon2idNew() memoryHardFunction {
+	return &argon2mhf{
+		time:    defaultArgon2idTime,
+		memory:  defaultArgon2idMemory,
+		threads: defaultArgon2idThreads,
 	}
+}
+
+func (a *argon2mhf) Harden(password, salt []byte, length int) []byte {
+	return argon2.IDKey(password, salt, uint32(a.time), uint32(a.memory), uint8(a.threads), uint32(length))
+}
+
+// Parameterize replaces the functions parameters with the new ones. Must match the amount of parameters.
+func (a *argon2mhf) Parameterize(parameters ...int) {
+	if len(parameters) != 3 {
+		panic(errParams)
+	}
+
+	a.time = parameters[0]
+	a.memory = parameters[1]
+	a.threads = parameters[2]
+}
+
+func (a *argon2mhf) String() string {
+	return fmt.Sprintf(argon2idFormat, argon2ids, a.time, a.memory, a.threads)
+}
+
+func (a *argon2mhf) params() []int {
+	return []int{a.time, a.memory, a.threads}
 }

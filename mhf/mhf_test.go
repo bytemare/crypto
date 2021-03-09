@@ -5,13 +5,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/bytemare/cryptotools/encoding"
 	"github.com/bytemare/cryptotools/utils"
 )
 
 var (
-	mhfs    = []MHF{Argon2id, Scrypt, PBKDF2Sha512, Bcrypt}
-	strings = []string{"Argon2id(1-65536-4-64)", "Scrypt(32768-8-1-64)", "PBKDF2(10000-64)", "Bcrypt(10)"}
+	mhfs    = []Identifier{Argon2id, Scrypt, PBKDF2Sha512, Bcrypt}
+	strings = []string{"Argon2id(1-65536-4)", "Scrypt(32768-8-1)", "PBKDF2(10000-SHA512)", "Bcrypt(10)"}
 )
 
 func TestAvailability(t *testing.T) {
@@ -22,7 +21,7 @@ func TestAvailability(t *testing.T) {
 	}
 
 	wrong := 0
-	if MHF(wrong).Available() {
+	if Identifier(wrong).Available() {
 		t.Errorf("%v is considered available when it should not", wrong)
 	}
 }
@@ -30,29 +29,24 @@ func TestAvailability(t *testing.T) {
 func TestMHF(t *testing.T) {
 	password := []byte("password")
 	salt := utils.RandomBytes(32)
-	enc := encoding.JSON
+	length := 32
 
 	for _, m := range mhfs {
 		t.Run(m.String(), func(t *testing.T) {
-			p := m.DefaultParameters()
+			assert.True(t, m.Available())
 
-			assert.Equal(t, p.String(), strings[p.ID-1])
+			assert.Equal(t, m.String(), strings[m-1])
 
 			assert.NotPanics(t, func() {
-				_ = p.Hash(password, salt)
+				_ = m.Harden(password, salt, length)
 			})
 
-			e, err := p.Encode(enc)
-			if err != nil {
-				t.Fatalf("%s : %v", p.ID, err)
-			}
-
-			p2, err := Decode(e, enc)
-			if err != nil {
-				t.Fatalf("%s : %v", p.ID, err)
-			}
-
-			assert.Equal(t, p, p2)
+			h := m.Get()
+			p := h.params()
+			h.Parameterize(p...)
+			assert.NotPanics(t, func() {
+				_ = h.Harden(password, salt, length)
+			})
 		})
 	}
 }

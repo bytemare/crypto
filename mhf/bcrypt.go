@@ -12,12 +12,18 @@ const (
 	defaultBcryptCost = 10
 )
 
-func defaultBcrypt(password, _ []byte, _ int) []byte {
-	return bcryptf(password, nil, defaultBcryptCost, 0, 0, 0)
+type bcryptmhf struct {
+	time int
 }
 
-func bcryptf(password, _ []byte, time, _, _, _ int) []byte {
-	h, err := bcrypt.GenerateFromPassword(password, time)
+func bcryptNew() memoryHardFunction {
+	return &bcryptmhf{
+		time: defaultBcryptCost,
+	}
+}
+
+func (b *bcryptmhf) Harden(password, _ []byte, _ int) []byte {
+	h, err := bcrypt.GenerateFromPassword(password, b.time)
 	if err != nil {
 		panic(err)
 	}
@@ -25,16 +31,19 @@ func bcryptf(password, _ []byte, time, _, _, _ int) []byte {
 	return h
 }
 
-func bcryptString(p *Parameters) string {
-	return fmt.Sprintf(bcryptFormat, bcrypts, p.Time)
+// Parameterize replaces the functions parameters with the new ones. Must match the amount of parameters.
+func (b *bcryptmhf) Parameterize(parameters ...int) {
+	if len(parameters) != 1 {
+		panic(errParams)
+	}
+
+	b.time = parameters[0]
 }
 
-func bcryptParams() *Parameters {
-	return &Parameters{
-		ID:        Bcrypt,
-		Time:      defaultBcryptCost,
-		Memory:    0,
-		Threads:   0,
-		KeyLength: 0,
-	}
+func (b *bcryptmhf) String() string {
+	return fmt.Sprintf(bcryptFormat, bcrypts, b.time)
+}
+
+func (b *bcryptmhf) params() []int {
+	return []int{b.time}
 }

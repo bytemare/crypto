@@ -1,39 +1,16 @@
 // Package mhf provides an interface to memory hard functions, a.k.a password key derivation functions.
 package mhf
 
-import (
-	"errors"
+import "errors"
 
-	"github.com/bytemare/cryptotools/encoding"
-)
+var errParams = errors.New("invalid amount of parameters")
 
-var errAssertMHF = errors.New("could not assert to MHF")
-
-// MemoryHardFunction present MHF for other definitions outside this package.
-type MemoryHardFunction interface {
-	// Available reports whether the given kdf function is linked into the binary.
-	Available() bool
-
-	// Harden uses default parameters for the key derivation function over the input password and salt.
-	Harden(password, salt []byte, length int) []byte
-
-	// HardenParam wraps and calls the key derivation function
-	HardenParam(password, salt []byte, time, memory, threads, length int) []byte
-
-	// DefaultParameters returns a pointer to a MHF struct containing
-	// the standard recommended default parameters for the kdf.
-	DefaultParameters() *Parameters
-
-	// String returns the string name of the hashing function.
-	String() string
-}
-
-// MHF is used to specify the memory hard function to be used.
-type MHF byte
+// Identifier is used to specify the memory hard function to be used.
+type Identifier byte
 
 const (
 	// Argon2id password kdf function.
-	Argon2id MHF = 1 + iota
+	Argon2id Identifier = 1 + iota
 
 	// Scrypt password kdf function.
 	Scrypt
@@ -45,114 +22,72 @@ const (
 	Bcrypt
 
 	maxID
-
-	// Default is set to Argon2id.
-	Default = Argon2id
-
-	// DefaultLength is the default output length in bytes.
-	DefaultLength = 64
-)
-
-var (
-	names                [maxID - 1]string
-	params               [maxID - 1]parameters
-	functions            [maxID - 1]kdf
-	defaultHashFunctions [maxID - 1]defaultHash
-)
-
-type (
-	kdf         func(password, salt []byte, time, memory, threads, length int) []byte
-	parameters  func() *Parameters
-	defaultHash func(password, salt []byte, length int) []byte
 )
 
 // Available reports whether the given kdf function is linked into the binary.
-func (i MHF) Available() bool {
+func (i Identifier) Available() bool {
 	return i > 0 && i < maxID
 }
 
 // Harden uses default parameters for the key derivation function over the input password and salt.
-func (i MHF) Harden(password, salt []byte, length int) []byte {
-	return defaultHashFunctions[i-1](password, salt, length)
-}
-
-// HardenParam wraps and calls the key derivation function
-func (i MHF) HardenParam(password, salt []byte, time, memory, threads, length int) []byte {
-	return functions[i-1](password, salt, time, memory, threads, length)
-}
-
-// DefaultParameters returns a pointer to a MHF struct containing
-// the standard recommended default parameters for the kdf.
-func (i MHF) DefaultParameters() *Parameters {
-	return params[i-1]()
+func (i Identifier) Harden(password, salt []byte, length int) []byte {
+	return i.Get().Harden(password, salt, length)
 }
 
 // String returns the string name of the hashing function.
-func (i MHF) String() string {
-	return names[i-1]
+func (i Identifier) String() string {
+	return i.Get().String()
 }
 
-func (i MHF) register(def defaultHash, k kdf, p parameters, name string) {
-	defaultHashFunctions[i-1] = def
-	functions[i-1] = k
-	params[i-1] = p
-	names[i-1] = name
+type constructor func() memoryHardFunction
+
+var constructors [maxID - 1]constructor
+
+func (i Identifier) register(c constructor) {
+	constructors[i-1] = c
 }
 
 func init() {
-	Argon2id.register(defaultArgon2id, argon2id, argon2idParams, argon2ids)
-	Scrypt.register(defaultScrypt, scryptf, scryptParams, scrypts)
-	PBKDF2Sha512.register(defaultPBKDF2, pbkdf, pbkdfParams, pbkdf2s)
-	Bcrypt.register(defaultBcrypt, bcryptf, bcryptParams, bcrypts)
+	Argon2id.register(argon2idNew)
+	Scrypt.register(scryptmhfNew)
+	PBKDF2Sha512.register(pbkdf2New)
+	Bcrypt.register(bcryptNew)
 }
 
-// Parameters represents a memory-hard functions and its parameters.
-type Parameters struct {
-	ID        MHF `json:"i"`
-	Time      int `json:"n"`
-	Memory    int `json:"r"`
-	Threads   int `json:"p"`
-	KeyLength int `json:"l"`
+type memoryHardFunction interface {
+	// Harden uses default parameters for the key derivation function over the input password and salt.
+	Harden(password, salt []byte, length int) []byte
+
+	// Parameterize replaces the functions parameters with the new ones. Must match the amount of parameters.
+	Parameterize(parameters ...int)
+
+	// Returns the string name of the function and its parameters
+	String() string
+
+	params() []int
 }
 
-// Hash calls the underlying memory hard function with the internally stored parameters on the given arguments.
-func (p *Parameters) Hash(password, salt []byte) []byte {
-	return p.ID.HardenParam(password, salt, p.Time, p.Memory, p.Threads, p.KeyLength)
+// MHF allows customisation of the underlying memory-hard function.
+type MHF struct {
+	memoryHardFunction
 }
 
-// Encode encodes m to the given encoding, allowing for storage of the parameters.
-func (p *Parameters) Encode(enc encoding.Encoding) ([]byte, error) {
-	return enc.Encode(p)
-}
-
-// String implements the Stringer() interface. It joins string representations of the parameters if available,
-// and returns the resulting string.
-func (p *Parameters) String() string {
-	switch p.ID {
-	case Argon2id:
-		return argon2idString(p)
-	case Scrypt:
-		return scryptString(p)
-	case PBKDF2Sha512:
-		return pbkdfString(p)
-	case Bcrypt:
-		return bcryptString(p)
-	default:
-		return ""
-	}
-}
-
-// Decode attempts to reconstruct the encoded MHF and its parameters.
-func Decode(encoded []byte, enc encoding.Encoding) (*Parameters, error) {
-	d, err := enc.Decode(encoded, &Parameters{})
-	if err != nil {
-		return nil, err
+// Set sets m's memory-hard function to the specified one and returns m. Returns nil if the identifier is invalid.
+func (m *MHF) Set(i Identifier) *MHF {
+	if i == 0 || i >= maxID {
+		return nil
 	}
 
-	m, ok := d.(*Parameters)
-	if !ok {
-		return nil, errAssertMHF
+	m.memoryHardFunction = constructors[i-1]()
+
+	return m
+}
+
+// Get returns an MHF with default parameters.
+func (i Identifier) Get() *MHF {
+	if i == 0 || i >= maxID {
+		return nil
 	}
 
-	return m, nil
+	return &MHF{constructors[i-1]()}
 }

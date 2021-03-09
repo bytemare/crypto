@@ -10,29 +10,38 @@ import (
 const (
 	defaultPBKDF2iterations = 10000
 	pbkdf2s                 = "PBKDF2"
-	pbkdf2Format            = "%s(%d-%d)"
+	pbkdf2Format            = "%s(%d-SHA512)"
 )
 
 var defaultPBKDF2Hash = sha512.New
 
-func defaultPBKDF2(password, salt []byte, length int) []byte {
-	return scryptf(password, salt, defaultPBKDF2iterations, 0, 0, length)
+type pbkdf2mhf struct {
+	iterations int
 }
 
-func pbkdf(password, salt []byte, iterations, _, _, length int) []byte {
-	return pbkdf2.Key(password, salt, iterations, length, defaultPBKDF2Hash)
-}
-
-func pbkdfString(p *Parameters) string {
-	return fmt.Sprintf(pbkdf2Format, pbkdf2s, p.Time, p.KeyLength)
-}
-
-func pbkdfParams() *Parameters {
-	return &Parameters{
-		ID:        PBKDF2Sha512,
-		Time:      defaultPBKDF2iterations,
-		Memory:    0,
-		Threads:   0,
-		KeyLength: DefaultLength,
+func pbkdf2New() memoryHardFunction {
+	return &pbkdf2mhf{
+		iterations: defaultPBKDF2iterations,
 	}
+}
+
+func (p *pbkdf2mhf) Harden(password, salt []byte, length int) []byte {
+	return pbkdf2.Key(password, salt, p.iterations, length, defaultPBKDF2Hash)
+}
+
+// Parameterize replaces the functions parameters with the new ones. Must match the amount of parameters.
+func (p *pbkdf2mhf) Parameterize(parameters ...int) {
+	if len(parameters) != 1 {
+		panic(errParams)
+	}
+
+	p.iterations = parameters[0]
+}
+
+func (p *pbkdf2mhf) String() string {
+	return fmt.Sprintf(pbkdf2Format, pbkdf2s, p.iterations)
+}
+
+func (p *pbkdf2mhf) params() []int {
+	return []int{p.iterations}
 }
