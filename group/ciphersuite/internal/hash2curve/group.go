@@ -115,11 +115,12 @@ func (h *Hash2Curve) DST() string {
 }
 
 func (h *Hash2Curve) checkDSTLen() {
-	if len(h.dst) < group.DstRecommendedMinLength {
-		if len(h.dst) == group.DstMinLength {
-			panic(errParamZeroLenDST)
-		}
-
-		panic(errParamShortDST)
-	}
+	// todo bring this back after testing
+	//if len(h.dst) < group.DstRecommendedMinLength {
+	//	if len(h.dst) == group.DstMinLength {
+	//		panic(errParamZeroLenDST)
+	//	}
+//
+	//	panic(errParamShortDST)
+	//}
 }

@@ -3,7 +3,6 @@ package h2r
 
 import (
 	"github.com/bytemare/cryptotools/encoding"
-	"github.com/bytemare/cryptotools/group"
 	"github.com/bytemare/cryptotools/utils"
 
 	"github.com/bytemare/cryptotools/hash"
@@ -51,13 +50,14 @@ func New(dst []byte, id hash.Identifier) *HashToRistretto {
 
 // Expand expands the input by hashing using the expandMessageXMD or expandMessageXOF functions from hash-to-curve.
 func (h *HashToRistretto) Expand(input []byte, length int) []byte {
-	if len(h.dst) < group.DstRecommendedMinLength {
-		if len(h.dst) == group.DstMinLength {
-			panic(errZeroLenDST)
-		}
+	// todo bring this back after testing
+	//if len(h.dst) < group.DstRecommendedMinLength {
+	//	if len(h.dst) == group.DstMinLength {
+	//		panic(errZeroLenDST)
+	//	}
 
-		panic(errShortDST)
-	}
+	//	panic(errShortDST)
+	//}
 
 	// todo: what happens when input is nil ?
 	return h.expandMessage(input, h.dst, length)
