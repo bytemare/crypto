@@ -72,7 +72,7 @@ func (i Identifier) Get(dst []byte) group.Group {
 		panic(errInvalidID)
 	}
 
-	return registered[i].newGroup(dst)
+	return registered[i].newGroup()
 }
 
 // Available reports whether the given Identifier is linked into the binary.
@@ -106,7 +106,7 @@ func (i Identifier) String() string {
 	return string(p.h2cID)
 }
 
-type newGroup func(dst []byte) group.Group
+type newGroup func() group.Group
 
 type params struct {
 	id    Identifier
@@ -123,14 +123,14 @@ func (i Identifier) register(identifier H2C.SuiteID, g newGroup) {
 }
 
 func newRistretto(identifier hash.Identifier) newGroup {
-	return func(dst []byte) group.Group {
-		return ristretto.New(identifier, dst)
+	return func() group.Group {
+		return ristretto.New(identifier)
 	}
 }
 
 func newCurve(id H2C.SuiteID) (H2C.SuiteID, newGroup) {
-	return id, func(dst []byte) group.Group {
-		return hash2curve.New(id, dst)
+	return id, func() group.Group {
+		return hash2curve.New(id)
 	}
 }
 

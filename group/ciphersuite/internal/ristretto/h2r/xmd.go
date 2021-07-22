@@ -3,8 +3,9 @@ package h2r
 
 import (
 	"fmt"
-	"github.com/bytemare/cryptotools/hash"
 	"math"
+
+	"github.com/bytemare/cryptotools/hash"
 
 	"github.com/bytemare/cryptotools/encoding"
 )
@@ -19,6 +20,7 @@ func (x *XMD) Identifier() hash.Identifier {
 
 // expandMessageXMD implements https://www.ietf.org/id/draft-irtf-cfrg-hash-to-curve-09.html#name-expand_message_xmd
 func (x *XMD) expandMessage(input, dst []byte, length int) []byte {
+	dst = x.vetDST(dst)
 	h := x.Hashing.Get()
 	b := h.OutputSize()
 	blockSize := h.BlockSize()

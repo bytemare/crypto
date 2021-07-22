@@ -2,9 +2,10 @@
 package h2r
 
 import (
+	"math"
+
 	"github.com/bytemare/cryptotools/encoding"
 	"github.com/bytemare/cryptotools/hash"
-	"math"
 )
 
 type XOF struct {
@@ -13,6 +14,7 @@ type XOF struct {
 
 // expandMessageXOF implements https://www.ietf.org/id/draft-irtf-cfrg-hash-to-curve-09.html#name-expand_message_xof
 func (x *XOF) expandMessage(input, dst []byte, length int) []byte {
+	dst = x.vetDST(dst)
 	len2o := encoding.I2OSP(length, 2)
 	dstLen2o := encoding.I2OSP(len(dst), 1)
 

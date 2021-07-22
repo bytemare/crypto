@@ -84,7 +84,7 @@ func mapHash(name string) hash.Identifier {
 func (s *set) run(t *testing.T) {
 	dst := []byte(s.DST)
 	id := mapHash(s.Hash)
-	h := New(dst, id)
+	h := New(id)
 
 	for i, test := range s.Tests {
 		t.Run(fmt.Sprintf("%s : Vector %d", s.Hash, i), func(t *testing.T) {
@@ -93,17 +93,17 @@ func (s *set) run(t *testing.T) {
 				t.Fatalf("%d : %v", i, err)
 			}
 
-			dstPrime := dstPrime(h.dst)
+			dstPrime := dstPrime(dst)
 			if !bytes.Equal(v.dstPrime, dstPrime) {
 				t.Fatalf("%d : invalid DST prime.", i)
 			}
 
-			msgPrime := msgPrime(id, v.msg, h.dst, v.lenInBytes)
+			msgPrime := msgPrime(id, v.msg, dst, v.lenInBytes)
 			if !bytes.Equal(v.msgPrime, msgPrime) {
 				t.Fatalf("%d : invalid msg prime.", i)
 			}
 
-			x := h.Expand(v.msg, v.lenInBytes)
+			x := h.Expand(v.msg, dst, v.lenInBytes)
 			if !assert.Equal(t, v.uniformBytes, x) {
 				t.Fatalf("%d : invalid hash (length %d vs %d).", i, len(x), v.lenInBytes)
 			}

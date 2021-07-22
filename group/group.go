@@ -36,5 +36,5 @@ type Group interface {
 	MultBytes(scalar, element []byte) (Element, error)
 
 	// DST returns the domain separation tag the group has been instantiated with.
-	DST() string
+	//DST() string
 }

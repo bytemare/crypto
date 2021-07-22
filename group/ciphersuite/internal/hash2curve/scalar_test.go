@@ -26,7 +26,7 @@ func TestScalarEncoding(t *testing.T) {
 }
 
 func TestScalarArithmetic(t *testing.T) {
-	g := New(h2c.Edwards25519_XMDSHA512_ELL2_RO_, []byte("dst"))
+	g := New(h2c.Edwards25519_XMDSHA512_ELL2_RO_)
 
 	// Test Addition and Substraction
 	s := g.NewScalar().Random()

@@ -7,12 +7,11 @@ import (
 	"github.com/gtank/ristretto255"
 
 	"github.com/bytemare/cryptotools/group"
-	"github.com/bytemare/cryptotools/group/ciphersuite/internal/ristretto/h2r"
 )
 
 // Element implements the Element interface for the Ristretto255 group element.
 type Element struct {
-	*h2r.HashToRistretto
+	//*h2r.HashToRistretto
 	element *ristretto255.Element
 }
 
@@ -28,7 +27,7 @@ func (e *Element) Add(element group.Element) group.Element {
 	}
 
 	return &Element{
-		HashToRistretto: e.HashToRistretto,
+		//HashToRistretto: e.HashToRistretto,
 		element:         ristretto255.NewElement().Add(e.element, ele.element),
 	}
 }
@@ -45,7 +44,7 @@ func (e *Element) Sub(element group.Element) group.Element {
 	}
 
 	return &Element{
-		HashToRistretto: e.HashToRistretto,
+		//HashToRistretto: e.HashToRistretto,
 		element:         ristretto255.NewElement().Subtract(e.element, ele.element),
 	}
 }
@@ -62,7 +61,7 @@ func (e *Element) Mult(s group.Scalar) group.Element {
 	}
 
 	return &Element{
-		HashToRistretto: e.HashToRistretto,
+		//HashToRistretto: e.HashToRistretto,
 		element:         ristretto255.NewElement().ScalarMult(sc.Scalar, e.element),
 	}
 }
@@ -90,7 +89,7 @@ func (e *Element) Copy() group.Element {
 	}
 
 	return &Element{
-		HashToRistretto: e.HashToRistretto,
+		//HashToRistretto: e.HashToRistretto,
 		element:         n,
 	}
 }

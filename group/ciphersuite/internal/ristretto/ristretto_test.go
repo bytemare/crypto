@@ -146,18 +146,18 @@ func dst(app, version, h2c string, identifier byte) []byte {
 }
 
 func TestNewSucced(t *testing.T) {
-	dst := dst(testApp, testVersion, testCiphersuite, 0x02)
+	//dst := dst(testApp, testVersion, testCiphersuite, 0x02)
 
 	for _, h := range hashAlgs {
 		assert.NotPanics(t, func() {
-			New(h, dst)
+			New(h)
 		}, "Should not panic with valid parameters")
 	}
 }
 
 func TestNilScalar(t *testing.T) {
-	dst := dst(testApp, testVersion, testCiphersuite, 0x02)
-	g := New(tests[0].hashID, dst)
+	//dst := dst(testApp, testVersion, testCiphersuite, 0x02)
+	g := New(tests[0].hashID)
 
 	_, err := g.NewScalar().Decode(nil)
 	if err == nil {
@@ -166,10 +166,10 @@ func TestNilScalar(t *testing.T) {
 }
 
 func TestScalar(t *testing.T) {
-	dst := dst(testApp, testVersion, testCiphersuite, 0x02)
+	//dst := dst(testApp, testVersion, testCiphersuite, 0x02)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := New(tt.hashID, dst)
+			g := New(tt.hashID)
 
 			s := g.NewScalar().Random()
 			if len(s.Bytes()) != canonicalEncodingLength {
@@ -222,8 +222,8 @@ func TestScalar(t *testing.T) {
 
 func TestNilElement(t *testing.T) {
 	// Test if the element in the test is the base point
-	dst := dst(testApp, testVersion, testCiphersuite, 0x02)
-	g := New(tests[0].hashID, dst)
+	//dst := dst(testApp, testVersion, testCiphersuite, 0x02)
+	g := New(tests[0].hashID)
 
 	_, err := g.NewElement().Decode(nil)
 	if err == nil {
@@ -233,8 +233,8 @@ func TestNilElement(t *testing.T) {
 
 func TestElement(t *testing.T) {
 	// Test if the element in the test is the base point
-	dst := dst(testApp, testVersion, testCiphersuite, 0x02)
-	g := New(tests[0].hashID, dst)
+	//dst := dst(testApp, testVersion, testCiphersuite, 0x02)
+	g := New(tests[0].hashID)
 
 	bp := g.NewElement().(*Element).Base()
 
@@ -250,7 +250,7 @@ func TestElement(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := New(tt.hashID, dst)
+			g := New(tt.hashID)
 
 			// Grab the bytes of the encoding
 			encoding, err := hex.DecodeString(tt.element)
@@ -304,8 +304,8 @@ func TestHashToCurveSucceed(t *testing.T) {
 				t.Fatalf("%s: bad hex encoding in test vector: %v", h.Identifier, err)
 			}
 
-			g := New(h.Identifier, dst)
-			m := g.HashToGroup([]byte(h2cInput), nil)
+			g := New(h.Identifier)
+			m := g.HashToGroup([]byte(h2cInput), dst)
 
 			if !bytes.Equal(encoding, m.Bytes()) {
 				t.Fatalf("encodings do not match. expected %v, got %v", hex.EncodeToString(encoding), hex.EncodeToString(m.Bytes()))
@@ -314,15 +314,15 @@ func TestHashToCurveSucceed(t *testing.T) {
 			// Try again with very long DST
 			proto := strings.Repeat("a", dstMaxLength+1)
 			assert.NotPanics(t, func() {
-				_ = New(h.Identifier, []byte(proto))
+				_ = g.HashToGroup([]byte(h2cInput), []byte(proto))
 			}, "expected no panic with very long dst")
 		})
 	}
 }
 
 func TestMultiplication(t *testing.T) {
-	dst := dst(testApp, testVersion, testCiphersuite, 0x02)
-	g := New(tests[0].hashID, dst)
+	//dst := dst(testApp, testVersion, testCiphersuite, 0x02)
+	g := New(tests[0].hashID)
 
 	assert.Panics(t, func() {
 		_ = g.NewElement().Mult(nil)
@@ -393,7 +393,7 @@ func TestMultiplication(t *testing.T) {
 }
 
 func TestPointArithmetic(t *testing.T) {
-	g := New(hash.SHA512, []byte(testDst))
+	g := New(hash.SHA512)
 	input := []byte(h2cInput)
 
 	// Test Addition and Subtraction
@@ -427,7 +427,7 @@ func TestPointArithmetic(t *testing.T) {
 }
 
 func TestScalarArithmetic(t *testing.T) {
-	g := New(hash.SHA512, []byte(testDst))
+	g := New(hash.SHA512)
 
 	// Test Addition and Substraction
 	s := g.NewScalar().Random()

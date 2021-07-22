@@ -29,6 +29,15 @@ func (i Identifier) Available() bool {
 	return i > 0 && i < maxID
 }
 
+// Get returns an MHF with default parameters.
+func (i Identifier) Get() *MHF {
+	if i == 0 || i >= maxID {
+		return nil
+	}
+
+	return &MHF{constructors[i-1]()}
+}
+
 // Harden uses default parameters for the key derivation function over the input password and salt.
 func (i Identifier) Harden(password, salt []byte, length int) []byte {
 	return i.Get().Harden(password, salt, length)
@@ -81,13 +90,4 @@ func (m *MHF) Set(i Identifier) *MHF {
 	m.memoryHardFunction = constructors[i-1]()
 
 	return m
-}
-
-// Get returns an MHF with default parameters.
-func (i Identifier) Get() *MHF {
-	if i == 0 || i >= maxID {
-		return nil
-	}
-
-	return &MHF{constructors[i-1]()}
 }

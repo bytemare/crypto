@@ -15,8 +15,8 @@ var (
 func TestPointEncoding(t *testing.T) {
 	for id := range curves {
 		t.Run(string(id), func(t *testing.T) {
-			h := New(id, dst)
-			e := h.HashToGroup(testInput, nil)
+			h := New(id)
+			e := h.HashToGroup(testInput, dst)
 			b := e.Bytes()
 			n, err := h.NewElement().Decode(b)
 			if err != nil {
@@ -32,7 +32,7 @@ func TestPointEncoding(t *testing.T) {
 }
 
 func testPointArithmetic(t *testing.T, suite H2C.SuiteID, input, dst []byte) {
-	g := New(suite, dst)
+	g := New(suite)
 
 	// Test Addition and Subtraction
 	base := g.Base()

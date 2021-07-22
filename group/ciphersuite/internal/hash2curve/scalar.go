@@ -104,6 +104,11 @@ func (s *Scalar) Copy() group.Scalar {
 
 // Decode decodes the input an sets the current scalar to its value, and returns it.
 func (s *Scalar) Decode(in []byte) (group.Scalar, error) {
+	if len(in) == 0 {
+		return nil, errParamNilScalar
+	}
+
+	// todo: warning - SetBytes interprets the input as a non-signed integer
 	e := new(big.Int).SetBytes(in)
 	if e.Sign() < 0 {
 		return nil, errParamNegScalar

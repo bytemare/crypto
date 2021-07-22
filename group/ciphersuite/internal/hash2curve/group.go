@@ -11,13 +11,13 @@ type Hash2Curve struct {
 	suite h2c.SuiteID
 	h2c.HashToPoint
 	*curve
-	dst []byte
+	//dst []byte
 }
 
 // New returns a pointer to a Hash2Curve structure instantiated for the given Hash-to-Curve identifier.
 // and the domain separation tag.
-func New(id h2c.SuiteID, dst []byte) *Hash2Curve {
-	h, err := id.Get(dst)
+func New(id h2c.SuiteID) *Hash2Curve {
+	h, err := id.Get(nil)
 	if err != nil {
 		panic(err)
 	}
@@ -26,7 +26,7 @@ func New(id h2c.SuiteID, dst []byte) *Hash2Curve {
 		panic(errParamNotRandomOracle)
 	}
 
-	return &Hash2Curve{id, h, curves[id].New(h.GetCurve()), dst}
+	return &Hash2Curve{id, h, curves[id].New(h.GetCurve())}
 }
 
 // NewScalar returns a new, empty, scalar.
@@ -61,7 +61,16 @@ func (h *Hash2Curve) HashToGroup(input, dst []byte) group.Element {
 	if dst == nil {
 		htp = h
 	} else {
-		htp = New(h.suite, dst)
+		h2, err := h.suite.Get(nil)
+		if err != nil {
+			panic(err)
+		}
+
+		if !h2.IsRandomOracle() {
+			panic(errParamNotRandomOracle)
+		}
+
+		htp = &Hash2Curve{h.suite, h2, curves[h.suite].New(h2.GetCurve())}
 	}
 
 	htp.checkDSTLen()
@@ -78,7 +87,16 @@ func (h *Hash2Curve) HashToScalar(input, dst []byte) group.Scalar {
 	if dst == nil {
 		htp = h
 	} else {
-		htp = New(h.suite, dst)
+		h2, err := h.suite.Get(nil)
+		if err != nil {
+			panic(err)
+		}
+
+		if !h2.IsRandomOracle() {
+			panic(errParamNotRandomOracle)
+		}
+
+		htp = &Hash2Curve{h.suite, h2, curves[h.suite].New(h2.GetCurve())}
 	}
 
 	htp.checkDSTLen()
@@ -110,9 +128,9 @@ func (h *Hash2Curve) MultBytes(scalar, element []byte) (group.Element, error) {
 }
 
 // DST returns the domain separation tag the group has been instantiated with.
-func (h *Hash2Curve) DST() string {
-	return string(h.dst)
-}
+//func (h *Hash2Curve) DST() string {
+//	return string(h.dst)
+//}
 
 func (h *Hash2Curve) checkDSTLen() {
 	// todo bring this back after testing
