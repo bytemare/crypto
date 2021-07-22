@@ -67,7 +67,7 @@ var (
 )
 
 // Get returns a Group interface implementing struct to the given cipher suite.
-func (i Identifier) Get(dst []byte) group.Group {
+func (i Identifier) Get() group.Group {
 	if i == 0 || i >= maxID {
 		panic(errInvalidID)
 	}
