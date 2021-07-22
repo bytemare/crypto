@@ -61,7 +61,7 @@ func (h *Hash2Curve) HashToGroup(input, dst []byte) group.Element {
 	if dst == nil {
 		htp = h
 	} else {
-		h2, err := h.suite.Get(nil)
+		h2, err := h.suite.Get(dst)
 		if err != nil {
 			panic(err)
 		}
@@ -87,7 +87,7 @@ func (h *Hash2Curve) HashToScalar(input, dst []byte) group.Scalar {
 	if dst == nil {
 		htp = h
 	} else {
-		h2, err := h.suite.Get(nil)
+		h2, err := h.suite.Get(dst)
 		if err != nil {
 			panic(err)
 		}
