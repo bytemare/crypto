@@ -18,8 +18,8 @@ func (x *XMD) Identifier() hash.Identifier {
 	return x.Hashing
 }
 
-// expandMessageXMD implements https://www.ietf.org/id/draft-irtf-cfrg-hash-to-curve-09.html#name-expand_message_xmd
-func (x *XMD) expandMessage(input, dst []byte, length int) []byte {
+// ExpandMessage XMD implements https://www.ietf.org/id/draft-irtf-cfrg-hash-to-curve-09.html#name-expand_message_xmd
+func (x *XMD) ExpandMessage(input, dst []byte, length int) []byte {
 	dst = x.vetDST(dst)
 	h := x.Hashing.Get()
 	b := h.OutputSize()

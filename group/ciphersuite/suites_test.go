@@ -2,25 +2,9 @@ package ciphersuite
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 const testVersion = "0.0"
-
-func TestIdentifier_Get(t *testing.T) {
-	for s := range registered {
-		t.Run(s.String(), func(t *testing.T) {
-			assert.NotPanics(t, func() {
-				dst, err := s.MakeDST(s.String(), testVersion)
-				if err == nil {
-					panic(err)
-				}
-				s.Get(dst)
-			}, "unexpected panic")
-		})
-	}
-}
 
 //func TestNilDST(t *testing.T) {
 //	for s := range registered {

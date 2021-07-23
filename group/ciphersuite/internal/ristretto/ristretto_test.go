@@ -7,6 +7,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/bytemare/cryptotools/group/ciphersuite/internal/ristretto/h2r"
+	"github.com/gtank/ristretto255"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/bytemare/cryptotools/hash"
@@ -145,33 +148,17 @@ func dst(app, version, h2c string, identifier byte) []byte {
 	return []byte(fmt.Sprintf("%s-V%s-CS%v-%s", app, version, identifier, h2c))
 }
 
-func TestNewSucced(t *testing.T) {
-	//dst := dst(testApp, testVersion, testCiphersuite, 0x02)
-
-	for _, h := range hashAlgs {
-		assert.NotPanics(t, func() {
-			New(h)
-		}, "Should not panic with valid parameters")
-	}
-}
-
 func TestNilScalar(t *testing.T) {
-	//dst := dst(testApp, testVersion, testCiphersuite, 0x02)
-	g := New(tests[0].hashID)
-
-	_, err := g.NewScalar().Decode(nil)
+	_, err := NewScalar().Decode(nil)
 	if err == nil {
 		t.Fatal("expected error on nil input")
 	}
 }
 
 func TestScalar(t *testing.T) {
-	//dst := dst(testApp, testVersion, testCiphersuite, 0x02)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := New(tt.hashID)
-
-			s := g.NewScalar().Random()
+			s := NewScalar().Random()
 			if len(s.Bytes()) != canonicalEncodingLength {
 				t.Fatalf("invalid random scalar length. Expected %d, got %d", canonicalEncodingLength, len(s.Bytes()))
 			}
@@ -182,7 +169,7 @@ func TestScalar(t *testing.T) {
 				t.Fatalf("#%s: bad hex encoding in test vector: %v", tt.name, err)
 			}
 
-			s, err = g.NewScalar().Decode(encoding)
+			s, err = NewScalar().Decode(encoding)
 
 			switch tt.scal {
 			case false:
@@ -206,15 +193,11 @@ func TestScalar(t *testing.T) {
 					t.Fatalf("invalid random scalar length. Expected %d, got %d", canonicalEncodingLength, len(s.Bytes()))
 				}
 
-				cpy, _ := g.NewScalar().Decode(s.Bytes())
+				cpy, _ := NewScalar().Decode(s.Bytes())
 				cpy = cpy.Invert()
 				if bytes.Equal(cpy.Bytes(), s.Bytes()) {
 					t.Fatal("scalar inversion resulted in same scalar")
 				}
-
-				//if string(s.Group()) != string(group.Ristretto255) {
-				//	t.Fatalf("wrong group identifier. Expected %s, got %s", string(group.Ristretto255), s.Group())
-				//}
 			}
 		})
 	}
@@ -222,10 +205,7 @@ func TestScalar(t *testing.T) {
 
 func TestNilElement(t *testing.T) {
 	// Test if the element in the test is the base point
-	//dst := dst(testApp, testVersion, testCiphersuite, 0x02)
-	g := New(tests[0].hashID)
-
-	_, err := g.NewElement().Decode(nil)
+	_, err := NewElement().Decode(nil)
 	if err == nil {
 		t.Fatal("expected error on nil input")
 	}
@@ -233,10 +213,7 @@ func TestNilElement(t *testing.T) {
 
 func TestElement(t *testing.T) {
 	// Test if the element in the test is the base point
-	//dst := dst(testApp, testVersion, testCiphersuite, 0x02)
-	g := New(tests[0].hashID)
-
-	bp := g.NewElement().(*Element).Base()
+	bp := NewElement().(*Element).Base()
 
 	// Grab the bytes of the encoding
 	encoding, err := hex.DecodeString(tests[0].element)
@@ -250,8 +227,6 @@ func TestElement(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := New(tt.hashID)
-
 			// Grab the bytes of the encoding
 			encoding, err := hex.DecodeString(tt.element)
 			if err != nil {
@@ -259,7 +234,7 @@ func TestElement(t *testing.T) {
 			}
 
 			// Test decoding
-			e, err := g.NewElement().Decode(encoding)
+			e, err := NewElement().Decode(encoding)
 
 			switch tt.elem {
 			case false:
@@ -284,12 +259,17 @@ func TestElement(t *testing.T) {
 				if !bytes.Equal(encoding, e.Bytes()) {
 					t.Fatalf("%s : Decoding and encoding doesn't return the same bytes", tt.name)
 				}
-
-				//if string(e.Group()) != string(group.Ristretto255) {
-				//	t.Fatalf("wrong group identifier. Expected %s, got %s", string(group.Ristretto255), e.Group())
-				//}
 			}
 		})
+	}
+}
+
+func hash2group(input, dst []byte, id hash.Identifier) *Element {
+	h := h2r.New(id)
+	uniform := h.ExpandMessage(input, dst, ristrettoInputLength)
+
+	return &Element{
+		element: ristretto255.NewElement().FromUniformBytes(uniform),
 	}
 }
 
@@ -304,8 +284,7 @@ func TestHashToCurveSucceed(t *testing.T) {
 				t.Fatalf("%s: bad hex encoding in test vector: %v", h.Identifier, err)
 			}
 
-			g := New(h.Identifier)
-			m := g.HashToGroup([]byte(h2cInput), dst)
+			m := hash2group([]byte(h2cInput), dst, h.Identifier)
 
 			if !bytes.Equal(encoding, m.Bytes()) {
 				t.Fatalf("encodings do not match. expected %v, got %v", hex.EncodeToString(encoding), hex.EncodeToString(m.Bytes()))
@@ -314,28 +293,25 @@ func TestHashToCurveSucceed(t *testing.T) {
 			// Try again with very long DST
 			proto := strings.Repeat("a", dstMaxLength+1)
 			assert.NotPanics(t, func() {
-				_ = g.HashToGroup([]byte(h2cInput), []byte(proto))
+				_ = HashToGroup([]byte(h2cInput), []byte(proto))
 			}, "expected no panic with very long dst")
 		})
 	}
 }
 
 func TestMultiplication(t *testing.T) {
-	//dst := dst(testApp, testVersion, testCiphersuite, 0x02)
-	g := New(tests[0].hashID)
-
 	assert.Panics(t, func() {
-		_ = g.NewElement().Mult(nil)
+		_ = NewElement().Mult(nil)
 	}, "expected panic on multiplying with nil scalar")
 
-	bp := g.NewElement().(*Element).Base()
-	rs := g.NewScalar().Random()
+	bp := NewElement().(*Element).Base()
+	rs := NewScalar().Random()
 
 	//
 	m1 := bp.Mult(rs)
 
 	//
-	m2, err := g.MultBytes(rs.Bytes(), g.NewElement().(*Element).Base().Bytes())
+	m2, err := MultBytes(rs.Bytes(), NewElement().(*Element).Base().Bytes())
 	if err != nil {
 		t.Fatalf("unexpected err ; %v", err)
 	}
@@ -345,10 +321,10 @@ func TestMultiplication(t *testing.T) {
 	}
 
 	// Blind and unblind
-	bp = g.NewElement().(*Element).Base()
+	bp = NewElement().(*Element).Base()
 	blinded := bp.Mult(rs)
 
-	if bytes.Equal(blinded.Bytes(), g.NewElement().(*Element).Base().Bytes()) {
+	if bytes.Equal(blinded.Bytes(), NewElement().(*Element).Base().Bytes()) {
 		t.Fatalf("failed multiplication : didn't change")
 	}
 
@@ -363,17 +339,17 @@ func TestMultiplication(t *testing.T) {
 
 	unblinded := blinded.InvertMult(rs)
 
-	if !bytes.Equal(unblinded.Bytes(), g.Base().Bytes()) {
+	if !bytes.Equal(unblinded.Bytes(), Base().Bytes()) {
 		t.Fatalf("failed multiplication : unblinding didn't revert")
 	}
 
 	// Multiply from byte values
-	element := g.NewElement().(*Element).Base()
-	scalar := g.NewScalar().Random()
+	element := NewElement().(*Element).Base()
+	scalar := NewScalar().Random()
 
-	mult := g.NewElement().(*Element).Base().Mult(scalar)
+	mult := NewElement().(*Element).Base().Mult(scalar)
 
-	bm, err := g.MultBytes(scalar.Bytes(), element.Bytes())
+	bm, err := MultBytes(scalar.Bytes(), element.Bytes())
 	if err != nil {
 		t.Fatalf("MultBytes errored for []bytes multiplication")
 	}
@@ -383,21 +359,20 @@ func TestMultiplication(t *testing.T) {
 	}
 
 	// Multiply with invalid values
-	if _, err := g.MultBytes(nil, nil); err == nil {
+	if _, err := MultBytes(nil, nil); err == nil {
 		t.Fatal("expected error for nil scalar in MultBytes")
 	}
 
-	if _, err := g.MultBytes(scalar.Bytes(), nil); err == nil {
+	if _, err := MultBytes(scalar.Bytes(), nil); err == nil {
 		t.Fatal("expected error for nil scalar in MultBytes")
 	}
 }
 
 func TestPointArithmetic(t *testing.T) {
-	g := New(hash.SHA512)
 	input := []byte(h2cInput)
 
 	// Test Addition and Subtraction
-	p := g.Base()
+	p := Base()
 	c := p.Copy()
 	assert.Panics(t, func() { p.Add(nil) })
 	a := p.Add(p)
@@ -406,12 +381,12 @@ func TestPointArithmetic(t *testing.T) {
 	assert.Equal(t, r.Bytes(), c.Bytes())
 
 	// Test Multiplication and inversion
-	p = g.Base()
-	s := g.HashToScalar(input, nil)
+	p = Base()
+	s := HashToScalar(input, nil)
 	penc := p.Bytes()
 	senc := s.Bytes()
 	m := p.Mult(s)
-	e, err := g.MultBytes(senc, penc)
+	e, err := MultBytes(senc, penc)
 	if err != nil {
 		t.Error(err)
 	}
@@ -423,14 +398,12 @@ func TestPointArithmetic(t *testing.T) {
 	// Test identity
 	p = p.Sub(p)
 	assert.True(t, p.IsIdentity())
-	assert.Equal(t, p.Bytes(), g.Identity().Bytes())
+	assert.Equal(t, p.Bytes(), Identity().Bytes())
 }
 
 func TestScalarArithmetic(t *testing.T) {
-	g := New(hash.SHA512)
-
 	// Test Addition and Substraction
-	s := g.NewScalar().Random()
+	s := NewScalar().Random()
 	assert.Equal(t, s.Add(nil).Bytes(), s.Bytes())
 	a := s.Add(s)
 	assert.Equal(t, a.Sub(nil).Bytes(), a.Bytes())
@@ -438,7 +411,7 @@ func TestScalarArithmetic(t *testing.T) {
 	assert.Equal(t, r.Bytes(), s.Bytes())
 
 	// Test Multiplication and inversion
-	s = g.NewScalar().Random()
+	s = NewScalar().Random()
 	m := s.Mult(s)
 	i := m.Mult(s.Invert())
 	assert.Equal(t, i.Bytes(), s.Bytes())

@@ -12,6 +12,7 @@ import (
 
 type curve struct {
 	id C.ID
+	Curve.EllCurve
 	solver
 	base Curve.Point
 }
@@ -76,9 +77,10 @@ func (p *params) New(ec Curve.EllCurve) *curve {
 	base := point(ec, p.baseX, p.baseY)
 
 	return &curve{
-		id:     p.id,
-		solver: p.solver,
-		base:   base,
+		id:       p.id,
+		EllCurve: p.id.Get(),
+		solver:   p.solver,
+		base:     base,
 	}
 }
 

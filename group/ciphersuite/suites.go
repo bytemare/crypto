@@ -1,4 +1,4 @@
-// Package ciphersuite identifies a list of prime-order elliptic curve groups coupled with hashing functions implemening
+// Package ciphersuite identifies a list of prime-order elliptic curve groups coupled with hashing functions implementing
 // group operations over elliptic curves, as well as HashToGroup() and HashToScalar() per Hash-to-curve.
 package ciphersuite
 
@@ -66,15 +66,6 @@ var (
 	errUnavailableID = internal.ParameterError("ciphersuite unavailable")
 )
 
-// Get returns a Group interface implementing struct to the given cipher suite.
-func (i Identifier) Get() group.Group {
-	if i == 0 || i >= maxID {
-		panic(errInvalidID)
-	}
-
-	return registered[i].newGroup()
-}
-
 // Available reports whether the given Identifier is linked into the binary.
 func (i Identifier) Available() bool {
 	return i > 0 && i < maxID && registered[i] != nil
@@ -82,6 +73,10 @@ func (i Identifier) Available() bool {
 
 // MakeDST builds a domain separation tag in the form of <app>-V<version>-CS<id>-<hash-to-curve-ID>, or returns an error.
 func (i Identifier) MakeDST(app, version string) ([]byte, error) {
+	if !i.Available() {
+		panic(errInvalidID)
+	}
+
 	if i == Identifier(0) || i >= maxID {
 		return nil, errInvalidID
 	}
@@ -97,6 +92,10 @@ func (i Identifier) MakeDST(app, version string) ([]byte, error) {
 
 // String returns the hash-to-curve string identifier of the ciphersuite.
 func (i Identifier) String() string {
+	if !i.Available() {
+		panic(errInvalidID)
+	}
+
 	if i == Identifier(0) || i >= maxID {
 		panic(errInvalidID)
 	}
@@ -122,9 +121,9 @@ func (i Identifier) register(identifier H2C.SuiteID, g newGroup) {
 	}
 }
 
-func newRistretto(identifier hash.Identifier) newGroup {
+func newRistretto(_ hash.Identifier) newGroup {
 	return func() group.Group {
-		return ristretto.New(identifier)
+		return nil
 	}
 }
 
@@ -146,4 +145,104 @@ func init() {
 	Curve448Sha512.register(newCurve(H2C.Curve448_XMDSHA512_ELL2_RO_))
 	Edwards448Sha512.register(newCurve(H2C.Edwards448_XMDSHA512_ELL2_RO_))
 	Secp256k1Sha256.register(newCurve(H2C.Secp256k1_XMDSHA256_SSWU_RO_))
+}
+
+/*
+
+ */
+
+func (i Identifier) NewScalar() group.Scalar {
+	if !i.Available() {
+		panic(errInvalidID)
+	}
+
+	if i == Ristretto255Sha512 {
+		return ristretto.NewScalar()
+	}
+
+	return registered[i].newGroup().NewScalar()
+}
+
+func (i Identifier) NewElement() group.Element {
+	if !i.Available() {
+		panic(errInvalidID)
+	}
+
+	if i == Ristretto255Sha512 {
+		return ristretto.NewElement()
+	}
+
+	return registered[i].newGroup().NewElement()
+}
+
+func (i Identifier) ElementLength() int {
+	if !i.Available() {
+		panic(errInvalidID)
+	}
+
+	if i == Ristretto255Sha512 {
+		return ristretto.ElementLength()
+	}
+
+	return registered[i].newGroup().ElementLength()
+}
+
+func (i Identifier) Identity() group.Element {
+	if !i.Available() {
+		panic(errInvalidID)
+	}
+
+	if i == Ristretto255Sha512 {
+		return ristretto.Identity()
+	}
+
+	return registered[i].newGroup().Identity()
+}
+
+func (i Identifier) HashToGroup(input, dst []byte) group.Element {
+	if !i.Available() {
+		panic(errInvalidID)
+	}
+
+	if i == Ristretto255Sha512 {
+		return ristretto.HashToGroup(input, dst)
+	}
+
+	return registered[i].newGroup().HashToGroup(input, dst)
+}
+
+func (i Identifier) HashToScalar(input, dst []byte) group.Scalar {
+	if !i.Available() {
+		panic(errInvalidID)
+	}
+
+	if i == Ristretto255Sha512 {
+		return ristretto.HashToScalar(input, dst)
+	}
+
+	return registered[i].newGroup().HashToScalar(input, dst)
+}
+
+func (i Identifier) Base() group.Element {
+	if !i.Available() {
+		panic(errInvalidID)
+	}
+
+	if i == Ristretto255Sha512 {
+		return ristretto.Base()
+	}
+
+	return registered[i].newGroup().Base()
+}
+
+func (i Identifier) MultBytes(scalar, element []byte) (group.Element, error) {
+	if !i.Available() {
+		panic(errInvalidID)
+	}
+
+	if i == Ristretto255Sha512 {
+		return ristretto.MultBytes(scalar, element)
+	}
+
+	return registered[i].newGroup().MultBytes(scalar, element)
 }

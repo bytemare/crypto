@@ -34,7 +34,4 @@ type Group interface {
 
 	// MultBytes allows []byte encodings of a scalar and an element of the Group to be multiplied.
 	MultBytes(scalar, element []byte) (Element, error)
-
-	// DST returns the domain separation tag the group has been instantiated with.
-	//DST() string
 }

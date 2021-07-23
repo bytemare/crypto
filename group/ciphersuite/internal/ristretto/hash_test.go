@@ -7,7 +7,6 @@ import (
 	"log"
 	"testing"
 
-	"github.com/bytemare/cryptotools/hash"
 	"github.com/gtank/ristretto255"
 )
 
@@ -44,8 +43,8 @@ func (h *h2gTest) decode() (*h2gTestBytes, error) {
 }
 
 var h2gTests = []h2gTest{
-	{x: "68656c6c6f", dst: "564f50524630362d48617368546f47726f75702d000001", p: "3094c4bd26db854b9290c37b5846b22e7019a7a82f3166f674a2e27cac691f22"},
-	{x: "776f726c64", dst: "564f50524630362d48617368546f47726f75702d000001", p: "a809b4a6789366a8cb052e6a878c3b903efdfa555291433c41b944dec5c62b61"},
+	{x: "68656c6c6f", dst: "564f50524630362d48617368546f47726f75702d000001", p: "723c88cc59988d39889aa607b6696d423e7718a36d4825e0f940b3c3a534396a"},
+	{x: "776f726c64", dst: "564f50524630362d48617368546f47726f75702d000001", p: "a47c0a13c42a26ab06e60d2e251ba591334a289f4fdfe3b17ed3321a9527f44c"},
 }
 
 func TestRistretto_HashToGroup(t *testing.T) {
@@ -56,9 +55,7 @@ func TestRistretto_HashToGroup(t *testing.T) {
 				t.Fatalf("%d : %v", i, err)
 			}
 
-			r := New(hash.SHA256)
-
-			e := r.HashToGroup(v.x, v.dst)
+			e := HashToGroup(v.x, v.dst)
 
 			if !bytes.Equal(e.Bytes(), v.p) {
 				t.Fatalf("Mappings do not match.\n\tExpected: %v\n\tActual: %v\n", hex.EncodeToString(v.p), hex.EncodeToString(e.Bytes()))
@@ -84,17 +81,9 @@ func decodeHex(in string) []byte {
 }
 
 func TestMult(t *testing.T) {
-	// in := decodeHex(input)
-	// d := decodeHex(dstTest)
 	e := decodeHex(element)
 	b := decodeHex(blind)
 	exp := decodeHex(expectedBlinded)
-
-	//r := New(hash.SHA512, d)
-	//e := r.HashToGroup(in).Bytes()
-	//
-	//h := hex.EncodeToString(e)
-	//log.Printf("Element : %v (%d)\n%v (%d)\n", e, len(e), h, len(h))
 
 	p := ristretto255.NewElement()
 	if err := p.Decode(e); err != nil {

@@ -11,7 +11,6 @@ import (
 
 // Element implements the Element interface for the Ristretto255 group element.
 type Element struct {
-	//*h2r.HashToRistretto
 	element *ristretto255.Element
 }
 
@@ -26,10 +25,7 @@ func (e *Element) Add(element group.Element) group.Element {
 		panic(errCastElement)
 	}
 
-	return &Element{
-		//HashToRistretto: e.HashToRistretto,
-		element:         ristretto255.NewElement().Add(e.element, ele.element),
-	}
+	return &Element{ristretto255.NewElement().Add(e.element, ele.element)}
 }
 
 // Sub subtracts the argument from the receiver, sets the receiver to the result and returns it.
@@ -43,10 +39,7 @@ func (e *Element) Sub(element group.Element) group.Element {
 		panic(errCastElement)
 	}
 
-	return &Element{
-		//HashToRistretto: e.HashToRistretto,
-		element:         ristretto255.NewElement().Subtract(e.element, ele.element),
-	}
+	return &Element{ristretto255.NewElement().Subtract(e.element, ele.element)}
 }
 
 // Mult returns the scalar multiplication of the receiver element with the given scalar.
@@ -60,10 +53,7 @@ func (e *Element) Mult(s group.Scalar) group.Element {
 		panic(errCastElement)
 	}
 
-	return &Element{
-		//HashToRistretto: e.HashToRistretto,
-		element:         ristretto255.NewElement().ScalarMult(sc.Scalar, e.element),
-	}
+	return &Element{ristretto255.NewElement().ScalarMult(sc.Scalar, e.element)}
 }
 
 // InvertMult returns the scalar multiplication of the receiver element with the inverse of the given scalar.
@@ -88,10 +78,7 @@ func (e *Element) Copy() group.Element {
 		panic(err)
 	}
 
-	return &Element{
-		//HashToRistretto: e.HashToRistretto,
-		element:         n,
-	}
+	return &Element{element: n}
 }
 
 // Decode decodes the input an sets the current element to its value, and returns it.

@@ -16,6 +16,7 @@ import (
 // Point implements the Element interface for Hash-to-Curve points.
 type Point struct {
 	*Hash2Curve
+	*curve
 	point C.Point
 }
 
@@ -32,7 +33,8 @@ func (p *Point) Add(element group.Element) group.Element {
 
 	return &Point{
 		Hash2Curve: p.Hash2Curve,
-		point:      p.GetCurve().Add(p.point, po.point),
+		curve:      p.curve,
+		point:      p.curve.Add(p.point, po.point),
 	}
 }
 
@@ -49,7 +51,8 @@ func (p *Point) Sub(element group.Element) group.Element {
 
 	return &Point{
 		Hash2Curve: p.Hash2Curve,
-		point:      p.GetCurve().Add(p.point, p.GetCurve().Neg(pt.point)),
+		curve:      p.curve,
+		point:      p.curve.Add(p.point, p.Neg(pt.point)),
 	}
 }
 
@@ -60,13 +63,16 @@ func (p *Point) Mult(scalar group.Scalar) group.Element {
 		panic("could not cast to hash2curve scalar")
 	}
 
-	if !p.GetHashToScalar().GetScalarField().IsEqual(sc.f) {
+	h2 := getH2C(p.suite, nil)
+
+	if !h2.GetHashToScalar().GetScalarField().IsEqual(sc.f) {
 		panic("cannot multiply with scalar from a different field")
 	}
 
 	return &Point{
 		Hash2Curve: p.Hash2Curve,
-		point:      p.GetCurve().ScalarMult(p.point, sc.s.Polynomial()[0]),
+		curve:      p.curve,
+		point:      p.ScalarMult(p.point, sc.s.Polynomial()[0]),
 	}
 }
 
@@ -88,6 +94,7 @@ func (p *Point) IsIdentity() bool {
 func (p *Point) Copy() group.Element {
 	return &Point{
 		Hash2Curve: p.Hash2Curve,
+		curve:      p.curve,
 		point:      p.point.Copy(),
 	}
 }
@@ -101,7 +108,7 @@ func (p *Point) Bytes() []byte {
 		return encodeEd25519(x, y)
 	}
 
-	return encodeSignPrefix(x, y, pointLen(p.GetCurve().Field().BitLen()))
+	return encodeSignPrefix(x, y, pointLen(p.Field().BitLen()))
 }
 
 // Decode decodes the input an sets the current element to its value, and returns it.
@@ -133,14 +140,14 @@ func (p *Point) Decode(input []byte) (e group.Element, err error) {
 	}
 
 	// Extract x
-	x, err := getX(p.GetCurve().Field(), input)
+	x, err := getX(p.Field(), input)
 	if err != nil {
 		return nil, err
 	}
 
 	// Compute y^2
 	y := p.solver(x)
-	y.ModSqrt(y, p.GetCurve().Field().Order())
+	y.ModSqrt(y, p.Field().Order())
 
 	if y == nil {
 		return nil, errParamYNotSquare
@@ -148,11 +155,11 @@ func (p *Point) Decode(input []byte) (e group.Element, err error) {
 
 	// Set the sign
 	if byte(y.Bit(0)) != input[0]&1 {
-		y.Neg(y).Mod(y, p.GetCurve().Field().Order())
+		y.Neg(y).Mod(y, p.Field().Order())
 	}
 
 	// Verify the point is on curve
-	if err := isOnCurve(x, y, p.GetCurve().Field().Order(), p.solver); err != nil {
+	if err := isOnCurve(x, y, p.Field().Order(), p.solver); err != nil {
 		return nil, err
 	}
 
@@ -170,10 +177,10 @@ func (p *Point) set(x, y *big.Int) (err error) {
 		}
 	}()
 
-	X := p.GetCurve().Field().Elt(x)
-	Y := p.GetCurve().Field().Elt(y)
+	X := p.Field().Elt(x)
+	Y := p.Field().Elt(y)
 
-	p.point = p.GetCurve().NewPoint(X, Y)
+	p.point = p.NewPoint(X, Y)
 
 	return err
 }

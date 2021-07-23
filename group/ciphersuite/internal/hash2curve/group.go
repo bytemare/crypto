@@ -9,9 +9,6 @@ import (
 // Hash2Curve implements the Group interface to Hash-to-Curve primitives.
 type Hash2Curve struct {
 	suite h2c.SuiteID
-	h2c.HashToPoint
-	*curve
-	//dst []byte
 }
 
 // New returns a pointer to a Hash2Curve structure instantiated for the given Hash-to-Curve identifier.
@@ -26,84 +23,81 @@ func New(id h2c.SuiteID) *Hash2Curve {
 		panic(errParamNotRandomOracle)
 	}
 
-	return &Hash2Curve{id, h, curves[id].New(h.GetCurve())}
+	return &Hash2Curve{id}
 }
 
 // NewScalar returns a new, empty, scalar.
 func (h *Hash2Curve) NewScalar() group.Scalar {
-	return scalar(h.GetHashToScalar().GetScalarField())
+	h2 := getH2C(h.suite, nil)
+
+	return scalar(h2.GetHashToScalar().GetScalarField())
 }
 
 // ElementLength returns the byte size of an encoded element.
 func (h *Hash2Curve) ElementLength() int {
-	return pointLen(h.GetCurve().Field().BitLen())
+	h2 := getH2C(h.suite, nil)
+
+	return pointLen(h2.GetCurve().Field().BitLen())
 }
 
 // NewElement returns a new, empty, element.
 func (h *Hash2Curve) NewElement() group.Element {
+	h2 := getH2C(h.suite, nil)
+
 	return &Point{
 		Hash2Curve: h,
-		point:      h.base,
+		curve:      GetCurve(h.suite),
+		point:      curves[h.suite].New(h2.GetCurve()).base,
 	}
 }
 
 // Identity returns the group's identity element.
 func (h *Hash2Curve) Identity() group.Element {
+	h2 := getH2C(h.suite, nil)
+
 	return &Point{
 		Hash2Curve: h,
-		point:      h.GetCurve().Identity(),
+		curve:      GetCurve(h.suite),
+		point:      h2.GetCurve().Identity(),
 	}
+}
+
+func getH2C(id h2c.SuiteID, dst []byte) h2c.HashToPoint {
+	h, err := id.Get(dst)
+	if err != nil {
+		panic(err)
+	}
+
+	if !h.IsRandomOracle() {
+		panic(errParamNotRandomOracle)
+	}
+
+	return h
+}
+
+func GetCurve(id h2c.SuiteID) *curve {
+	h2 := getH2C(id, nil)
+	return curves[id].New(h2.GetCurve())
 }
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
 func (h *Hash2Curve) HashToGroup(input, dst []byte) group.Element {
-	var htp *Hash2Curve
-	if dst == nil {
-		htp = h
-	} else {
-		h2, err := h.suite.Get(dst)
-		if err != nil {
-			panic(err)
-		}
-
-		if !h2.IsRandomOracle() {
-			panic(errParamNotRandomOracle)
-		}
-
-		htp = &Hash2Curve{h.suite, h2, curves[h.suite].New(h2.GetCurve())}
-	}
-
-	htp.checkDSTLen()
+	h2 := getH2C(h.suite, dst)
 
 	return &Point{
-		Hash2Curve: htp,
-		point:      htp.Hash(input),
+		Hash2Curve: h,
+		curve:      GetCurve(h.suite),
+		point:      h2.Hash(input),
 	}
 }
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.
 func (h *Hash2Curve) HashToScalar(input, dst []byte) group.Scalar {
-	var htp *Hash2Curve
-	if dst == nil {
-		htp = h
-	} else {
-		h2, err := h.suite.Get(dst)
-		if err != nil {
-			panic(err)
-		}
-
-		if !h2.IsRandomOracle() {
-			panic(errParamNotRandomOracle)
-		}
-
-		htp = &Hash2Curve{h.suite, h2, curves[h.suite].New(h2.GetCurve())}
-	}
-
-	htp.checkDSTLen()
+	h2 := getH2C(h.suite, dst)
 
 	return &Scalar{
-		s: htp.GetHashToScalar().Hash(input),
-		f: htp.GetHashToScalar().GetScalarField(),
+		s: h2.GetHashToScalar().Hash(input),
+		f: h2.GetHashToScalar().GetScalarField(),
 	}
 }
 
@@ -127,18 +121,13 @@ func (h *Hash2Curve) MultBytes(scalar, element []byte) (group.Element, error) {
 	return e.Mult(s), nil
 }
 
-// DST returns the domain separation tag the group has been instantiated with.
-//func (h *Hash2Curve) DST() string {
-//	return string(h.dst)
-//}
-
 func (h *Hash2Curve) checkDSTLen() {
 	// todo bring this back after testing
 	//if len(h.dst) < group.DstRecommendedMinLength {
 	//	if len(h.dst) == group.DstMinLength {
 	//		panic(errParamZeroLenDST)
 	//	}
-//
+	//
 	//	panic(errParamShortDST)
 	//}
 }

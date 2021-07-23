@@ -103,7 +103,7 @@ func (s *set) run(t *testing.T) {
 				t.Fatalf("%d : invalid msg prime.", i)
 			}
 
-			x := h.Expand(v.msg, dst, v.lenInBytes)
+			x := h.ExpandMessage(v.msg, dst, v.lenInBytes)
 			if !assert.Equal(t, v.uniformBytes, x) {
 				t.Fatalf("%d : invalid hash (length %d vs %d).", i, len(x), v.lenInBytes)
 			}
