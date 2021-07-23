@@ -22,6 +22,9 @@ const (
 	// Ristretto255Sha512 identifies the Ristretto255 group with SHA2-512 hash-to-group hashing.
 	Ristretto255Sha512 Identifier = 1 + iota
 
+	// decaf448 is not implemented.
+	decaf448
+
 	// P256Sha256 identifies a group over P256 with SHA2-512 hash-to-group hashing.
 	P256Sha256
 
