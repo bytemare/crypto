@@ -26,15 +26,12 @@ func (x *XOF) vetDST(dst []byte) []byte {
 		return dst
 	}
 
-	// If the tag length exceeds 255 bytes, compute a shorter tag by hashing it
-	ext := append([]byte(dstLongPrefix), dst...)
-
-	size := x.MinOutputSize()
-
+	// size := x.MinOutputSize()
 	k := x.SecurityLevel()
-	size = int(math.Ceil(float64(2 * k / 8)))
+	size := int(math.Ceil(float64(2 * k / 8)))
 
-	return x.Get().Hash(size, ext)
+	// If the tag length exceeds 255 bytes, compute a shorter tag by hashing it
+	return x.Get().Hash(size, []byte(dstLongPrefix), dst)
 }
 
 func (x *XOF) Identifier() hash.Identifier {

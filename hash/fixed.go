@@ -54,7 +54,7 @@ type fixedParams struct {
 
 var registeredHashing map[Hashing]*fixedParams
 
-// Get returns a pointer to an initialised Hash structure for the according has primitive.
+// Get returns a pointer to an initialized Hash structure for the according has primitive.
 func (i Hashing) Get() *Hash {
 	return &Hash{
 		Hashing: i,
@@ -133,7 +133,7 @@ type Hash struct {
 	hash hash.Hash
 }
 
-// Write implements io.Writer
+// Write implements io.Writer.
 func (h *Hash) Write(p []byte) (n int, err error) {
 	return h.hash.Write(p)
 }
@@ -167,7 +167,7 @@ func (h *Hash) Hmac(message, key []byte) []byte {
 	}
 
 	hm := hmac.New(h.f, key)
-	hm.Write(message)
+	_, _ = hm.Write(message)
 
 	return hm.Sum(nil)
 }

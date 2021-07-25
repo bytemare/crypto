@@ -46,7 +46,7 @@ type xofParams struct {
 
 var registeredXOF map[Extensible]*xofParams
 
-// Get returns a pointer to an initialised Hash structure for the according has primitive.
+// Get returns a pointer to an initialized Hash structure for the according has primitive.
 func (e Extensible) Get() *ExtensibleHash {
 	p := registeredXOF[e]
 	h := p.newHashFunc()
@@ -210,7 +210,7 @@ func (h *ExtensibleHash) Hash(size int, input ...[]byte) []byte {
 	return output
 }
 
-// Write implements io.Writer
+// Write implements io.Writer.
 func (h *ExtensibleHash) Write(p []byte) (n int, err error) {
 	return h.XOF.Write(p)
 }

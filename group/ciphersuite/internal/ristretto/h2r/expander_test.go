@@ -11,8 +11,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/bytemare/cryptotools/hash"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/bytemare/cryptotools/hash"
 )
 
 type vector struct {

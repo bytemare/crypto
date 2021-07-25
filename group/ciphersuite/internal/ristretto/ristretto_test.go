@@ -7,8 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bytemare/cryptotools/group/ciphersuite/internal/ristretto/h2r"
 	"github.com/gtank/ristretto255"
+
+	"github.com/bytemare/cryptotools/group/ciphersuite/internal/ristretto/h2r"
 
 	"github.com/stretchr/testify/assert"
 

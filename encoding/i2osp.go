@@ -48,7 +48,7 @@ func I2OSP(value, length int) []byte {
 	return out[:length]
 }
 
-// I2OSP Octet Stream to Integer Primitive on maximum 4 bytes / 32 bits.
+// OS2IP Octet Stream to Integer Primitive on maximum 4 bytes / 32 bits.
 func OS2IP(input []byte) int {
 	switch length := len(input); {
 	case length == 0:

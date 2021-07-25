@@ -50,10 +50,10 @@ const (
 	Secp256k1Sha256
 
 	// BLS12381G1Sha256 identifies a group over BLS12381G1 with SHA2-512 hash-to-group hashing.
-	// BLS12381G1Sha256
+	// BLS12381G1Sha256.
 
 	// BLS12381G2Sha256 identifies a group over BLS12381G2 with SHA2-512 hash-to-group hashing.
-	// BLS12381G2Sha256
+	// BLS12381G2Sha256.
 
 	maxID
 
@@ -150,10 +150,7 @@ func init() {
 	Secp256k1Sha256.register(newCurve(H2C.Secp256k1_XMDSHA256_SSWU_RO_))
 }
 
-/*
-
- */
-
+// NewScalar returns a new, empty, scalar.
 func (i Identifier) NewScalar() group.Scalar {
 	if !i.Available() {
 		panic(errInvalidID)
@@ -166,6 +163,7 @@ func (i Identifier) NewScalar() group.Scalar {
 	return registered[i].newGroup().NewScalar()
 }
 
+// NewElement returns a new, empty, element.
 func (i Identifier) NewElement() group.Element {
 	if !i.Available() {
 		panic(errInvalidID)
@@ -178,6 +176,7 @@ func (i Identifier) NewElement() group.Element {
 	return registered[i].newGroup().NewElement()
 }
 
+// ElementLength returns the byte size of an encoded element.
 func (i Identifier) ElementLength() int {
 	if !i.Available() {
 		panic(errInvalidID)
@@ -190,6 +189,7 @@ func (i Identifier) ElementLength() int {
 	return registered[i].newGroup().ElementLength()
 }
 
+// Identity returns the group's identity element.
 func (i Identifier) Identity() group.Element {
 	if !i.Available() {
 		panic(errInvalidID)
@@ -202,6 +202,7 @@ func (i Identifier) Identity() group.Element {
 	return registered[i].newGroup().Identity()
 }
 
+// HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
 func (i Identifier) HashToGroup(input, dst []byte) group.Element {
 	if !i.Available() {
 		panic(errInvalidID)
@@ -214,6 +215,7 @@ func (i Identifier) HashToGroup(input, dst []byte) group.Element {
 	return registered[i].newGroup().HashToGroup(input, dst)
 }
 
+// HashToScalar allows arbitrary input to be safely mapped to the field.
 func (i Identifier) HashToScalar(input, dst []byte) group.Scalar {
 	if !i.Available() {
 		panic(errInvalidID)
@@ -226,6 +228,7 @@ func (i Identifier) HashToScalar(input, dst []byte) group.Scalar {
 	return registered[i].newGroup().HashToScalar(input, dst)
 }
 
+// Base returns the group's base point a.k.a. canonical generator.
 func (i Identifier) Base() group.Element {
 	if !i.Available() {
 		panic(errInvalidID)
@@ -238,6 +241,7 @@ func (i Identifier) Base() group.Element {
 	return registered[i].newGroup().Base()
 }
 
+// MultBytes allows []byte encodings of a scalar and an element of the Group to be multiplied.
 func (i Identifier) MultBytes(scalar, element []byte) (group.Element, error) {
 	if !i.Available() {
 		panic(errInvalidID)

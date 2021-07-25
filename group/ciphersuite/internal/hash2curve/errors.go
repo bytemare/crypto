@@ -16,6 +16,6 @@ var (
 	errParamDecPoint          = internal.ParameterError("could not decode point")
 	errParamInvalidSize       = internal.ParameterError("invalid input size")
 	errParamInvalidFormat     = internal.ParameterError("invalid format (uncompressed)")
-	errParamZeroLenDST        = internal.ParameterError("zero-length DST")
-	errParamShortDST          = internal.ParameterError("DST is shorter than recommended length")
+	//errParamZeroLenDST        = internal.ParameterError("zero-length DST")
+	//errParamShortDST          = internal.ParameterError("DST is shorter than recommended length")
 )

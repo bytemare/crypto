@@ -2,9 +2,10 @@
 package ristretto
 
 import (
+	"github.com/gtank/ristretto255"
+
 	"github.com/bytemare/cryptotools/group"
 	"github.com/bytemare/cryptotools/group/ciphersuite/internal/ristretto/h2r"
-	"github.com/gtank/ristretto255"
 )
 
 const ristrettoInputLength = 64

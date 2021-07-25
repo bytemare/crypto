@@ -3,6 +3,7 @@ package hash2curve
 
 import (
 	"github.com/armfazh/h2c-go-ref"
+
 	"github.com/bytemare/cryptotools/group"
 )
 
@@ -46,7 +47,7 @@ func (h *Hash2Curve) NewElement() group.Element {
 
 	return &Point{
 		Hash2Curve: h,
-		curve:      GetCurve(h.suite),
+		curve:      getCurve(h.suite),
 		point:      curves[h.suite].New(h2.GetCurve()).base,
 	}
 }
@@ -57,7 +58,7 @@ func (h *Hash2Curve) Identity() group.Element {
 
 	return &Point{
 		Hash2Curve: h,
-		curve:      GetCurve(h.suite),
+		curve:      getCurve(h.suite),
 		point:      h2.GetCurve().Identity(),
 	}
 }
@@ -75,7 +76,7 @@ func getH2C(id h2c.SuiteID, dst []byte) h2c.HashToPoint {
 	return h
 }
 
-func GetCurve(id h2c.SuiteID) *curve {
+func getCurve(id h2c.SuiteID) *curve {
 	h2 := getH2C(id, nil)
 	return curves[id].New(h2.GetCurve())
 }
@@ -86,7 +87,7 @@ func (h *Hash2Curve) HashToGroup(input, dst []byte) group.Element {
 
 	return &Point{
 		Hash2Curve: h,
-		curve:      GetCurve(h.suite),
+		curve:      getCurve(h.suite),
 		point:      h2.Hash(input),
 	}
 }
@@ -121,13 +122,13 @@ func (h *Hash2Curve) MultBytes(scalar, element []byte) (group.Element, error) {
 	return e.Mult(s), nil
 }
 
-func (h *Hash2Curve) checkDSTLen() {
-	// todo bring this back after testing
-	//if len(h.dst) < group.DstRecommendedMinLength {
-	//	if len(h.dst) == group.DstMinLength {
-	//		panic(errParamZeroLenDST)
-	//	}
-	//
-	//	panic(errParamShortDST)
-	//}
-}
+// func (h *Hash2Curve) checkDSTLen() {
+// 	 // todo bring this back after testing
+// 	 if len(h.dst) < group.DstRecommendedMinLength {
+// 	 	if len(h.dst) == group.DstMinLength {
+// 	 		panic(errParamZeroLenDST)
+// 	 	}
+//
+// 	 	panic(errParamShortDST)
+// 	 }
+// }

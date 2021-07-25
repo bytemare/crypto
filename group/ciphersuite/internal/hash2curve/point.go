@@ -112,7 +112,7 @@ func (p *Point) Bytes() []byte {
 }
 
 // Decode decodes the input an sets the current element to its value, and returns it.
-func (p *Point) Decode(input []byte) (e group.Element, err error) {
+func (p *Point) Decode(input []byte) (group.Element, error) {
 	if p.id == Curve.P256 || p.id == Curve.P384 || p.id == Curve.P521 {
 		x, y := nist.UnmarshalCompressed(h2cToNist(p.id), input)
 		if x == nil {

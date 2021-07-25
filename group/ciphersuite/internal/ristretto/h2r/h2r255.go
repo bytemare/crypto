@@ -13,10 +13,10 @@ const (
 	dstLongPrefix = "H2C-OVERSIZE-DST-"
 )
 
-//var (
-//	errZeroLenDST = internal.ParameterError("zero-length DST")
-//	errShortDST   = internal.ParameterError("DST is shorter than recommended length")
-//)
+// var (
+// 	errZeroLenDST = internal.ParameterError("zero-length DST")
+// 	errShortDST   = internal.ParameterError("DST is shorter than recommended length")
+// )
 
 func New(id hash.Identifier) Expander {
 	if !id.Extensible() {
@@ -28,12 +28,12 @@ func New(id hash.Identifier) Expander {
 
 func ExpandMessage(input, dst []byte, length int) []byte {
 	// todo bring this back after testing
-	//if len(h.dst) < group.DstRecommendedMinLength {
-	//	if len(h.dst) == group.DstMinLength {
-	//		panic(errZeroLenDST)
-	//	}
-	//	panic(errShortDST)
-	//}
+	// if len(h.dst) < group.DstRecommendedMinLength {
+	// 	if len(h.dst) == group.DstMinLength {
+	// 		panic(errZeroLenDST)
+	// 	}
+	// 	panic(errShortDST)
+	// }
 	h := XMD{Hashing: hash.SHA512}
 	return h.ExpandMessage(input, dst, length)
 }

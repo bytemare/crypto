@@ -15,7 +15,6 @@ type parameters struct {
 	blockSize  int
 	outputSize int
 	security   int
-	id         Identifier
 	name       string
 }
 

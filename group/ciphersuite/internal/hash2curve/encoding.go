@@ -76,7 +76,7 @@ func isOnCurve(x, y, order *big.Int, solve solver) error {
 	return nil
 }
 
-// y^2 = x^3 + b
+// y^2 = x^3 + b.
 func solveKoblitz(x *big.Int) *big.Int {
 	var a int64 = 7
 
@@ -88,7 +88,7 @@ func solveKoblitz(x *big.Int) *big.Int {
 	return y.Mod(y, secp256k1order)
 }
 
-// y^2 = ( x^3 + A * x^2 + x ) / B, with B = 1
+// y^2 = ( x^3 + A * x^2 + x ) / B, with B = 1.
 func solveCurve448(x *big.Int) *big.Int {
 	x2 := new(big.Int).Mul(x, x)
 	x3 := new(big.Int).Mul(x2, x)
@@ -99,7 +99,7 @@ func solveCurve448(x *big.Int) *big.Int {
 	return y2.Mod(y2, curve448order)
 }
 
-// y^2 = ( x^3 + A * x^2 + x ) / B, with B = 1
+// y^2 = ( x^3 + A * x^2 + x ) / B, with B = 1.
 func solveCurve25519(x *big.Int) *big.Int {
 	x2 := new(big.Int).Mul(x, x)
 	x3 := new(big.Int).Mul(x2, x)
@@ -110,7 +110,7 @@ func solveCurve25519(x *big.Int) *big.Int {
 	return y2.Mod(y2, curve25519order)
 }
 
-// y^2 = ( 1 + x^2 ) / ( 1 − d * x^2 )
+// y^2 = ( 1 + x^2 ) / ( 1 − d * x^2 ).
 func solveEd25519Y(x *big.Int) *big.Int {
 	x2 := new(big.Int).Mul(x, x)
 	dx2 := new(big.Int).Mul(ed25519d, x2)
@@ -122,7 +122,7 @@ func solveEd25519Y(x *big.Int) *big.Int {
 	return y2.Mod(y2, ed25519order)
 }
 
-// x^2 = ( y^2 - 1 ) / ( 1 + d * y^2 )
+// x^2 = ( y^2 - 1 ) / ( 1 + d * y^2 ).
 func solveEd25519X(y *big.Int) *big.Int {
 	y2 := new(big.Int).Mul(y, y)
 	dy2 := new(big.Int).Mul(ed25519d, y2)
@@ -134,7 +134,7 @@ func solveEd25519X(y *big.Int) *big.Int {
 	return x2.Mod(x2, ed25519order)
 }
 
-// y^2 = ( 1 - x^2 ) / ( 1 − d * x^2 )
+// y^2 = ( 1 - x^2 ) / ( 1 − d * x^2 ).
 func solveEd448(x *big.Int) *big.Int {
 	x2 := new(big.Int).Mul(x, x)
 	dx2 := new(big.Int).Mul(ed448d, x2)

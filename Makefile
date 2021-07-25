@@ -9,6 +9,7 @@ lint:
 
 .PHONY: license
 license:
+
 	@echo "Checking License headers ..."
 	@addlicense -check -v -f .github/licence-header.tmpl *
 

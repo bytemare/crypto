@@ -108,7 +108,7 @@ func (s *Scalar) Decode(in []byte) (group.Scalar, error) {
 		return nil, errParamNilScalar
 	}
 
-	// todo: warning - SetBytes interprets the input as a non-signed integer
+	// warning - SetBytes interprets the input as a non-signed integer, so this will always be negative
 	e := new(big.Int).SetBytes(in)
 	if e.Sign() < 0 {
 		return nil, errParamNegScalar

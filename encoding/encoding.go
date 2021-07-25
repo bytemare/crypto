@@ -4,8 +4,9 @@ package encoding
 import (
 	"encoding/json"
 
-	"github.com/bytemare/cryptotools/internal"
 	"github.com/vmihailenco/msgpack/v5"
+
+	"github.com/bytemare/cryptotools/internal"
 )
 
 // Encoding identifies referenced encoding formats.
@@ -23,8 +24,6 @@ const (
 	MessagePack
 
 	maxID
-
-	// todo : add hex and protobuf.
 
 	// Default is the default encoding used when none specified.
 	Default = JSON
