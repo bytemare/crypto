@@ -75,6 +75,4 @@ jobs:
             -Dsonar.projectKey=bytemare_cryptotools
             -Dsonar.organization=bytemare-cryptotools
             -Dsonar.go.coverage.reportPaths=coverage.out
-            -Dsonar.test.exclusions=tests/**
-            -Dsonar.tests=tests/
             -Dsonar.verbose=true
