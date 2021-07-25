@@ -1,6 +1,6 @@
 module github.com/bytemare/cryptotools
 
-go 1.15
+go 1.16
 
 require (
 	github.com/armfazh/h2c-go-ref v0.0.0-20210215173008-07e12a6f8e0d

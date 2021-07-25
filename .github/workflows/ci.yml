@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        GOVER: [ '1.16', '1.15', '1.14' ]
+        GOVER: [ '1.16', '1.15' ]
 
     steps:
       - name: Checkout repo
