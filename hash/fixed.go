@@ -10,6 +10,7 @@
 package hash
 
 import (
+	"crypto"
 	"crypto/hmac"
 	"crypto/sha256"
 	"crypto/sha512"
@@ -22,22 +23,21 @@ import (
 )
 
 // Hashing defines registered fixed length hashing engines.
-type Hashing byte
+type Hashing uint
 
 const (
+
 	// SHA256 identifies the Sha2 hashing function with 256 bit output.
-	SHA256 Hashing = 1 + iota
+	SHA256 = Hashing(crypto.SHA256)
 
 	// SHA512 identifies the Sha2 hashing function with 512 bit output.
-	SHA512
+	SHA512 = Hashing(crypto.SHA512)
 
 	// SHA3_256 identifies the Sha3 hashing function with 256 bit output.
-	SHA3_256
+	SHA3_256 = Hashing(crypto.SHA3_256)
 
 	// SHA3_512 identifies the Sha3 hashing function with 512 bit output.
-	SHA3_512
-
-	maxHashing
+	SHA3_512 = Hashing(crypto.SHA3_512)
 
 	// string IDs for the hash functions.
 	sha256s   = "SHA256"
@@ -62,6 +62,21 @@ type fixedParams struct {
 
 var registeredHashing map[Hashing]*fixedParams
 
+// FromCrypto returns a Hashing identifier given a hash function defined in the built-in crypto, if it has been registered.
+func FromCrypto(h crypto.Hash) Hashing {
+	i := Hashing(h)
+	if i.Available() {
+		return i
+	} else {
+		return 0
+	}
+}
+
+// GetCryptoID returns the built-in crypto identifier corresponding the Hashing identifier.
+func (i Hashing) GetCryptoID() crypto.Hash {
+	return crypto.Hash(i)
+}
+
 // Get returns a pointer to an initialized Hash structure for the according has primitive.
 func (i Hashing) Get() *Hash {
 	return &Hash{
@@ -73,7 +88,8 @@ func (i Hashing) Get() *Hash {
 
 // Available reports whether the given hash function is linked into the binary.
 func (i Hashing) Available() bool {
-	return i < maxHashing && registeredHashing[i] != nil
+	_, ok := registeredHashing[i]
+	return ok
 }
 
 // BlockSize returns the hash's block size.

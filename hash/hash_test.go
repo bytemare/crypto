@@ -9,6 +9,7 @@
 package hash
 
 import (
+	"crypto"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -40,9 +41,43 @@ func TestAvailability(t *testing.T) {
 		}
 	}
 
-	wrong := maxHashing
+	wrong := Hashing(crypto.MD4)
 	if wrong.Available() {
 		t.Errorf("%v is considered available when it should not", wrong)
+	}
+}
+
+func TestID(t *testing.T) {
+	ids := []struct {
+		Hashing
+		crypto.Hash
+	}{
+		{
+			SHA256,
+			crypto.SHA256,
+		},
+		{
+			SHA512,
+			crypto.SHA512,
+		},
+		{
+			SHA3_256,
+			crypto.SHA3_256,
+		},
+		{
+			SHA3_512,
+			crypto.SHA3_512,
+		},
+	}
+
+	for _, id := range ids {
+		if id.Hash != id.Hashing.GetCryptoID() {
+			t.Fatalf("GetCryptoID match error: %q vs. %q", id.Hash, id.Hashing.GetCryptoID())
+		}
+
+		if id.Hashing != FromCrypto(id.Hash) {
+			t.Fatalf("FromCrypto matching error: %q vs. %q", id.Hashing, FromCrypto(id.Hash))
+		}
 	}
 }
 

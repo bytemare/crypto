@@ -7,7 +7,7 @@
 // https://spdx.org/licenses/MIT.html
 
 // Package h2r provides hash-to-curve compatible hashing or arbitrary input into the Ristretto255 group.
-package h2r
+package expand
 
 import (
 	"github.com/bytemare/cryptotools/encoding"
@@ -34,7 +34,7 @@ func New(id hash.Identifier) Expander {
 	return &XOF{id.(hash.Extensible)}
 }
 
-func ExpandMessage(input, dst []byte, length int) []byte {
+func ExpandMessage(id hash.Identifier, input, dst []byte, length int) []byte {
 	// todo bring this back after testing
 	// if len(h.dst) < group.DstRecommendedMinLength {
 	// 	if len(h.dst) == group.DstMinLength {
@@ -42,14 +42,13 @@ func ExpandMessage(input, dst []byte, length int) []byte {
 	// 	}
 	// 	panic(errShortDST)
 	// }
-	h := XMD{Hashing: hash.SHA512}
-	return h.ExpandMessage(input, dst, length)
+	//h := XMD{Hashing: hash.SHA512}
+	return New(id).ExpandMessage(input, dst, length)
 }
 
 type Expander interface {
 	ExpandMessage(input, dst []byte, length int) []byte
 	vetDST(dst []byte) []byte
-	Identifier() hash.Identifier
 }
 
 func msgPrime(h hash.Identifier, input, dst []byte, length int) []byte {
