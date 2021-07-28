@@ -11,6 +11,7 @@ package ristretto
 
 import (
 	"fmt"
+	"github.com/bytemare/cryptotools/group/ciphersuite/internal"
 
 	"github.com/gtank/ristretto255"
 
@@ -25,12 +26,12 @@ type Element struct {
 // Add adds the argument to the receiver, sets the receiver to the result and returns it.
 func (e *Element) Add(element group.Element) group.Element {
 	if element == nil {
-		panic(errParamNilPoint)
+		panic(internal.ErrParamNilPoint)
 	}
 
 	ele, ok := element.(*Element)
 	if !ok {
-		panic(errCastElement)
+		panic(internal.ErrCastElement)
 	}
 
 	return &Element{ristretto255.NewElement().Add(e.element, ele.element)}
@@ -39,38 +40,38 @@ func (e *Element) Add(element group.Element) group.Element {
 // Sub subtracts the argument from the receiver, sets the receiver to the result and returns it.
 func (e *Element) Sub(element group.Element) group.Element {
 	if element == nil {
-		panic(errParamNilPoint)
+		panic(internal.ErrParamNilPoint)
 	}
 
 	ele, ok := element.(*Element)
 	if !ok {
-		panic(errCastElement)
+		panic(internal.ErrCastElement)
 	}
 
 	return &Element{ristretto255.NewElement().Subtract(e.element, ele.element)}
 }
 
 // Mult returns the scalar multiplication of the receiver element with the given scalar.
-func (e *Element) Mult(s group.Scalar) group.Element {
-	if s == nil {
-		panic(errParamNilScalar)
+func (e *Element) Mult(scalar group.Scalar) group.Element {
+	if scalar == nil {
+		panic(internal.ErrParamNilScalar)
 	}
 
-	sc, ok := s.(*Scalar)
+	sc, ok := scalar.(*Scalar)
 	if !ok {
-		panic(errCastElement)
+		panic(internal.ErrCastElement)
 	}
 
-	return &Element{ristretto255.NewElement().ScalarMult(sc.Scalar, e.element)}
+	return &Element{ristretto255.NewElement().ScalarMult(sc.scalar, e.element)}
 }
 
 // InvertMult returns the scalar multiplication of the receiver element with the inverse of the given scalar.
-func (e *Element) InvertMult(s group.Scalar) group.Element {
-	if s == nil {
-		panic(errParamNilScalar)
+func (e *Element) InvertMult(scalar group.Scalar) group.Element {
+	if scalar == nil {
+		panic(internal.ErrParamNilScalar)
 	}
 
-	return e.Mult(s.Invert())
+	return e.Mult(scalar.Invert())
 }
 
 // IsIdentity returns whether the element is the group's identity element.
@@ -114,7 +115,7 @@ func (e *Element) Base() group.Element {
 
 func decodeElement(element []byte) (*ristretto255.Element, error) {
 	if len(element) == 0 {
-		return nil, errParamNilPoint
+		return nil, internal.ErrParamNilPoint
 	}
 
 	e := ristretto255.NewElement()

@@ -10,13 +10,17 @@
 package ristretto
 
 import (
+	"github.com/bytemare/cryptotools/hash"
+	"github.com/bytemare/hash2curve"
 	"github.com/gtank/ristretto255"
 
 	"github.com/bytemare/cryptotools/group"
-	"github.com/bytemare/cryptotools/group/ciphersuite/internal/ristretto/h2r"
 )
 
-const ristrettoInputLength = 64
+const (
+	ristrettoInputLength = 64
+	String = "ristretto255_XMD:SHA-512_R255MAP_RO_"
+)
 
 // NewScalar returns a new, empty, scalar.
 func NewScalar() group.Scalar {
@@ -40,14 +44,14 @@ func Identity() group.Element {
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the group.
 func HashToGroup(input, dst []byte) group.Element {
-	uniform := h2r.ExpandMessage(input, dst, ristrettoInputLength)
+	uniform := hash2curve.ExpandMessage(hash.SHA512, input, dst, ristrettoInputLength)
 
 	return &Element{ristretto255.NewElement().FromUniformBytes(uniform)}
 }
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.
 func HashToScalar(input, dst []byte) group.Scalar {
-	uniform := h2r.ExpandMessage(input, dst, ristrettoInputLength)
+	uniform := hash2curve.ExpandMessage(hash.SHA512, input, dst, ristrettoInputLength)
 
 	return &Scalar{ristretto255.NewScalar().FromUniformBytes(uniform)}
 }

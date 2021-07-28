@@ -32,8 +32,8 @@ var (
 	curve25519order = C.Curve25519.Get().Field().Order()
 	ed448d          = new(big.Int)
 	ed448order      = C.Edwards448.Get().Field().Order()
-	ed25519d        = new(big.Int)
-	ed25519order    = C.Edwards25519.Get().Field().Order()
+	//ed25519d        = new(big.Int)
+	//ed25519order    = C.Edwards25519.Get().Field().Order()
 	secp256k1order  = C.SECP256K1.Get().Field().Order()
 )
 
@@ -50,9 +50,9 @@ func init() {
 		panic("setting value failed")
 	}
 
-	if _, ok := ed25519d.SetString("0x52036cee2b6ffe738cc740797779e89800700a4d4141d8ab75eb4dca135978a3", 0); !ok {
-		panic("setting value failed")
-	}
+	//if _, ok := ed25519d.SetString("0x52036cee2b6ffe738cc740797779e89800700a4d4141d8ab75eb4dca135978a3", 0); !ok {
+	//	panic("setting value failed")
+	//}
 }
 
 func point(curve Curve.EllCurve, x, y string) Curve.Point {
@@ -117,12 +117,12 @@ var curves = map[H2C.SuiteID]*params{
 		"0x9",
 		"0x20ae19a1b8a086b4e01edd2c7748d14c923d4d7e6d7c61b229e9c5a27eced3d9",
 	},
-	H2C.Edwards25519_XMDSHA512_ELL2_RO_: {
-		C.Edwards25519,
-		solveEd25519Y,
-		"0x216936D3CD6E53FEC0A4E231FDD6DC5C692CC7609525A7B2C9562D608F25D51A",
-		"0x6666666666666666666666666666666666666666666666666666666666666658",
-	},
+	//H2C.Edwards25519_XMDSHA512_ELL2_RO_: {
+	//	C.Edwards25519,
+	//	solveEd25519Y,
+	//	"0x216936D3CD6E53FEC0A4E231FDD6DC5C692CC7609525A7B2C9562D608F25D51A",
+	//	"0x6666666666666666666666666666666666666666666666666666666666666658",
+	//},
 	H2C.Curve448_XMDSHA512_ELL2_RO_: {
 		C.Curve448,
 		solveCurve448,

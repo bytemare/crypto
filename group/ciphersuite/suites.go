@@ -12,6 +12,7 @@ package ciphersuite
 
 import (
 	"fmt"
+	"github.com/bytemare/cryptotools/group/ciphersuite/internal/ed25519"
 
 	"github.com/bytemare/cryptotools/internal"
 
@@ -138,6 +139,12 @@ func newRistretto(_ hash.Identifier) newGroup {
 	}
 }
 
+func new25519(_ hash.Identifier) newGroup {
+	return func() group.Group {
+		return nil
+	}
+}
+
 func newCurve(id H2C.SuiteID) (H2C.SuiteID, newGroup) {
 	return id, func() group.Group {
 		return hash2curve.New(id)
@@ -147,12 +154,12 @@ func newCurve(id H2C.SuiteID) (H2C.SuiteID, newGroup) {
 func init() {
 	registered = make(map[Identifier]*params)
 
-	Ristretto255Sha512.register("ristretto255_XMD:SHA-512_R255MAP_RO_", newRistretto(hash.SHA512))
+	Ristretto255Sha512.register(ristretto.String, newRistretto(hash.SHA512))
 	P256Sha256.register(newCurve(H2C.P256_XMDSHA256_SSWU_RO_))
 	P384Sha512.register(newCurve(H2C.P384_XMDSHA512_SSWU_RO_))
 	P521Sha512.register(newCurve(H2C.P521_XMDSHA512_SSWU_RO_))
 	Curve25519Sha512.register(newCurve(H2C.Curve25519_XMDSHA512_ELL2_RO_))
-	Edwards25519Sha512.register(newCurve(H2C.Edwards25519_XMDSHA512_ELL2_RO_))
+	Edwards25519Sha512.register(ed25519.String, new25519(hash.SHA512))
 	Curve448Sha512.register(newCurve(H2C.Curve448_XMDSHA512_ELL2_RO_))
 	Edwards448Sha512.register(newCurve(H2C.Edwards448_XMDSHA512_ELL2_RO_))
 	Secp256k1Sha256.register(newCurve(H2C.Secp256k1_XMDSHA256_SSWU_RO_))
@@ -164,11 +171,14 @@ func (i Identifier) NewScalar() group.Scalar {
 		panic(errInvalidID)
 	}
 
-	if i == Ristretto255Sha512 {
+	switch i {
+	case Ristretto255Sha512:
 		return ristretto.NewScalar()
+	case Edwards25519Sha512:
+		return ed25519.NewScalar()
+	default:
+		return registered[i].newGroup().NewScalar()
 	}
-
-	return registered[i].newGroup().NewScalar()
 }
 
 // NewElement returns a new, empty, element.
@@ -177,11 +187,14 @@ func (i Identifier) NewElement() group.Element {
 		panic(errInvalidID)
 	}
 
-	if i == Ristretto255Sha512 {
+	switch i {
+	case Ristretto255Sha512:
 		return ristretto.NewElement()
+	case Edwards25519Sha512:
+		return ed25519.NewElement()
+	default:
+		return registered[i].newGroup().NewElement()
 	}
-
-	return registered[i].newGroup().NewElement()
 }
 
 // ElementLength returns the byte size of an encoded element.
@@ -190,11 +203,14 @@ func (i Identifier) ElementLength() int {
 		panic(errInvalidID)
 	}
 
-	if i == Ristretto255Sha512 {
+	switch i {
+	case Ristretto255Sha512:
 		return ristretto.ElementLength()
+	case Edwards25519Sha512:
+		return ed25519.ElementLength()
+	default:
+		return registered[i].newGroup().ElementLength()
 	}
-
-	return registered[i].newGroup().ElementLength()
 }
 
 // Identity returns the group's identity element.
@@ -203,11 +219,14 @@ func (i Identifier) Identity() group.Element {
 		panic(errInvalidID)
 	}
 
-	if i == Ristretto255Sha512 {
+	switch i {
+	case Ristretto255Sha512:
 		return ristretto.Identity()
+	case Edwards25519Sha512:
+		return ed25519.Identity()
+	default:
+		return registered[i].newGroup().Identity()
 	}
-
-	return registered[i].newGroup().Identity()
 }
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
@@ -216,11 +235,14 @@ func (i Identifier) HashToGroup(input, dst []byte) group.Element {
 		panic(errInvalidID)
 	}
 
-	if i == Ristretto255Sha512 {
+	switch i {
+	case Ristretto255Sha512:
 		return ristretto.HashToGroup(input, dst)
+	case Edwards25519Sha512:
+		return ed25519.HashToGroup(input, dst)
+	default:
+		return registered[i].newGroup().HashToGroup(input, dst)
 	}
-
-	return registered[i].newGroup().HashToGroup(input, dst)
 }
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.
@@ -229,11 +251,14 @@ func (i Identifier) HashToScalar(input, dst []byte) group.Scalar {
 		panic(errInvalidID)
 	}
 
-	if i == Ristretto255Sha512 {
+	switch i {
+	case Ristretto255Sha512:
 		return ristretto.HashToScalar(input, dst)
+	case Edwards25519Sha512:
+		return ed25519.HashToScalar(input, dst)
+	default:
+		return registered[i].newGroup().HashToScalar(input, dst)
 	}
-
-	return registered[i].newGroup().HashToScalar(input, dst)
 }
 
 // Base returns the group's base point a.k.a. canonical generator.
@@ -242,11 +267,14 @@ func (i Identifier) Base() group.Element {
 		panic(errInvalidID)
 	}
 
-	if i == Ristretto255Sha512 {
+	switch i {
+	case Ristretto255Sha512:
 		return ristretto.Base()
+	case Edwards25519Sha512:
+		return ed25519.Base()
+	default:
+		return registered[i].newGroup().Base()
 	}
-
-	return registered[i].newGroup().Base()
 }
 
 // MultBytes allows []byte encodings of a scalar and an element of the Group to be multiplied.
@@ -255,9 +283,12 @@ func (i Identifier) MultBytes(scalar, element []byte) (group.Element, error) {
 		panic(errInvalidID)
 	}
 
-	if i == Ristretto255Sha512 {
+	switch i {
+	case Ristretto255Sha512:
 		return ristretto.MultBytes(scalar, element)
+	case Edwards25519Sha512:
+		return ed25519.MultBytes(scalar, element)
+	default:
+		return registered[i].newGroup().MultBytes(scalar, element)
 	}
-
-	return registered[i].newGroup().MultBytes(scalar, element)
 }

@@ -134,18 +134,18 @@ func (p *Point) Decode(input []byte) (group.Element, error) {
 		return p, nil
 	}
 
-	if p.id == Curve.Edwards25519 {
-		x, y, err := decodeEd25519(input)
-		if err != nil {
-			return nil, err
-		}
-
-		if err := p.set(x, y); err != nil {
-			return nil, err
-		}
-
-		return p, nil
-	}
+	//if p.id == Curve.Edwards25519 {
+	//	x, y, err := decodeEd25519(input)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//
+	//	if err := p.set(x, y); err != nil {
+	//		return nil, err
+	//	}
+	//
+	//	return p, nil
+	//}
 
 	// Extract x
 	x, err := getX(p.Field(), input)
