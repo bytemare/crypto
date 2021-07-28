@@ -15,9 +15,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gtank/ristretto255"
+	"github.com/bytemare/hash2curve"
 
-	"github.com/bytemare/cryptotools/group/ciphersuite/internal/ristretto/h2r"
+	"github.com/gtank/ristretto255"
 
 	"github.com/stretchr/testify/assert"
 
@@ -274,8 +274,7 @@ func TestElement(t *testing.T) {
 }
 
 func hash2group(input, dst []byte, id hash.Identifier) *Element {
-	h := h2r.New(id)
-	uniform := h.ExpandMessage(input, dst, ristrettoInputLength)
+	uniform := hash2curve.ExpandMessage(id, input, dst, ristrettoInputLength)
 
 	return &Element{
 		element: ristretto255.NewElement().FromUniformBytes(uniform),

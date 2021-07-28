@@ -36,40 +36,40 @@ func encodeEd25519(x, y *big.Int) []byte {
 	return out
 }
 
-func decodeEd25519(in []byte) (x, y *big.Int, err error) {
-	if len(in) != ed25519PointSize {
-		return nil, nil, errParamInvalidEd25519Enc
-	}
-
-	xsign := in[0] >> 7
-	mask := ^(1 << 7)
-	in[0] &= byte(mask)
-
-	// Get x
-	y = new(big.Int).SetBytes(in)
-	if y.Cmp(ed25519order) >= 0 {
-		return nil, nil, errParamDecXExceeds
-	}
-
-	// Compute x^2
-	x = solveEd25519X(y)
-	x.ModSqrt(x, ed25519order)
-
-	if y == nil {
-		return nil, nil, errParamXNotSquare
-	}
-
-	// Set the sign
-	if x.Bit(0) != uint(xsign) {
-		x.Neg(x).Mod(x, ed25519order)
-	}
-
-	if err := isOnCurve(x, y, ed25519order, solveEd25519Y); err != nil {
-		return nil, nil, err
-	}
-
-	return x, y, nil
-}
+//func decodeEd25519(in []byte) (x, y *big.Int, err error) {
+//	if len(in) != ed25519PointSize {
+//		return nil, nil, errParamInvalidEd25519Enc
+//	}
+//
+//	xsign := in[0] >> 7
+//	mask := ^(1 << 7)
+//	in[0] &= byte(mask)
+//
+//	// Get y
+//	y = new(big.Int).SetBytes(in)
+//	if y.Cmp(ed25519order) >= 0 {
+//		return nil, nil, errParamDecXExceeds
+//	}
+//
+//	// Compute x
+//	x = solveEd25519X(y)
+//	x.ModSqrt(x, ed25519order)
+//
+//	if x == nil {
+//		return nil, nil, errParamXNotSquare
+//	}
+//
+//	// Set the sign
+//	if x.Bit(0) != uint(xsign) {
+//		x.Neg(x).Mod(x, ed25519order)
+//	}
+//
+//	if err := isOnCurve(x, y, ed25519order, solveEd25519Y); err != nil {
+//		return nil, nil, err
+//	}
+//
+//	return x, y, nil
+//}
 
 type solver func(x *big.Int) *big.Int
 
@@ -118,29 +118,29 @@ func solveCurve25519(x *big.Int) *big.Int {
 	return y2.Mod(y2, curve25519order)
 }
 
-// y^2 = ( 1 + x^2 ) / ( 1 − d * x^2 ).
-func solveEd25519Y(x *big.Int) *big.Int {
-	x2 := new(big.Int).Mul(x, x)
-	dx2 := new(big.Int).Mul(ed25519d, x2)
-	x2.Add(big.NewInt(1), x2)
-	dx2.Sub(big.NewInt(1), dx2)
-	dx2.ModInverse(dx2, ed25519order)
-	y2 := new(big.Int).Mul(x2, dx2)
-
-	return y2.Mod(y2, ed25519order)
-}
+//// y^2 = ( 1 + x^2 ) / ( 1 − d * x^2 ).
+//func solveEd25519Y(x *big.Int) *big.Int {
+//	x2 := new(big.Int).Mul(x, x)
+//	dx2 := new(big.Int).Mul(ed25519d, x2)
+//	x2.Add(big.NewInt(1), x2)
+//	dx2.Sub(big.NewInt(1), dx2)
+//	dx2.ModInverse(dx2, ed25519order)
+//	y2 := new(big.Int).Mul(x2, dx2)
+//
+//	return y2.Mod(y2, ed25519order)
+//}
 
 // x^2 = ( y^2 - 1 ) / ( 1 + d * y^2 ).
-func solveEd25519X(y *big.Int) *big.Int {
-	y2 := new(big.Int).Mul(y, y)
-	dy2 := new(big.Int).Mul(ed25519d, y2)
-	dy2.Add(big.NewInt(1), dy2)
-	y2.Sub(y2, big.NewInt(1))
-	dy2.ModInverse(dy2, ed25519order)
-	x2 := new(big.Int).Mul(y2, dy2)
-
-	return x2.Mod(x2, ed25519order)
-}
+//func solveEd25519X(y *big.Int) *big.Int {
+//	y2 := new(big.Int).Mul(y, y)
+//	dy2 := new(big.Int).Mul(ed25519d, y2)
+//	dy2.Add(big.NewInt(1), dy2)
+//	y2.Sub(y2, big.NewInt(1))
+//	dy2.ModInverse(dy2, ed25519order)
+//	x2 := new(big.Int).Mul(y2, dy2)
+//
+//	return x2.Mod(x2, ed25519order)
+//}
 
 // y^2 = ( 1 - x^2 ) / ( 1 − d * x^2 ).
 func solveEd448(x *big.Int) *big.Int {

@@ -39,7 +39,7 @@ func TestPointEncoding(t *testing.T) {
 	}
 }
 
-func testPointArithmetic(t *testing.T, suite H2C.SuiteID, input, dst []byte) {
+func testPointArithmetic(t *testing.T, suite H2C.SuiteID, input []byte) {
 	g := New(suite)
 
 	// Test Addition and Subtraction
@@ -76,7 +76,7 @@ func testPointArithmetic(t *testing.T, suite H2C.SuiteID, input, dst []byte) {
 func TestPointArithmetic(t *testing.T) {
 	for id := range curves {
 		t.Run(string(id), func(t *testing.T) {
-			testPointArithmetic(t, id, testInput, dst)
+			testPointArithmetic(t, id, testInput)
 		})
 	}
 }

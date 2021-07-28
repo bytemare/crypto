@@ -13,7 +13,7 @@ type Element interface {
 	// Add returns the sum of the Elements, and does not change the receiver.
 	Add(Element) Element
 
-	// Sub returns the difference between the scalars, and does not change the receiver.
+	// Sub returns the difference between the Elements, and does not change the receiver.
 	Sub(Element) Element
 
 	// Mult returns the scalar multiplication of the receiver element with the given scalar.

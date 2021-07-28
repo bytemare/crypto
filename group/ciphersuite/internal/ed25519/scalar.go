@@ -1,33 +1,25 @@
-// SPDX-License-Identifier: MIT
-//
-// Copyright (C) 2021 Daniel Bourdrez. All Rights Reserved.
-//
-// This source code is licensed under the MIT license found in the
-// LICENSE file in the root directory of this source tree or at
-// https://spdx.org/licenses/MIT.html
-
-// Package ristretto allows simple and abstracted operations in the Ristretto255 group
-package ristretto
+package ed25519
 
 import (
-	"github.com/bytemare/cryptotools/group/ciphersuite/internal"
-	"github.com/gtank/ristretto255"
-
+	"filippo.io/edwards25519"
 	"github.com/bytemare/cryptotools/group"
+	"github.com/bytemare/cryptotools/group/ciphersuite/internal"
 	"github.com/bytemare/cryptotools/utils"
 )
 
+const inputLength = 64
 const canonicalEncodingLength = 32
 
-// Scalar implements the Scalar interface for Ristretto255 group scalars.
 type Scalar struct {
-	scalar *ristretto255.Scalar
+	scalar *edwards25519.Scalar
 }
 
 // Random sets the current scalar to a new random scalar and returns it.
 func (s *Scalar) Random() group.Scalar {
-	random := utils.RandomBytes(ristrettoInputLength)
-	s.scalar.FromUniformBytes(random)
+	_, err := s.scalar.SetUniformBytes(utils.RandomBytes(inputLength))
+	if err != nil {
+		panic(err)
+	}
 
 	return s
 }
@@ -43,7 +35,7 @@ func (s *Scalar) Add(scalar group.Scalar) group.Scalar {
 		panic(internal.ErrCastScalar)
 	}
 
-	return &Scalar{scalar: ristretto255.NewScalar().Add(s.scalar, sc.scalar)}
+	return &Scalar{scalar: edwards25519.NewScalar().Add(s.scalar, sc.scalar)}
 }
 
 // Sub returns the difference between the scalars, and does not change the receiver.
@@ -57,7 +49,7 @@ func (s *Scalar) Sub(scalar group.Scalar) group.Scalar {
 		panic("could not cast to same group scalar : wrong group ?")
 	}
 
-	return &Scalar{scalar: ristretto255.NewScalar().Subtract(s.scalar, sc.scalar)}
+	return &Scalar{scalar: edwards25519.NewScalar().Subtract(s.scalar, sc.scalar)}
 }
 
 // Mult returns the multiplication of the scalars, and does not change the receiver.
@@ -71,17 +63,29 @@ func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
 		panic("could not cast to same group scalar : wrong group ?")
 	}
 
-	return &Scalar{scalar: ristretto255.NewScalar().Multiply(s.scalar, sc.scalar)}
+	return &Scalar{scalar: edwards25519.NewScalar().Multiply(s.scalar, sc.scalar)}
 }
 
 // Invert returns the scalar's modular inverse ( 1 / scalar ).
 func (s *Scalar) Invert() group.Scalar {
-	return &Scalar{ristretto255.NewScalar().Invert(s.scalar)}
+	return &Scalar{edwards25519.NewScalar().Invert(s.scalar)}
 }
 
 // Copy returns a copy of the Scalar.
 func (s *Scalar) Copy() group.Scalar {
-	return &Scalar{ristretto255.NewScalar().Add(ristretto255.NewScalar(), s.scalar)}
+	return &Scalar{edwards25519.NewScalar().Add(edwards25519.NewScalar(), s.scalar)}
+}
+
+func decodeScalar(scalar []byte) (*edwards25519.Scalar, error) {
+	if len(scalar) == 0 {
+		return nil, internal.ErrParamNilScalar
+	}
+
+	if len(scalar) != canonicalEncodingLength {
+		return nil, internal.ErrParamScalarLength
+	}
+
+	return edwards25519.NewScalar().SetCanonicalBytes(scalar)
 }
 
 // Decode decodes the input an sets the current scalar to its value, and returns it.
@@ -96,24 +100,7 @@ func (s *Scalar) Decode(in []byte) (group.Scalar, error) {
 	return s, nil
 }
 
-// Bytes returns the byte encoding of the scalar.
+// Bytes returns the byte encoding of the element.
 func (s *Scalar) Bytes() []byte {
-	return s.scalar.Encode(nil)
-}
-
-func decodeScalar(scalar []byte) (*ristretto255.Scalar, error) {
-	if len(scalar) == 0 {
-		return nil, internal.ErrParamNilScalar
-	}
-
-	if len(scalar) != canonicalEncodingLength {
-		return nil, internal.ErrParamScalarLength
-	}
-
-	s := ristretto255.NewScalar()
-	if err := s.Decode(scalar); err != nil {
-		return nil, err
-	}
-
-	return s, nil
+	return s.scalar.Bytes()
 }

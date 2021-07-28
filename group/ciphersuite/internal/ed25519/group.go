@@ -1,30 +1,18 @@
-// SPDX-License-Identifier: MIT
-//
-// Copyright (C) 2021 Daniel Bourdrez. All Rights Reserved.
-//
-// This source code is licensed under the MIT license found in the
-// LICENSE file in the root directory of this source tree or at
-// https://spdx.org/licenses/MIT.html
-
-// Package ristretto allows simple and abstracted operations in the Ristretto255 group
-package ristretto
+package ed25519
 
 import (
-	"github.com/bytemare/cryptotools/hash"
+	"filippo.io/edwards25519"
 	"github.com/bytemare/hash2curve"
-	"github.com/gtank/ristretto255"
 
 	"github.com/bytemare/cryptotools/group"
+	"github.com/bytemare/cryptotools/hash"
 )
 
-const (
-	ristrettoInputLength = 64
-	String = "ristretto255_XMD:SHA-512_R255MAP_RO_"
-)
+const String = "edwards25519_XMD:SHA-512_ELL2_RO_"
 
 // NewScalar returns a new, empty, scalar.
 func NewScalar() group.Scalar {
-	return &Scalar{ristretto255.NewScalar()}
+	return &Scalar{edwards25519.NewScalar()}
 }
 
 // ElementLength returns the byte size of an encoded element.
@@ -34,31 +22,41 @@ func ElementLength() int {
 
 // NewElement returns a new, empty, element.
 func NewElement() group.Element {
-	return &Element{ristretto255.NewElement()}
+	return &Element{edwards25519.NewIdentityPoint()}
 }
 
 // Identity returns the group's identity element.
 func Identity() group.Element {
-	return &Element{ristretto255.NewElement().Zero()}
+	return &Element{edwards25519.NewIdentityPoint()}
 }
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the group.
 func HashToGroup(input, dst []byte) group.Element {
-	uniform := hash2curve.ExpandMessage(hash.SHA512, input, dst, ristrettoInputLength)
+	uniform := hash2curve.ExpandMessage(hash.SHA512, input, dst, inputLength)
 
-	return &Element{ristretto255.NewElement().FromUniformBytes(uniform)}
+	p, err := edwards25519.NewIdentityPoint().SetBytes(uniform)
+	if err != nil {
+		panic(err)
+	}
+
+	return &Element{p}
 }
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.
 func HashToScalar(input, dst []byte) group.Scalar {
-	uniform := hash2curve.ExpandMessage(hash.SHA512, input, dst, ristrettoInputLength)
+	uniform := hash2curve.ExpandMessage(hash.SHA512, input, dst, inputLength)
 
-	return &Scalar{ristretto255.NewScalar().FromUniformBytes(uniform)}
+	s, err := edwards25519.NewScalar().SetUniformBytes(uniform)
+	if err != nil {
+		panic(err)
+	}
+
+	return &Scalar{s}
 }
 
 // Base returns Ristretto255's base point a.k.a. canonical generator.
 func Base() group.Element {
-	return &Element{ristretto255.NewElement().Base()}
+	return &Element{edwards25519.NewGeneratorPoint()}
 }
 
 // MultBytes allows []byte encodings of a scalar and an element of the group to be multiplied.

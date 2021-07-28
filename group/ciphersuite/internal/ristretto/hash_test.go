@@ -12,7 +12,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/gtank/ristretto255"
@@ -104,8 +103,6 @@ func TestMult(t *testing.T) {
 	}
 
 	mult := ristretto255.NewElement().ScalarMult(s, p)
-
-	log.Printf("ScalarMult : %v\n", hex.EncodeToString(mult.Encode(nil)))
 
 	if !bytes.Equal(exp, mult.Encode(nil)) {
 		t.Fatalf("Blinding does not match.\n\tExpected: %v\n\tActual: %v\n", exp, mult.Encode(nil))
