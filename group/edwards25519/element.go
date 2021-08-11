@@ -1,18 +1,21 @@
-package ed25519
+// Package edwards25519 wraps filippo.io/edwards25519 and exposes a simple prime-order group API with hash-to-curve.
+package edwards25519
 
 import (
-	"filippo.io/edwards25519"
 	"fmt"
-	"github.com/bytemare/cryptotools/group"
-	"github.com/bytemare/cryptotools/group/ciphersuite/internal"
+
+	"filippo.io/edwards25519"
+
+	"github.com/bytemare/cryptotools/group/internal"
 )
 
+// Element represents an Edwards25519 point. It wraps an Edwards25519 implementation to leverage its optimized operations.
 type Element struct {
 	element *edwards25519.Point
 }
 
 // Add returns the sum of the Elements, and does not change the receiver.
-func (e *Element) Add(element group.Element) group.Element {
+func (e *Element) Add(element internal.Point) internal.Point {
 	if element == nil {
 		panic(internal.ErrParamNilPoint)
 	}
@@ -26,7 +29,7 @@ func (e *Element) Add(element group.Element) group.Element {
 }
 
 // Sub returns the difference between the Elements, and does not change the receiver.
-func (e *Element) Sub(element group.Element) group.Element {
+func (e *Element) Sub(element internal.Point) internal.Point {
 	if element == nil {
 		panic(internal.ErrParamNilPoint)
 	}
@@ -40,7 +43,7 @@ func (e *Element) Sub(element group.Element) group.Element {
 }
 
 // Mult returns the scalar multiplication of the receiver element with the given scalar.
-func (e *Element) Mult(scalar group.Scalar) group.Element {
+func (e *Element) Mult(scalar internal.Scalar) internal.Point {
 	if scalar == nil {
 		panic(internal.ErrParamNilScalar)
 	}
@@ -54,7 +57,7 @@ func (e *Element) Mult(scalar group.Scalar) group.Element {
 }
 
 // InvertMult returns the scalar multiplication of the receiver element with the inverse of the given scalar.
-func (e *Element) InvertMult(scalar group.Scalar) group.Element {
+func (e *Element) InvertMult(scalar internal.Scalar) internal.Point {
 	if scalar == nil {
 		panic(internal.ErrParamNilScalar)
 	}
@@ -69,7 +72,7 @@ func (e *Element) IsIdentity() bool {
 }
 
 // Copy returns a copy of the element.
-func (e *Element) Copy() group.Element {
+func (e *Element) Copy() internal.Point {
 	n := edwards25519.NewIdentityPoint()
 	if _, err := n.SetBytes(e.element.Bytes()); err != nil {
 		panic(err)
@@ -79,13 +82,12 @@ func (e *Element) Copy() group.Element {
 }
 
 // Decode decodes the input an sets the current element to its value, and returns it.
-func (e *Element) Decode(in []byte) (group.Element, error) {
+func (e *Element) Decode(in []byte) (internal.Point, error) {
 	if len(in) == 0 {
 		return nil, internal.ErrParamNilPoint
 	}
 
-	p := edwards25519.NewIdentityPoint()
-	if _, err := p.SetBytes(in); err != nil {
+	if _, err := e.element.SetBytes(in); err != nil {
 		return nil, fmt.Errorf("decoding element : %w", err)
 	}
 
@@ -95,4 +97,9 @@ func (e *Element) Decode(in []byte) (group.Element, error) {
 // Bytes returns the compressed byte encoding of the element.
 func (e *Element) Bytes() []byte {
 	return e.element.Bytes()
+}
+
+// BytesMontgomery returns the bi-rationally equivalent Curve25519 encoded point.
+func (e *Element) BytesMontgomery() []byte {
+	return e.element.BytesMontgomery()
 }

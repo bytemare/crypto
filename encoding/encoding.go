@@ -11,10 +11,9 @@ package encoding
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/vmihailenco/msgpack/v5"
-
-	"github.com/bytemare/cryptotools/internal"
 )
 
 // Encoding identifies referenced encoding formats.
@@ -46,8 +45,8 @@ var (
 	encoders map[Encoding]encoder
 	decoders map[Encoding]decoder
 
-	errInvalidID    = internal.ParameterError("invalid encoding identifier")
-	errNotAvailable = internal.ParameterError("encoding is not available")
+	errInvalidID    = errors.New("invalid encoding identifier")
+	errNotAvailable = errors.New("encoding is not available")
 )
 
 func (e Encoding) register(enc encoder, dec decoder) {

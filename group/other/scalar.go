@@ -6,16 +6,16 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-// Package hash2curve wraps an hash-to-curve implementation and exposes functions for operations on points and scalars.
-package hash2curve
+// Package other wraps an hash-to-curve implementation and exposes functions for operations on points and scalars.
+package other
 
 import (
 	"crypto/rand"
 	"math/big"
 
-	"github.com/armfazh/tozan-ecc/field"
+	"github.com/bytemare/cryptotools/group/internal"
 
-	"github.com/bytemare/cryptotools/group"
+	"github.com/armfazh/tozan-ecc/field"
 )
 
 // Scalar implements the Scalar interface for Hash-to-Curve field elements.
@@ -24,7 +24,7 @@ type Scalar struct {
 	f field.Field
 }
 
-func scalar(f field.Field) group.Scalar {
+func scalar(f field.Field) internal.Scalar {
 	return &Scalar{
 		s: f.Zero(),
 		f: f,
@@ -37,14 +37,14 @@ func (s *Scalar) Equal(s2 *Scalar) bool {
 }
 
 // Random sets the current scalar to a new random scalar and returns it.
-func (s *Scalar) Random() group.Scalar {
+func (s *Scalar) Random() internal.Scalar {
 	s.s = s.f.Rand(rand.Reader)
 
 	return s
 }
 
 // Add returns the sum of the scalars, and does not change the receiver.
-func (s *Scalar) Add(scalar group.Scalar) group.Scalar {
+func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s
 	}
@@ -61,7 +61,7 @@ func (s *Scalar) Add(scalar group.Scalar) group.Scalar {
 }
 
 // Sub returns the difference between the scalars, and does not change the receiver.
-func (s *Scalar) Sub(scalar group.Scalar) group.Scalar {
+func (s *Scalar) Sub(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s
 	}
@@ -78,7 +78,7 @@ func (s *Scalar) Sub(scalar group.Scalar) group.Scalar {
 }
 
 // Mult returns the multiplication of the scalars, and does not change the receiver.
-func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
+func (s *Scalar) Mult(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		panic("multiplying scalar with nil element")
 	}
@@ -94,8 +94,8 @@ func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
 	}
 }
 
-// Invert returns the scalar's modular inverse ( 1 / scalar ).
-func (s *Scalar) Invert() group.Scalar {
+// Invert returns the scalar's modular inverse ( 1 / scalar ), and does not change the receiver.
+func (s *Scalar) Invert() internal.Scalar {
 	return &Scalar{
 		s: s.f.Inv(s.s),
 		f: s.f,
@@ -103,7 +103,7 @@ func (s *Scalar) Invert() group.Scalar {
 }
 
 // Copy returns a copy of the Scalar.
-func (s *Scalar) Copy() group.Scalar {
+func (s *Scalar) Copy() internal.Scalar {
 	return &Scalar{
 		s: s.s.Copy(),
 		f: s.f,
@@ -111,7 +111,7 @@ func (s *Scalar) Copy() group.Scalar {
 }
 
 // Decode decodes the input an sets the current scalar to its value, and returns it.
-func (s *Scalar) Decode(in []byte) (group.Scalar, error) {
+func (s *Scalar) Decode(in []byte) (internal.Scalar, error) {
 	if len(in) == 0 {
 		return nil, errParamNilScalar
 	}

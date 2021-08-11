@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Group: MIT
 //
 // Copyright (C) 2021 Daniel Bourdrez. All Rights Reserved.
 //
@@ -6,13 +6,11 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-package ciphersuite
+package group
 
 import (
 	"testing"
 )
-
-const testVersion = "0.0"
 
 //func TestNilDST(t *testing.T) {
 //	for s := range registered {

@@ -6,22 +6,22 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-// Package hash2curve wraps an hash-to-curve implementation and exposes functions for operations on points and scalars.
-package hash2curve
+// Package other wraps an hash-to-curve implementation and exposes functions for operations on points and scalars.
+package other
 
 import (
 	nist "crypto/elliptic"
 	"fmt"
 	"math/big"
 
+	"github.com/bytemare/cryptotools/group/internal"
+
 	Curve "github.com/armfazh/h2c-go-ref/curve"
 	C "github.com/armfazh/tozan-ecc/curve"
 	"github.com/armfazh/tozan-ecc/field"
-
-	"github.com/bytemare/cryptotools/group"
 )
 
-// Point implements the Element interface for Hash-to-Curve points.
+// Point implements the Point interface for Hash-to-Curve points.
 type Point struct {
 	*Hash2Curve
 	*curve
@@ -29,7 +29,7 @@ type Point struct {
 }
 
 // Add adds the argument to the receiver, sets the receiver to the result and returns it.
-func (p *Point) Add(element group.Element) group.Element {
+func (p *Point) Add(element internal.Point) internal.Point {
 	if element == nil {
 		panic("element is nil")
 	}
@@ -47,7 +47,7 @@ func (p *Point) Add(element group.Element) group.Element {
 }
 
 // Sub subtracts the argument from the receiver, sets the receiver to the result and returns it.
-func (p *Point) Sub(element group.Element) group.Element {
+func (p *Point) Sub(element internal.Point) internal.Point {
 	if element == nil {
 		panic("element is nil")
 	}
@@ -65,7 +65,7 @@ func (p *Point) Sub(element group.Element) group.Element {
 }
 
 // Mult returns the scalar multiplication of the receiver element with the given scalar.
-func (p *Point) Mult(scalar group.Scalar) group.Element {
+func (p *Point) Mult(scalar internal.Scalar) internal.Point {
 	sc, ok := scalar.(*Scalar)
 	if !ok {
 		panic("could not cast to hash2curve scalar")
@@ -85,7 +85,7 @@ func (p *Point) Mult(scalar group.Scalar) group.Element {
 }
 
 // InvertMult returns the scalar multiplication of the receiver element with the inverse of the given scalar.
-func (p *Point) InvertMult(s group.Scalar) group.Element {
+func (p *Point) InvertMult(s internal.Scalar) internal.Point {
 	if s == nil {
 		panic(errParamNilScalar)
 	}
@@ -99,7 +99,7 @@ func (p *Point) IsIdentity() bool {
 }
 
 // Copy returns a copy of the element.
-func (p *Point) Copy() group.Element {
+func (p *Point) Copy() internal.Point {
 	return &Point{
 		Hash2Curve: p.Hash2Curve,
 		curve:      p.curve,
@@ -112,15 +112,15 @@ func (p *Point) Bytes() []byte {
 	x := p.point.X().Polynomial()[0]
 	y := p.point.Y().Polynomial()[0]
 
-	if p.id == Curve.Edwards25519 {
-		return encodeEd25519(x, y)
-	}
+	//if p.id == Curve.Edwards25519 {
+	//	return encodeEd25519(x, y)
+	//}
 
 	return encodeSignPrefix(x, y, pointLen(p.Field().BitLen()))
 }
 
 // Decode decodes the input an sets the current element to its value, and returns it.
-func (p *Point) Decode(input []byte) (group.Element, error) {
+func (p *Point) Decode(input []byte) (internal.Point, error) {
 	if p.id == Curve.P256 || p.id == Curve.P384 || p.id == Curve.P521 {
 		x, y := nist.UnmarshalCompressed(h2cToNist(p.id), input)
 		if x == nil {

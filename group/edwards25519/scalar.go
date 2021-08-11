@@ -1,22 +1,25 @@
-package ed25519
+// Package edwards25519 wraps filippo.io/edwards25519 and exposes a simple prime-order group API with hash-to-curve.
+package edwards25519
 
 import (
 	"filippo.io/edwards25519"
-	"github.com/bytemare/cryptotools/group"
-	"github.com/bytemare/cryptotools/group/ciphersuite/internal"
-	"github.com/bytemare/cryptotools/utils"
+
+	"github.com/bytemare/cryptotools/group/internal"
 )
 
-const inputLength = 64
-const canonicalEncodingLength = 32
+const (
+	inputLength             = 64
+	canonicalEncodingLength = 32
+)
 
+// Scalar represents an Edwards25519 scalar. It wraps an Edwards25519 implementation to leverage its optimized operations.
 type Scalar struct {
 	scalar *edwards25519.Scalar
 }
 
 // Random sets the current scalar to a new random scalar and returns it.
-func (s *Scalar) Random() group.Scalar {
-	_, err := s.scalar.SetUniformBytes(utils.RandomBytes(inputLength))
+func (s *Scalar) Random() internal.Scalar {
+	_, err := s.scalar.SetUniformBytes(internal.RandomBytes(inputLength))
 	if err != nil {
 		panic(err)
 	}
@@ -25,7 +28,7 @@ func (s *Scalar) Random() group.Scalar {
 }
 
 // Add returns the sum of the scalars, and does not change the receiver.
-func (s *Scalar) Add(scalar group.Scalar) group.Scalar {
+func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s
 	}
@@ -39,7 +42,7 @@ func (s *Scalar) Add(scalar group.Scalar) group.Scalar {
 }
 
 // Sub returns the difference between the scalars, and does not change the receiver.
-func (s *Scalar) Sub(scalar group.Scalar) group.Scalar {
+func (s *Scalar) Sub(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s
 	}
@@ -53,7 +56,7 @@ func (s *Scalar) Sub(scalar group.Scalar) group.Scalar {
 }
 
 // Mult returns the multiplication of the scalars, and does not change the receiver.
-func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
+func (s *Scalar) Mult(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		panic("multiplying scalar with nil element")
 	}
@@ -66,14 +69,14 @@ func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
 	return &Scalar{scalar: edwards25519.NewScalar().Multiply(s.scalar, sc.scalar)}
 }
 
-// Invert returns the scalar's modular inverse ( 1 / scalar ).
-func (s *Scalar) Invert() group.Scalar {
+// Invert returns the scalar's modular inverse ( 1 / scalar ), and does not change the receiver.
+func (s *Scalar) Invert() internal.Scalar {
 	return &Scalar{edwards25519.NewScalar().Invert(s.scalar)}
 }
 
 // Copy returns a copy of the Scalar.
-func (s *Scalar) Copy() group.Scalar {
-	return &Scalar{edwards25519.NewScalar().Add(edwards25519.NewScalar(), s.scalar)}
+func (s *Scalar) Copy() internal.Scalar {
+	return &Scalar{edwards25519.NewScalar().Set(s.scalar)}
 }
 
 func decodeScalar(scalar []byte) (*edwards25519.Scalar, error) {
@@ -89,7 +92,7 @@ func decodeScalar(scalar []byte) (*edwards25519.Scalar, error) {
 }
 
 // Decode decodes the input an sets the current scalar to its value, and returns it.
-func (s *Scalar) Decode(in []byte) (group.Scalar, error) {
+func (s *Scalar) Decode(in []byte) (internal.Scalar, error) {
 	sc, err := decodeScalar(in)
 	if err != nil {
 		return nil, err

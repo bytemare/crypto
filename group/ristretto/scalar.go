@@ -10,11 +10,9 @@
 package ristretto
 
 import (
-	"github.com/bytemare/cryptotools/group/ciphersuite/internal"
 	"github.com/gtank/ristretto255"
 
-	"github.com/bytemare/cryptotools/group"
-	"github.com/bytemare/cryptotools/utils"
+	"github.com/bytemare/cryptotools/group/internal"
 )
 
 const canonicalEncodingLength = 32
@@ -25,15 +23,15 @@ type Scalar struct {
 }
 
 // Random sets the current scalar to a new random scalar and returns it.
-func (s *Scalar) Random() group.Scalar {
-	random := utils.RandomBytes(ristrettoInputLength)
+func (s *Scalar) Random() internal.Scalar {
+	random := internal.RandomBytes(ristrettoInputLength)
 	s.scalar.FromUniformBytes(random)
 
 	return s
 }
 
 // Add returns the sum of the scalars, and does not change the receiver.
-func (s *Scalar) Add(scalar group.Scalar) group.Scalar {
+func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s
 	}
@@ -47,7 +45,7 @@ func (s *Scalar) Add(scalar group.Scalar) group.Scalar {
 }
 
 // Sub returns the difference between the scalars, and does not change the receiver.
-func (s *Scalar) Sub(scalar group.Scalar) group.Scalar {
+func (s *Scalar) Sub(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s
 	}
@@ -61,7 +59,7 @@ func (s *Scalar) Sub(scalar group.Scalar) group.Scalar {
 }
 
 // Mult returns the multiplication of the scalars, and does not change the receiver.
-func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
+func (s *Scalar) Mult(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		panic("multiplying scalar with nil element")
 	}
@@ -75,17 +73,17 @@ func (s *Scalar) Mult(scalar group.Scalar) group.Scalar {
 }
 
 // Invert returns the scalar's modular inverse ( 1 / scalar ).
-func (s *Scalar) Invert() group.Scalar {
+func (s *Scalar) Invert() internal.Scalar {
 	return &Scalar{ristretto255.NewScalar().Invert(s.scalar)}
 }
 
 // Copy returns a copy of the Scalar.
-func (s *Scalar) Copy() group.Scalar {
+func (s *Scalar) Copy() internal.Scalar {
 	return &Scalar{ristretto255.NewScalar().Add(ristretto255.NewScalar(), s.scalar)}
 }
 
 // Decode decodes the input an sets the current scalar to its value, and returns it.
-func (s *Scalar) Decode(in []byte) (group.Scalar, error) {
+func (s *Scalar) Decode(in []byte) (internal.Scalar, error) {
 	sc, err := decodeScalar(in)
 	if err != nil {
 		return nil, err

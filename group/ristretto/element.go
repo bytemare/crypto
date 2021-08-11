@@ -11,48 +11,47 @@ package ristretto
 
 import (
 	"fmt"
-	"github.com/bytemare/cryptotools/group/ciphersuite/internal"
 
 	"github.com/gtank/ristretto255"
 
-	"github.com/bytemare/cryptotools/group"
+	"github.com/bytemare/cryptotools/group/internal"
 )
 
-// Element implements the Element interface for the Ristretto255 group element.
-type Element struct {
-	element *ristretto255.Element
+// Point implements the Point interface for the Ristretto255 group element.
+type Point struct {
+	point *ristretto255.Element
 }
 
 // Add adds the argument to the receiver, sets the receiver to the result and returns it.
-func (e *Element) Add(element group.Element) group.Element {
+func (p *Point) Add(element internal.Point) internal.Point {
 	if element == nil {
 		panic(internal.ErrParamNilPoint)
 	}
 
-	ele, ok := element.(*Element)
+	ele, ok := element.(*Point)
 	if !ok {
 		panic(internal.ErrCastElement)
 	}
 
-	return &Element{ristretto255.NewElement().Add(e.element, ele.element)}
+	return &Point{ristretto255.NewElement().Add(p.point, ele.point)}
 }
 
 // Sub subtracts the argument from the receiver, sets the receiver to the result and returns it.
-func (e *Element) Sub(element group.Element) group.Element {
+func (p *Point) Sub(element internal.Point) internal.Point {
 	if element == nil {
 		panic(internal.ErrParamNilPoint)
 	}
 
-	ele, ok := element.(*Element)
+	ele, ok := element.(*Point)
 	if !ok {
 		panic(internal.ErrCastElement)
 	}
 
-	return &Element{ristretto255.NewElement().Subtract(e.element, ele.element)}
+	return &Point{ristretto255.NewElement().Subtract(p.point, ele.point)}
 }
 
 // Mult returns the scalar multiplication of the receiver element with the given scalar.
-func (e *Element) Mult(scalar group.Scalar) group.Element {
+func (p *Point) Mult(scalar internal.Scalar) internal.Point {
 	if scalar == nil {
 		panic(internal.ErrParamNilScalar)
 	}
@@ -62,55 +61,55 @@ func (e *Element) Mult(scalar group.Scalar) group.Element {
 		panic(internal.ErrCastElement)
 	}
 
-	return &Element{ristretto255.NewElement().ScalarMult(sc.scalar, e.element)}
+	return &Point{ristretto255.NewElement().ScalarMult(sc.scalar, p.point)}
 }
 
 // InvertMult returns the scalar multiplication of the receiver element with the inverse of the given scalar.
-func (e *Element) InvertMult(scalar group.Scalar) group.Element {
+func (p *Point) InvertMult(scalar internal.Scalar) internal.Point {
 	if scalar == nil {
 		panic(internal.ErrParamNilScalar)
 	}
 
-	return e.Mult(scalar.Invert())
+	return p.Mult(scalar.Invert())
 }
 
 // IsIdentity returns whether the element is the group's identity element.
-func (e *Element) IsIdentity() bool {
+func (p *Point) IsIdentity() bool {
 	id := ristretto255.NewElement().Zero()
-	return e.element.Equal(id) == 1
+	return p.point.Equal(id) == 1
 }
 
 // Copy returns a copy of the element.
-func (e *Element) Copy() group.Element {
+func (p *Point) Copy() internal.Point {
 	n := ristretto255.NewElement()
-	if err := n.Decode(e.element.Encode(nil)); err != nil {
+	if err := n.Decode(p.point.Encode(nil)); err != nil {
 		panic(err)
 	}
 
-	return &Element{element: n}
+	return &Point{point: n}
 }
 
 // Decode decodes the input an sets the current element to its value, and returns it.
-func (e *Element) Decode(in []byte) (group.Element, error) {
+func (p *Point) Decode(in []byte) (internal.Point, error) {
 	el, err := decodeElement(in)
 	if err != nil {
 		return nil, err
 	}
 
-	e.element = el
+	p.point = el
 
-	return e, nil
+	return p, nil
 }
 
 // Bytes returns the compressed byte encoding of the element.
-func (e *Element) Bytes() []byte {
-	return e.element.Encode(nil)
+func (p *Point) Bytes() []byte {
+	return p.point.Encode(nil)
 }
 
 // Base returns the group's base point.
-func (e *Element) Base() group.Element {
-	e.element = ristretto255.NewElement().Base()
-	return e
+func (p *Point) Base() internal.Point {
+	p.point = ristretto255.NewElement().Base()
+	return p
 }
 
 func decodeElement(element []byte) (*ristretto255.Element, error) {

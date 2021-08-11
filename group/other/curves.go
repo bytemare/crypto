@@ -6,8 +6,8 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-// Package hash2curve wraps an hash-to-curve implementation and exposes functions for operations on points and scalars.
-package hash2curve
+// Package other wraps an hash-to-curve implementation and exposes functions for operations on points and scalars.
+package other
 
 import (
 	"crypto/elliptic"
@@ -26,15 +26,15 @@ type curve struct {
 }
 
 var (
-	curve448a       = new(big.Int)
-	curve448order   = C.Curve448.Get().Field().Order()
-	curve25519a     = new(big.Int)
-	curve25519order = C.Curve25519.Get().Field().Order()
-	ed448d          = new(big.Int)
-	ed448order      = C.Edwards448.Get().Field().Order()
-	//ed25519d        = new(big.Int)
-	//ed25519order    = C.Edwards25519.Get().Field().Order()
-	secp256k1order  = C.SECP256K1.Get().Field().Order()
+	curve448a     = new(big.Int)
+	curve448order = C.Curve448.Get().Field().Order()
+	// curve25519a     = new(big.Int)
+	// curve25519order = C.Curve25519.Get().Field().Order()
+	ed448d     = new(big.Int)
+	ed448order = C.Edwards448.Get().Field().Order()
+	// ed25519d        = new(big.Int)
+	// ed25519order    = C.Edwards25519.Get().Field().Order()
+	secp256k1order = C.SECP256K1.Get().Field().Order()
 )
 
 func init() {
@@ -42,17 +42,17 @@ func init() {
 		panic("setting value failed")
 	}
 
-	if _, ok := curve25519a.SetString("486662", 0); !ok {
-		panic("setting value failed")
-	}
+	// if _, ok := curve25519a.SetString("486662", 0); !ok {
+	//	panic("setting value failed")
+	// }
+
+	// if _, ok := ed25519d.SetString("0x52036cee2b6ffe738cc740797779e89800700a4d4141d8ab75eb4dca135978a3", 0); !ok {
+	//	panic("setting value failed")
+	// }
 
 	if _, ok := ed448d.SetString("-39081", 0); !ok {
 		panic("setting value failed")
 	}
-
-	//if _, ok := ed25519d.SetString("0x52036cee2b6ffe738cc740797779e89800700a4d4141d8ab75eb4dca135978a3", 0); !ok {
-	//	panic("setting value failed")
-	//}
 }
 
 func point(curve Curve.EllCurve, x, y string) Curve.Point {
@@ -111,18 +111,18 @@ var curves = map[H2C.SuiteID]*params{
 		"0xc6858e06b70404e9cd9e3ecb662395b4429c648139053fb521f828af606b4d3dbaa14b5e77efe75928fe1dc127a2ffa8de3348b3c1856a429bf97e7e31c2e5bd66",
 		"0x11839296a789a3bc0045c8a5fb42c7d1bd998f54449579b446817afbd17273e662c97ee72995ef42640c550b9013fad0761353c7086a272c24088be94769fd16650",
 	},
-	H2C.Curve25519_XMDSHA512_ELL2_RO_: {
-		C.Curve25519,
-		solveCurve25519,
-		"0x9",
-		"0x20ae19a1b8a086b4e01edd2c7748d14c923d4d7e6d7c61b229e9c5a27eced3d9",
-	},
-	//H2C.Edwards25519_XMDSHA512_ELL2_RO_: {
+	// H2C.Curve25519_XMDSHA512_ELL2_RO_: {
+	//	C.Curve25519,
+	//	solveCurve25519,
+	//	"0x9",
+	//	"0x20ae19a1b8a086b4e01edd2c7748d14c923d4d7e6d7c61b229e9c5a27eced3d9",
+	// },
+	// H2C.Edwards25519_XMDSHA512_ELL2_RO_: {
 	//	C.Edwards25519,
 	//	solveEd25519Y,
 	//	"0x216936D3CD6E53FEC0A4E231FDD6DC5C692CC7609525A7B2C9562D608F25D51A",
 	//	"0x6666666666666666666666666666666666666666666666666666666666666658",
-	//},
+	// },
 	H2C.Curve448_XMDSHA512_ELL2_RO_: {
 		C.Curve448,
 		solveCurve448,

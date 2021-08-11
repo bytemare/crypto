@@ -6,13 +6,13 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-// Package hash2curve wraps an hash-to-curve implementation and exposes functions for operations on points and scalars.
-package hash2curve
+// Package other wraps an hash-to-curve implementation and exposes functions for operations on points and scalars.
+package other
 
 import (
 	"github.com/armfazh/h2c-go-ref"
 
-	"github.com/bytemare/cryptotools/group"
+	"github.com/bytemare/cryptotools/group/internal"
 )
 
 // Hash2Curve implements the Group interface to Hash-to-Curve primitives.
@@ -36,7 +36,7 @@ func New(id h2c.SuiteID) *Hash2Curve {
 }
 
 // NewScalar returns a new, empty, scalar.
-func (h *Hash2Curve) NewScalar() group.Scalar {
+func (h *Hash2Curve) NewScalar() internal.Scalar {
 	h2 := getH2C(h.suite, nil)
 
 	return scalar(h2.GetHashToScalar().GetScalarField())
@@ -50,7 +50,7 @@ func (h *Hash2Curve) ElementLength() int {
 }
 
 // NewElement returns a new, empty, element.
-func (h *Hash2Curve) NewElement() group.Element {
+func (h *Hash2Curve) NewElement() internal.Point {
 	h2 := getH2C(h.suite, nil)
 
 	return &Point{
@@ -61,7 +61,7 @@ func (h *Hash2Curve) NewElement() group.Element {
 }
 
 // Identity returns the group's identity element.
-func (h *Hash2Curve) Identity() group.Element {
+func (h *Hash2Curve) Identity() internal.Point {
 	h2 := getH2C(h.suite, nil)
 
 	return &Point{
@@ -90,7 +90,7 @@ func getCurve(id h2c.SuiteID) *curve {
 }
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
-func (h *Hash2Curve) HashToGroup(input, dst []byte) group.Element {
+func (h *Hash2Curve) HashToGroup(input, dst []byte) internal.Point {
 	h2 := getH2C(h.suite, dst)
 
 	return &Point{
@@ -101,7 +101,7 @@ func (h *Hash2Curve) HashToGroup(input, dst []byte) group.Element {
 }
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.
-func (h *Hash2Curve) HashToScalar(input, dst []byte) group.Scalar {
+func (h *Hash2Curve) HashToScalar(input, dst []byte) internal.Scalar {
 	h2 := getH2C(h.suite, dst)
 
 	return &Scalar{
@@ -111,12 +111,12 @@ func (h *Hash2Curve) HashToScalar(input, dst []byte) group.Scalar {
 }
 
 // Base returns the group's base point a.k.a. canonical generator.
-func (h *Hash2Curve) Base() group.Element {
+func (h *Hash2Curve) Base() internal.Point {
 	return h.NewElement()
 }
 
 // MultBytes allows []byte encodings of a scalar and an element of the Group to be multiplied.
-func (h *Hash2Curve) MultBytes(scalar, element []byte) (group.Element, error) {
+func (h *Hash2Curve) MultBytes(scalar, element []byte) (internal.Point, error) {
 	s, err := h.NewScalar().Decode(scalar)
 	if err != nil {
 		return nil, err

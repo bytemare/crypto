@@ -6,14 +6,14 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-// Package hash2curve wraps an hash-to-curve implementation and exposes functions for operations on points and scalars.
-package hash2curve
+// Package other wraps an hash-to-curve implementation and exposes functions for operations on points and scalars.
+package other
 
 import (
 	"math/big"
 )
 
-const ed25519PointSize = 32
+// const ed25519PointSize = 32
 
 func pointLen(bitLen int) int {
 	byteLen := (bitLen + 7) / 8
@@ -28,15 +28,15 @@ func encodeSignPrefix(x, y *big.Int, pointLen int) []byte {
 	return compressed
 }
 
-func encodeEd25519(x, y *big.Int) []byte {
-	out := make([]byte, ed25519PointSize)
-	y.FillBytes(out)
-	out[0] |= byte(x.Bit(0) << 7)
+// func encodeEd25519(x, y *big.Int) []byte {
+//	out := make([]byte, ed25519PointSize)
+//	y.FillBytes(out)
+//	out[0] |= byte(x.Bit(0) << 7)
+//
+//	return out
+// }
 
-	return out
-}
-
-//func decodeEd25519(in []byte) (x, y *big.Int, err error) {
+// func decodeEd25519(in []byte) (x, y *big.Int, err error) {
 //	if len(in) != ed25519PointSize {
 //		return nil, nil, errParamInvalidEd25519Enc
 //	}
@@ -108,18 +108,18 @@ func solveCurve448(x *big.Int) *big.Int {
 }
 
 // y^2 = ( x^3 + A * x^2 + x ) / B, with B = 1.
-func solveCurve25519(x *big.Int) *big.Int {
-	x2 := new(big.Int).Mul(x, x)
-	x3 := new(big.Int).Mul(x2, x)
-	ax2 := new(big.Int).Mul(x2, curve25519a)
-	y2 := new(big.Int).Add(x3, ax2)
-	y2.Add(y2, x)
+// func solveCurve25519(x *big.Int) *big.Int {
+//	x2 := new(big.Int).Mul(x, x)
+//	x3 := new(big.Int).Mul(x2, x)
+//	ax2 := new(big.Int).Mul(x2, curve25519a)
+//	y2 := new(big.Int).Add(x3, ax2)
+//	y2.Add(y2, x)
+//
+//	return y2.Mod(y2, curve25519order)
+// }
 
-	return y2.Mod(y2, curve25519order)
-}
-
-//// y^2 = ( 1 + x^2 ) / ( 1 − d * x^2 ).
-//func solveEd25519Y(x *big.Int) *big.Int {
+// y^2 = ( 1 + x^2 ) / ( 1 − d * x^2 ).
+// func solveEd25519Y(x *big.Int) *big.Int {
 //	x2 := new(big.Int).Mul(x, x)
 //	dx2 := new(big.Int).Mul(ed25519d, x2)
 //	x2.Add(big.NewInt(1), x2)
@@ -128,10 +128,10 @@ func solveCurve25519(x *big.Int) *big.Int {
 //	y2 := new(big.Int).Mul(x2, dx2)
 //
 //	return y2.Mod(y2, ed25519order)
-//}
+// }
 
 // x^2 = ( y^2 - 1 ) / ( 1 + d * y^2 ).
-//func solveEd25519X(y *big.Int) *big.Int {
+// func solveEd25519X(y *big.Int) *big.Int {
 //	y2 := new(big.Int).Mul(y, y)
 //	dy2 := new(big.Int).Mul(ed25519d, y2)
 //	dy2.Add(big.NewInt(1), dy2)
@@ -140,7 +140,7 @@ func solveCurve25519(x *big.Int) *big.Int {
 //	x2 := new(big.Int).Mul(y2, dy2)
 //
 //	return x2.Mod(x2, ed25519order)
-//}
+// }
 
 // y^2 = ( 1 - x^2 ) / ( 1 − d * x^2 ).
 func solveEd448(x *big.Int) *big.Int {

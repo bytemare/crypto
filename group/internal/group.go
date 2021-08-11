@@ -6,8 +6,8 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-// Package group exposes simple and abstract operations to group Elements and Scalars.
-package group
+// Package internal defines simple and abstract APIs to group Elements and Scalars.
+package internal
 
 const (
 	// DstMinLength is the minimum acceptable length of input DST.
@@ -23,23 +23,23 @@ type Group interface {
 	NewScalar() Scalar
 
 	// NewElement returns a new, empty, element.
-	NewElement() Element
+	NewElement() Point
 
 	// ElementLength returns the byte size of an encoded element.
 	ElementLength() int
 
 	// Identity returns the group's identity element.
-	Identity() Element
+	Identity() Point
 
 	// HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
-	HashToGroup(input, dst []byte) Element
+	HashToGroup(input, dst []byte) Point
 
 	// HashToScalar allows arbitrary input to be safely mapped to the field.
 	HashToScalar(input, dst []byte) Scalar
 
 	// Base returns the group's base point a.k.a. canonical generator.
-	Base() Element
+	Base() Point
 
 	// MultBytes allows []byte encodings of a scalar and an element of the Group to be multiplied.
-	MultBytes(scalar, element []byte) (Element, error)
+	MultBytes(scalar, element []byte) (Point, error)
 }

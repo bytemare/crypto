@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-package hash2curve
+package other
 
 import (
 	"testing"
@@ -16,7 +16,7 @@ import (
 )
 
 func TestScalarEncoding(t *testing.T) {
-	h2p, err := h2c.Edwards25519_XMDSHA512_ELL2_RO_.Get([]byte("dst"))
+	h2p, err := h2c.P256_XMDSHA256_SSWU_RO_.Get([]byte("dst"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,7 +34,7 @@ func TestScalarEncoding(t *testing.T) {
 }
 
 func TestScalarArithmetic(t *testing.T) {
-	g := New(h2c.Edwards25519_XMDSHA512_ELL2_RO_)
+	g := New(h2c.P256_XMDSHA256_SSWU_RO_)
 
 	// Test Addition and Substraction
 	s := g.NewScalar().Random()
