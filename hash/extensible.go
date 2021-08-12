@@ -9,13 +9,12 @@
 package hash
 
 import (
+	"errors"
 	"io"
 
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/blake2s"
 	"golang.org/x/crypto/sha3"
-
-	"github.com/bytemare/cryptotools/internal"
 )
 
 // Extensible identifies Extendable-Output Functions.
@@ -121,16 +120,16 @@ func init() {
 	BLAKE2XS.register(newBlake2xs(), blake2xs, 0, size256, sec128)
 }
 
-var errSmallOutputSize = internal.ParameterError("requested output size too small")
+var errSmallOutputSize = errors.New("requested output size too small")
 
 // XOF defines the interface to hash functions that
 // support arbitrary-length output.
 type XOF interface {
-	// Write absorbs more data into the hash's state. It panics if called
+	// Writer Write absorbs more data into the hash's state. It panics if called
 	// after Read.
 	io.Writer
 
-	// Read reads more output from the hash. It returns io.EOF if the limit
+	// Reader Read reads more output from the hash. It returns io.EOF if the limit
 	// has been reached.
 	io.Reader
 

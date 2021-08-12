@@ -67,9 +67,9 @@ func FromCrypto(h crypto.Hash) Hashing {
 	i := Hashing(h)
 	if i.Available() {
 		return i
-	} else {
-		return 0
 	}
+
+	return 0
 }
 
 // GetCryptoID returns the built-in crypto identifier corresponding the Hashing identifier.

@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-// Package signature provides an additional abstraction and modularity to digital signature schemes of built-in implementations
+// Package signature provides additional abstraction and modularity to digital signature schemes of built-in implementations
 package signature
 
 import (

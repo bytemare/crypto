@@ -6,31 +6,64 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
+// Package group exposes a prime-order elliptic curve groups with additional hash-to-curve operations.
 package group
 
-// Scalar interface abstracts common operations on scalars in a Group.
-type Scalar interface {
-	// Random sets the current scalar to a new random scalar and returns it.
-	Random() Scalar
+import (
+	"github.com/bytemare/cryptotools/group/internal"
+)
 
-	// Add returns the sum of the scalars, and does not change the receiver.
-	Add(scalar Scalar) Scalar
+// Scalar represents a scalar in the prime-order group.
+type Scalar struct {
+	internal.Scalar
+}
 
-	// Sub returns the difference between the scalars, and does not change the receiver.
-	Sub(scalar Scalar) Scalar
+func newScalar(s internal.Scalar) *Scalar {
+	return &Scalar{s}
+}
 
-	// Mult returns the multiplication of the scalars, and does not change the receiver.
-	Mult(scalar Scalar) Scalar
+// Random sets the current scalar to a new random scalar and returns it.
+func (s *Scalar) Random() *Scalar {
+	s.Scalar.Random()
+	return s
+}
 
-	// Invert returns the scalar's modular inverse ( 1 / scalar ).
-	Invert() Scalar
+// Add returns the sum of the scalars, and does not change the receiver.
+func (s *Scalar) Add(scalar *Scalar) *Scalar {
+	return &Scalar{s.Scalar.Add(scalar.Scalar)}
+}
 
-	// Copy returns a copy of the Scalar.
-	Copy() Scalar
+// Sub returns the difference between the scalars, and does not change the receiver.
+func (s *Scalar) Sub(scalar *Scalar) *Scalar {
+	return &Scalar{s.Scalar.Sub(scalar.Scalar)}
+}
 
-	// Decode decodes the input an sets the current scalar to its value, and returns it.
-	Decode(in []byte) (Scalar, error)
+// Mult returns the multiplication of the scalars, and does not change the receiver.
+func (s *Scalar) Mult(scalar *Scalar) *Scalar {
+	return &Scalar{s.Scalar.Mult(scalar.Scalar)}
+}
 
-	// Bytes returns the byte encoding of the element.
-	Bytes() []byte
+// Invert returns the scalar's modular inverse ( 1 / scalar ), and does not change the receiver.
+func (s *Scalar) Invert() *Scalar {
+	return &Scalar{s.Scalar.Invert()}
+}
+
+// Copy returns a copy of the Scalar.
+func (s *Scalar) Copy() *Scalar {
+	return &Scalar{s.Scalar.Copy()}
+}
+
+// Decode decodes the input an sets the current scalar to its value, and returns it.
+func (s *Scalar) Decode(in []byte) (*Scalar, error) {
+	q, err := s.Scalar.Decode(in)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Scalar{q}, nil
+}
+
+// Bytes returns the byte encoding of the element.
+func (s *Scalar) Bytes() []byte {
+	return s.Scalar.Bytes()
 }
