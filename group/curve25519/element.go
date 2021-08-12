@@ -1,3 +1,11 @@
+// SPDX-License-Identifier: MIT
+//
+// Copyright (C) 2021 Daniel Bourdrez. All Rights Reserved.
+//
+// This source code is licensed under the MIT license found in the
+// LICENSE file in the root directory of this source tree or at
+// https://spdx.org/licenses/MIT.html
+
 // Package curve25519 implements a prime-order group over Curve25519 with hash-to-curve.
 package curve25519
 
@@ -13,7 +21,7 @@ import (
 
 // Element represents a Curve25519 point. It wraps an Edwards25519 implementation to leverage its optimized operations.
 type Element struct {
-	element *edwards25519.Point // a group/edwards25519 Point
+	element *edwards25519.Point
 }
 
 func newPoint() *Element {

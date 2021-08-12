@@ -10,19 +10,19 @@
 package other
 
 import (
-	"github.com/armfazh/h2c-go-ref"
+	H2C "github.com/armfazh/h2c-go-ref"
 
 	"github.com/bytemare/cryptotools/group/internal"
 )
 
 // Hash2Curve implements the Group interface to Hash-to-Curve primitives.
 type Hash2Curve struct {
-	suite h2c.SuiteID
+	suite H2C.SuiteID
 }
 
 // New returns a pointer to a Hash2Curve structure instantiated for the given Hash-to-Curve identifier.
 // and the domain separation tag.
-func New(id h2c.SuiteID) *Hash2Curve {
+func New(id H2C.SuiteID) *Hash2Curve {
 	h, err := id.Get(nil)
 	if err != nil {
 		panic(err)
@@ -71,7 +71,7 @@ func (h *Hash2Curve) Identity() internal.Point {
 	}
 }
 
-func getH2C(id h2c.SuiteID, dst []byte) h2c.HashToPoint {
+func getH2C(id H2C.SuiteID, dst []byte) H2C.HashToPoint {
 	h, err := id.Get(dst)
 	if err != nil {
 		panic(err)
@@ -84,7 +84,7 @@ func getH2C(id h2c.SuiteID, dst []byte) h2c.HashToPoint {
 	return h
 }
 
-func getCurve(id h2c.SuiteID) *curve {
+func getCurve(id H2C.SuiteID) *curve {
 	h2 := getH2C(id, nil)
 	return curves[id].New(h2.GetCurve())
 }
