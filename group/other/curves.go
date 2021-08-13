@@ -51,7 +51,7 @@ func h2cToNist(id C.ID) elliptic.Curve {
 		return elliptic.P256()
 	}
 
-	if id == C.P256 {
+	if id == C.P384 {
 		return elliptic.P384()
 	}
 
