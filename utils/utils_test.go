@@ -27,13 +27,17 @@ func TestConcatenate(t *testing.T) {
 	b := []byte("b")
 	expected := []byte("ab")
 
-	c := Concatenate(0, a, b)
+	if Concatenate(nil) != nil {
+		t.Error("expected nil output for nil input")
+	}
+
+	if !bytes.Equal(a, Concatenate(a)) {
+		t.Error("expected same output for single input")
+	}
+
+	c := Concatenate(a, b)
 
 	if !bytes.Equal(c, expected) {
 		t.Errorf("failed to concatenate. Expected %v, got %v", expected, c)
-	}
-
-	if Concatenate(0, nil) != nil {
-		t.Error("expected nil output for nil input")
 	}
 }

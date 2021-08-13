@@ -12,7 +12,7 @@ import (
 	"crypto"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	tests2 "github.com/bytemare/cryptotools/internal/tests"
 )
 
 type data struct {
@@ -107,9 +107,11 @@ func TestSmallXOFOutput(t *testing.T) {
 	for _, id := range []Extensible{SHAKE128, SHAKE256, BLAKE2XB, BLAKE2XS} {
 		h := id.Get()
 
-		assert.Panics(t, func() {
+		if hasPanic, _ := tests2.ExpectPanic(nil, func() {
 			_ = h.Hash(h.minOutputSize-1, testData.message)
-		})
+		}); !hasPanic {
+			t.Fatal("expected panic")
+		}
 
 	}
 }

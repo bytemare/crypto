@@ -14,10 +14,6 @@ import (
 	"fmt"
 )
 
-const (
-	bufLen = 100
-)
-
 // RandomBytes returns random bytes of length len (wrapper for crypto/rand).
 func RandomBytes(length int) []byte {
 	r := make([]byte, length)
@@ -30,24 +26,23 @@ func RandomBytes(length int) []byte {
 }
 
 // Concatenate takes the variadic array of input and returns a concatenation of it.
-func Concatenate(length int, input ...[]byte) []byte {
-	if len(input) == 0 {
-		return nil
-	}
-
+func Concatenate(input ...[]byte) []byte {
 	if len(input) == 1 {
+		if len(input[0]) == 0 {
+			return nil
+		}
+
 		return input[0]
 	}
 
-	if length == 0 {
-		length = bufLen
+	length := 0
+	for _, in := range input {
+		length += len(in)
 	}
 
 	buf := make([]byte, 0, length)
-	l := 0
 
 	for _, in := range input {
-		l += len(in)
 		buf = append(buf, in...)
 	}
 

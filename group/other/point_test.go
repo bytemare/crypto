@@ -9,10 +9,12 @@
 package other
 
 import (
+	"bytes"
 	"testing"
 
+	tests2 "github.com/bytemare/cryptotools/internal/tests"
+
 	H2C "github.com/armfazh/h2c-go-ref"
-	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -34,7 +36,9 @@ func TestPointEncoding(t *testing.T) {
 			ne := e.(*Point)
 			nn := n.(*Point)
 
-			assert.True(t, ne.point.IsEqual(nn.point))
+			if !ne.point.IsEqual(nn.point) {
+				t.Fatal("expected assertion to be true")
+			}
 		})
 	}
 }
@@ -44,13 +48,22 @@ func testPointArithmetic(t *testing.T, suite H2C.SuiteID, input []byte) {
 
 	// Test Addition and Subtraction
 	base := g.Base()
-	assert.Panics(t, func() { base.Add(nil) })
+	if hasPanic, _ := tests2.ExpectPanic(nil, func() {
+		base.Add(nil)
+	}); !hasPanic {
+		t.Fatal("expected panic")
+	}
 
 	a := base.Add(base)
-	assert.Panics(t, func() { a.Sub(nil) })
-
+	if hasPanic, _ := tests2.ExpectPanic(nil, func() {
+		a.Sub(nil)
+	}); !hasPanic {
+		t.Fatal("expected panic")
+	}
 	sub := a.Sub(base)
-	assert.Equal(t, sub.Bytes(), base.Bytes())
+	if !bytes.Equal(sub.Bytes(), base.Bytes()) {
+		t.Fatal("not equal")
+	}
 
 	// Test Multiplication and inversion
 	base = g.Base()
@@ -58,19 +71,31 @@ func testPointArithmetic(t *testing.T, suite H2C.SuiteID, input []byte) {
 	penc := base.Bytes()
 	senc := s.Bytes()
 	m := base.Mult(s)
-	assert.False(t, m.IsIdentity(), "base mult s is identity")
+	if m.IsIdentity() {
+		t.Fatal("base mult s is identity")
+	}
 	e, err := g.MultBytes(senc, penc)
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, m.Bytes(), e.Bytes())
-	assert.PanicsWithError(t, errParamNilScalar.Error(), func() { m.InvertMult(nil) })
+	if !bytes.Equal(m.Bytes(), e.Bytes()) {
+		t.Fatal("not equal")
+	}
+	if hasPanic, err := tests2.ExpectPanic(errParamNilScalar, func() {
+		m.InvertMult(nil)
+	}); !hasPanic {
+		t.Fatalf("expected panic: %v", err)
+	}
 	i := m.InvertMult(s)
-	assert.Equal(t, i.Bytes(), base.Bytes())
+	if !bytes.Equal(i.Bytes(), base.Bytes()) {
+		t.Fatal("not equal")
+	}
 
 	// Test identity
 	id := base.Sub(base)
-	assert.True(t, id.IsIdentity())
+	if !id.IsIdentity() {
+		t.Fatal("expected assertion to be true")
+	}
 }
 
 func TestPointArithmetic(t *testing.T) {

@@ -21,9 +21,26 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/bytemare/cryptotools/encoding"
 	"github.com/bytemare/cryptotools/hash"
 )
+
+func TestExpander_ZeroDST(t *testing.T) {
+	msg := []byte("test")
+	zeroDST := []byte("")
+	length := 32
+
+	defer func() {
+		recover()
+	}()
+
+	xmd1 := crypto.SHA256
+	_ = ExpandXMD(xmd1, msg, zeroDST, length)
+
+	xof1 := hash.SHAKE128
+	_ = ExpandXOF(xof1, msg, zeroDST, length)
+
+	t.Fatal("expected panic on zero length DST")
+}
 
 func TestExpander_LongDST(t *testing.T) {
 	msg := []byte("test")
@@ -158,7 +175,7 @@ func concatenate(input ...[]byte) []byte {
 }
 
 func msgPrime(h hash.Identifier, input, dst []byte, length int) []byte {
-	lib := encoding.I2OSP(length, 2)
+	lib := i2osp(length, 2)
 	dstPrime := dstPrime(dst)
 
 	if h.Extensible() {

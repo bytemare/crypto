@@ -12,15 +12,14 @@ package hash2curve
 import (
 	"math"
 
-	"github.com/bytemare/cryptotools/encoding"
 	"github.com/bytemare/cryptotools/hash"
 )
 
 // expandMessage XOF implements https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve#section-5.4.2.
 func expandXOF(x hash.Extensible, input, dst []byte, length int) []byte {
 	dst = vetXofDST(x, dst)
-	len2o := encoding.I2OSP(length, 2)
-	dstLen2o := encoding.I2OSP(len(dst), 1)
+	len2o := i2osp(length, 2)
+	dstLen2o := i2osp(len(dst), 1)
 
 	return x.Get().Hash(length, input, len2o, dst, dstLen2o)
 }

@@ -6,7 +6,8 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-package encoding
+// Package hash2curve provides hash-to-curve compatible input expansion.
+package hash2curve
 
 import (
 	"bytes"
@@ -14,7 +15,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	tests2 "github.com/bytemare/cryptotools/internal/tests"
 )
 
 type i2ospTest struct {
@@ -44,44 +45,49 @@ var i2ospVectors = []i2ospTest{
 func TestI2OSP(t *testing.T) {
 	for i, v := range i2ospVectors {
 		t.Run(fmt.Sprintf("%d - %d - %v", v.value, v.size, v.encoded), func(t *testing.T) {
-			r := I2OSP(v.value, v.size)
+			r := i2osp(v.value, v.size)
 
 			if !bytes.Equal(r, v.encoded) {
 				t.Fatalf("invalid encoding for %d. Expected '%s', got '%v'", i, hex.EncodeToString(v.encoded), hex.EncodeToString(r))
-			}
-
-			value := OS2IP(v.encoded)
-			if v.value != value {
-				t.Fatalf("invalid decoding for %d. Expected %d, got %d", i, v.value, value)
 			}
 		})
 	}
 
 	length := -1
-	assert.PanicsWithError(t, errLengthNegative.Error(), func() {
-		_ = I2OSP(1, length)
-	}, "expected panic with negative length")
+	if hasPanic, err := tests2.ExpectPanic(errLengthNegative, func() {
+		_ = i2osp(1, length)
+	}); !hasPanic {
+		t.Fatalf("expected panic with with negative length: %v", err)
+	}
 
 	length = 0
-	assert.PanicsWithError(t, errLengthNegative.Error(), func() {
-		_ = I2OSP(1, length)
-	}, "expected panic with 0 length")
+	if hasPanic, err := tests2.ExpectPanic(errLengthNegative, func() {
+		_ = i2osp(1, length)
+	}); !hasPanic {
+		t.Fatalf("expected panic with with 0 length: %v", err)
+	}
 
 	length = 5
-	assert.PanicsWithError(t, errLengthTooBig.Error(), func() {
-		_ = I2OSP(1, length)
-	}, "expected panic with length too high")
+	if hasPanic, err := tests2.ExpectPanic(errLengthTooBig, func() {
+		_ = i2osp(1, length)
+	}); !hasPanic {
+		t.Fatalf("expected panic with length too big: %v", err)
+	}
 
 	negative := -1
-	assert.PanicsWithError(t, errInputNegative.Error(), func() {
-		_ = I2OSP(negative, 4)
-	}, "expected panic with negative input")
+	if hasPanic, err := tests2.ExpectPanic(errInputNegative, func() {
+		_ = i2osp(negative, 4)
+	}); !hasPanic {
+		t.Fatalf("expected panic with negative input: %v", err)
+	}
 
 	tooLarge := 1 << 8
 	length = 1
-	assert.PanicsWithError(t, errInputLarge.Error(), func() {
-		_ = I2OSP(tooLarge, length)
-	}, "expected panic with exceeding value for the length")
+	if hasPanic, err := tests2.ExpectPanic(errInputLarge, func() {
+		_ = i2osp(tooLarge, length)
+	}); !hasPanic {
+		t.Fatalf("expected panic with exceeding value for the length: %v", err)
+	}
 
 	lengths := map[int]int{
 		100:           1,
@@ -91,7 +97,7 @@ func TestI2OSP(t *testing.T) {
 	}
 
 	for k, v := range lengths {
-		r := I2OSP(k, v)
+		r := i2osp(k, v)
 
 		if len(r) != v {
 			t.Fatalf("invalid length for %d. Expected '%d', got '%d' (%v)", k, v, len(r), r)

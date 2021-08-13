@@ -25,50 +25,50 @@ const (
 	H2C = "ristretto255_XMD:SHA-512_R255MAP_RO_"
 )
 
-// Ristretto255Sha512 represents the Ristretto255 group. It exposes a prime-order group API with hash-to-curve operations.
-type Ristretto255Sha512 struct{}
+// Group represents the Ristretto255 group. It exposes a prime-order group API with hash-to-curve operations.
+type Group struct{}
 
 // NewScalar returns a new, empty, scalar.
-func (r Ristretto255Sha512) NewScalar() internal.Scalar {
+func (r Group) NewScalar() internal.Scalar {
 	return &Scalar{ristretto255.NewScalar()}
 }
 
 // ElementLength returns the byte size of an encoded element.
-func (r Ristretto255Sha512) ElementLength() int {
+func (r Group) ElementLength() int {
 	return canonicalEncodingLength
 }
 
 // NewElement returns a new, empty, element.
-func (r Ristretto255Sha512) NewElement() internal.Point {
+func (r Group) NewElement() internal.Point {
 	return &Point{ristretto255.NewElement()}
 }
 
 // Identity returns the group's identity element.
-func (r Ristretto255Sha512) Identity() internal.Point {
+func (r Group) Identity() internal.Point {
 	return &Point{ristretto255.NewElement().Zero()}
 }
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the group.
-func (r Ristretto255Sha512) HashToGroup(input, dst []byte) internal.Point {
+func (r Group) HashToGroup(input, dst []byte) internal.Point {
 	uniform := hash2curve.ExpandXMD(crypto.SHA512, input, dst, ristrettoInputLength)
 
 	return &Point{ristretto255.NewElement().FromUniformBytes(uniform)}
 }
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.
-func (r Ristretto255Sha512) HashToScalar(input, dst []byte) internal.Scalar {
+func (r Group) HashToScalar(input, dst []byte) internal.Scalar {
 	uniform := hash2curve.ExpandXMD(crypto.SHA512, input, dst, ristrettoInputLength)
 
 	return &Scalar{ristretto255.NewScalar().FromUniformBytes(uniform)}
 }
 
 // Base returns group's base point a.k.a. canonical generator.
-func (r Ristretto255Sha512) Base() internal.Point {
+func (r Group) Base() internal.Point {
 	return &Point{ristretto255.NewElement().Base()}
 }
 
 // MultBytes allows []byte encodings of a scalar and an element of the group to be multiplied.
-func (r Ristretto255Sha512) MultBytes(s, e []byte) (internal.Point, error) {
+func (r Group) MultBytes(s, e []byte) (internal.Point, error) {
 	sc, err := r.NewScalar().Decode(s)
 	if err != nil {
 		return nil, err

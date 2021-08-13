@@ -42,7 +42,7 @@ func (v *vectors) run(t *testing.T) {
 		t.Fatalf("Wrong ciphersuite. Expected %q, got %q", v.Ciphersuite, H2C)
 	}
 	for _, vector := range v.Vectors {
-		p := Curve25519Sha512{}.HashToGroup([]byte(vector.Msg), []byte(v.Dst))
+		p := Group{}.HashToGroup([]byte(vector.Msg), []byte(v.Dst))
 		if hex.EncodeToString(reverse(p.Bytes())) != vector.P.X[2:] {
 			t.Fatalf("Unexpected HashToGroup output. Expected %q, got %q", vector.P.X, hex.EncodeToString(p.Bytes()))
 		}

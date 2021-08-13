@@ -9,10 +9,10 @@
 package other
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/armfazh/h2c-go-ref"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestScalarEncoding(t *testing.T) {
@@ -30,7 +30,9 @@ func TestScalarEncoding(t *testing.T) {
 
 	s3 := s2.(*Scalar)
 
-	assert.True(t, s3.Equal(s.(*Scalar)))
+	if !s3.Equal(s.(*Scalar)) {
+		t.Fatal("expected assertion to be true")
+	}
 }
 
 func TestScalarArithmetic(t *testing.T) {
@@ -38,16 +40,24 @@ func TestScalarArithmetic(t *testing.T) {
 
 	// Test Addition and Substraction
 	s := g.NewScalar().Random()
-	assert.Equal(t, s.Add(nil).Bytes(), s.Bytes())
+	if !bytes.Equal(s.Add(nil).Bytes(), s.Bytes()) {
+		t.Fatal("not equal")
+	}
 	a := s.Add(s)
-	assert.Equal(t, a.Sub(nil).Bytes(), a.Bytes())
+	if !bytes.Equal(a.Sub(nil).Bytes(), a.Bytes()) {
+		t.Fatal("not equal")
+	}
 	r := a.Sub(s)
-	assert.Equal(t, r.Bytes(), s.Bytes())
+	if !bytes.Equal(r.Bytes(), s.Bytes()) {
+		t.Fatal("not equal")
+	}
 
 	// Test Multiplication and inversion
 	s = g.NewScalar().Random()
 	m := s.Mult(s)
 	i := s.Invert().Mult(m)
 	// i := m.Mult(s.Invert())
-	assert.Equal(t, i.Bytes(), s.Bytes())
+	if !bytes.Equal(i.Bytes(), s.Bytes()) {
+		t.Fatal("not equal")
+	}
 }

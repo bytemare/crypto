@@ -12,7 +12,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	tests2 "github.com/bytemare/cryptotools/internal/tests"
 )
 
 func TestLongHmacKey(t *testing.T) {
@@ -21,9 +21,11 @@ func TestLongHmacKey(t *testing.T) {
 	for _, id := range []Hashing{SHA256, SHA512, SHA3_256, SHA3_512} {
 		h := id.Get()
 
-		assert.PanicsWithError(t, errHmacKeySize.Error(), func() {
+		if hasPanic, err := tests2.ExpectPanic(errHmacKeySize, func() {
 			_ = h.Hmac(testData.message, longHMACKey)
-		})
+		}); !hasPanic {
+			t.Fatalf("expected panic: %v", err)
+		}
 	}
 }
 

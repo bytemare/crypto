@@ -153,3 +153,35 @@ func solveEd448(x *big.Int) *big.Int {
 
 	return y2.Mod(y2, ed448order)
 }
+
+func (p *Point) recoverPoint(input []byte) (*Point, error) {
+	// Extract x
+	x, err := getX(p.Field(), input)
+	if err != nil {
+		return nil, err
+	}
+
+	// Compute y^2
+	y := p.solver(x)
+	y.ModSqrt(y, p.Field().Order())
+
+	if y == nil {
+		return nil, errParamYNotSquare
+	}
+
+	// Set the sign
+	if byte(y.Bit(0)) != input[0]&1 {
+		y.Neg(y).Mod(y, p.Field().Order())
+	}
+
+	// Verify the point is on curve
+	if err := isOnCurve(x, y, p.Field().Order(), p.solver); err != nil {
+		return nil, err
+	}
+
+	if err := p.set(x, y); err != nil {
+		return nil, err
+	}
+
+	return p, nil
+}
