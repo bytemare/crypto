@@ -11,12 +11,12 @@ package hash2curve
 
 import (
 	"crypto"
-	"fmt"
+	"errors"
 	"hash"
 	"math"
-
-	"github.com/bytemare/cryptotools/encoding"
 )
+
+var errLengthTooLarge = errors.New("hash function's output length to low for requested length")
 
 // expandXMD implements https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve#section-5.4.1.
 func expandXMD(id crypto.Hash, input, dst []byte, length int) []byte {
@@ -27,11 +27,11 @@ func expandXMD(id crypto.Hash, input, dst []byte, length int) []byte {
 
 	ell := math.Ceil(float64(length) / float64(b))
 	if ell > 255 {
-		panic(fmt.Errorf("the hash function's output length is too low: %d/%d", b, length))
+		panic(errLengthTooLarge)
 	}
 
 	zPad := make([]byte, blockSize)
-	lib := encoding.I2OSP(length, 2)
+	lib := i2osp(length, 2)
 	zeroByte := []byte{0}
 	dstPrime := dstPrime(dst)
 
