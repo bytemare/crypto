@@ -112,7 +112,7 @@ func newCurve(id H2C.SuiteID) (string, internal.Group) {
 func init() {
 	registered = make(map[Group]*params)
 
-	Ristretto255Sha512.register(ristretto.H2C, ristretto.Ristretto255Sha512{})
+	Ristretto255Sha512.register(ristretto.H2C, ristretto.Group{})
 	P256Sha256.register(newCurve(H2C.P256_XMDSHA256_SSWU_RO_))
 	P384Sha512.register(newCurve(H2C.P384_XMDSHA512_SSWU_RO_))
 	P521Sha512.register(newCurve(H2C.P521_XMDSHA512_SSWU_RO_))

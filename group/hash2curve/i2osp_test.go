@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	tests2 "github.com/bytemare/cryptotools/internal/tests"
 )
 
 type i2ospTest struct {
@@ -50,39 +50,44 @@ func TestI2OSP(t *testing.T) {
 			if !bytes.Equal(r, v.encoded) {
 				t.Fatalf("invalid encoding for %d. Expected '%s', got '%v'", i, hex.EncodeToString(v.encoded), hex.EncodeToString(r))
 			}
-
-			value := os2ip(v.encoded)
-			if v.value != value {
-				t.Fatalf("invalid decoding for %d. Expected %d, got %d", i, v.value, value)
-			}
 		})
 	}
 
 	length := -1
-	assert.PanicsWithError(t, errLengthNegative.Error(), func() {
+	if hasPanic, err := tests2.ExpectPanic(errLengthNegative, func() {
 		_ = i2osp(1, length)
-	}, "expected panic with negative length")
+	}); !hasPanic {
+		t.Fatalf("expected panic with with negative length: %v", err)
+	}
 
 	length = 0
-	assert.PanicsWithError(t, errLengthNegative.Error(), func() {
+	if hasPanic, err := tests2.ExpectPanic(errLengthNegative, func() {
 		_ = i2osp(1, length)
-	}, "expected panic with 0 length")
+	}); !hasPanic {
+		t.Fatalf("expected panic with with 0 length: %v", err)
+	}
 
 	length = 5
-	assert.PanicsWithError(t, errLengthTooBig.Error(), func() {
+	if hasPanic, err := tests2.ExpectPanic(errLengthTooBig, func() {
 		_ = i2osp(1, length)
-	}, "expected panic with length too high")
+	}); !hasPanic {
+		t.Fatalf("expected panic with length too big: %v", err)
+	}
 
 	negative := -1
-	assert.PanicsWithError(t, errInputNegative.Error(), func() {
+	if hasPanic, err := tests2.ExpectPanic(errInputNegative, func() {
 		_ = i2osp(negative, 4)
-	}, "expected panic with negative input")
+	}); !hasPanic {
+		t.Fatalf("expected panic with negative input: %v", err)
+	}
 
 	tooLarge := 1 << 8
 	length = 1
-	assert.PanicsWithError(t, errInputLarge.Error(), func() {
+	if hasPanic, err := tests2.ExpectPanic(errInputLarge, func() {
 		_ = i2osp(tooLarge, length)
-	}, "expected panic with exceeding value for the length")
+	}); !hasPanic {
+		t.Fatalf("expected panic with exceeding value for the length: %v", err)
+	}
 
 	lengths := map[int]int{
 		100:           1,

@@ -20,9 +20,6 @@ var (
 	errInputLarge     = errors.New("input is too high for length")
 	errLengthNegative = errors.New("length is negative or 0")
 	errLengthTooBig   = errors.New("requested length is > 4")
-
-	errInputEmpty    = errors.New("nil or empty input")
-	errInputTooLarge = errors.New("input too large for integer")
 )
 
 // i2osp 32 bit Integer to Octet Stream Primitive on maximum 4 bytes.
@@ -55,24 +52,4 @@ func i2osp(value, length int) []byte {
 	}
 
 	return out[:length]
-}
-
-// os2ip Octet Stream to Integer Primitive on maximum 4 bytes / 32 bits.
-func os2ip(input []byte) int {
-	switch length := len(input); {
-	case length == 0:
-		panic(errInputEmpty)
-	case length == 1:
-		b := []byte{0, input[0]}
-		return int(binary.BigEndian.Uint16(b))
-	case length == 2:
-		return int(binary.BigEndian.Uint16(input))
-	case length == 3:
-		b := append([]byte{0}, input...)
-		return int(binary.BigEndian.Uint16(b))
-	case length == 4:
-		return int(binary.BigEndian.Uint32(input))
-	default:
-		panic(errInputTooLarge)
-	}
 }

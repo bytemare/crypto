@@ -11,7 +11,7 @@ package mhf
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	tests2 "github.com/bytemare/cryptotools/internal/tests"
 
 	"github.com/bytemare/cryptotools/utils"
 )
@@ -41,20 +41,28 @@ func TestMHF(t *testing.T) {
 
 	for _, m := range mhfs {
 		t.Run(m.String(), func(t *testing.T) {
-			assert.True(t, m.Available())
+			if !m.Available() {
+				t.Fatal("expected assertion to be true")
+			}
 
-			assert.Equal(t, m.String(), strings[m-1])
+			if m.String() != strings[m-1] {
+				t.Fatal("not equal")
+			}
 
-			assert.NotPanics(t, func() {
+			if hasPanic, _ := tests2.ExpectPanic(nil, func() {
 				_ = m.Harden(password, salt, length)
-			})
+			}); hasPanic {
+				t.Fatal("unexpected panic")
+			}
 
 			h := m.Get()
 			p := h.params()
 			h.Parameterize(p...)
-			assert.NotPanics(t, func() {
-				_ = h.Harden(password, salt, length)
-			})
+			if hasPanic, _ := tests2.ExpectPanic(nil, func() {
+				_ = m.Harden(password, salt, length)
+			}); hasPanic {
+				t.Fatal("unexpected panic")
+			}
 		})
 	}
 }
