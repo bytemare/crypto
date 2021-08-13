@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"testing"
 
-	tests2 "github.com/bytemare/cryptotools/internal/tests"
+	tests2 "github.com/bytemare/crypto/internal/tests"
 )
 
 type i2ospTest struct {

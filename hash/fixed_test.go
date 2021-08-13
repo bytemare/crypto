@@ -12,7 +12,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	tests2 "github.com/bytemare/cryptotools/internal/tests"
+	tests2 "github.com/bytemare/crypto/internal/tests"
 )
 
 func TestLongHmacKey(t *testing.T) {

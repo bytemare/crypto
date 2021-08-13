@@ -14,8 +14,8 @@ import (
 
 	"github.com/gtank/ristretto255"
 
-	"github.com/bytemare/cryptotools/group/hash2curve"
-	"github.com/bytemare/cryptotools/group/internal"
+	"github.com/bytemare/crypto/group/hash2curve"
+	"github.com/bytemare/crypto/group/internal"
 )
 
 const (

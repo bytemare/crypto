@@ -13,7 +13,7 @@ import (
 	"crypto"
 	"io"
 
-	"github.com/bytemare/cryptotools/signature/internal"
+	"github.com/bytemare/crypto/signature/internal"
 )
 
 // Identifier indicates the signature scheme to be used.

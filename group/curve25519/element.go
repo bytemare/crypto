@@ -15,8 +15,8 @@ import (
 	"filippo.io/edwards25519"
 	"filippo.io/edwards25519/field"
 
-	"github.com/bytemare/cryptotools/group/hash2curve"
-	"github.com/bytemare/cryptotools/group/internal"
+	"github.com/bytemare/crypto/group/hash2curve"
+	"github.com/bytemare/crypto/group/internal"
 )
 
 // Element represents a Curve25519 point. It wraps an Edwards25519 implementation to leverage its optimized operations.

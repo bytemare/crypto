@@ -10,7 +10,7 @@
 package group
 
 import (
-	"github.com/bytemare/cryptotools/group/internal"
+	"github.com/bytemare/crypto/group/internal"
 )
 
 // Point represents a point on the curve of the prime-order group.

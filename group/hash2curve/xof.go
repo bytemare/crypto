@@ -12,7 +12,7 @@ package hash2curve
 import (
 	"math"
 
-	"github.com/bytemare/cryptotools/hash"
+	"github.com/bytemare/crypto/hash"
 )
 
 // expandMessage XOF implements https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve#section-5.4.2.

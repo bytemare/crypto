@@ -1,4 +1,4 @@
-module github.com/bytemare/cryptotools
+module github.com/bytemare/crypto
 
 go 1.16
 

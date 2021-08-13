@@ -14,7 +14,7 @@ import (
 	"errors"
 	"hash"
 
-	x "github.com/bytemare/cryptotools/hash"
+	x "github.com/bytemare/crypto/hash"
 )
 
 const (

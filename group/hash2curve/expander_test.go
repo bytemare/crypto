@@ -21,7 +21,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/bytemare/cryptotools/hash"
+	"github.com/bytemare/crypto/hash"
 )
 
 func TestExpander_ZeroDST(t *testing.T) {

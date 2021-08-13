@@ -12,7 +12,7 @@ package edwards25519
 import (
 	"filippo.io/edwards25519"
 
-	"github.com/bytemare/cryptotools/group/internal"
+	"github.com/bytemare/crypto/group/internal"
 )
 
 const (

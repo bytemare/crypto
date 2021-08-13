@@ -12,7 +12,7 @@ package ristretto
 import (
 	"github.com/gtank/ristretto255"
 
-	"github.com/bytemare/cryptotools/group/internal"
+	"github.com/bytemare/crypto/group/internal"
 )
 
 const canonicalEncodingLength = 32

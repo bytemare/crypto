@@ -15,11 +15,11 @@ import (
 
 	H2C "github.com/armfazh/h2c-go-ref"
 
-	"github.com/bytemare/cryptotools/group/curve25519"
-	"github.com/bytemare/cryptotools/group/edwards25519"
-	"github.com/bytemare/cryptotools/group/internal"
-	"github.com/bytemare/cryptotools/group/other"
-	"github.com/bytemare/cryptotools/group/ristretto"
+	"github.com/bytemare/crypto/group/curve25519"
+	"github.com/bytemare/crypto/group/edwards25519"
+	"github.com/bytemare/crypto/group/internal"
+	"github.com/bytemare/crypto/group/other"
+	"github.com/bytemare/crypto/group/ristretto"
 )
 
 // Group defines registered groups for use in the implementation.

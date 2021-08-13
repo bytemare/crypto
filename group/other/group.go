@@ -12,7 +12,7 @@ package other
 import (
 	H2C "github.com/armfazh/h2c-go-ref"
 
-	"github.com/bytemare/cryptotools/group/internal"
+	"github.com/bytemare/crypto/group/internal"
 )
 
 // Hash2Curve implements the Group interface to Hash-to-Curve primitives.

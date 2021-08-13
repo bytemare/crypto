@@ -14,7 +14,7 @@ import (
 
 	"github.com/gtank/ristretto255"
 
-	"github.com/bytemare/cryptotools/group/internal"
+	"github.com/bytemare/crypto/group/internal"
 )
 
 // Point implements the Point interface for the Ristretto255 group element.

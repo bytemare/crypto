@@ -4,7 +4,7 @@ COMMIT      := $(shell git rev-parse HEAD)
 .PHONY: lint
 lint:
 	@echo "Linting ..."
-	@gofumports -w -local github.com/bytemare/cryptotools .
+	@gofumports -w -local github.com/bytemare/crypto .
 	@golangci-lint run --config=./.github/.golangci.yml ./...
 
 .PHONY: license

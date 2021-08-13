@@ -14,8 +14,8 @@ import (
 
 	"filippo.io/edwards25519"
 
-	"github.com/bytemare/cryptotools/group/hash2curve"
-	"github.com/bytemare/cryptotools/group/internal"
+	"github.com/bytemare/crypto/group/hash2curve"
+	"github.com/bytemare/crypto/group/internal"
 )
 
 // H2C represents the hash-to-curve string identifier.

@@ -14,7 +14,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/bytemare/cryptotools/group/internal"
+	"github.com/bytemare/crypto/group/internal"
 
 	Curve "github.com/armfazh/h2c-go-ref/curve"
 	C "github.com/armfazh/tozan-ecc/curve"

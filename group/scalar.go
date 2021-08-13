@@ -10,7 +10,7 @@
 package group
 
 import (
-	"github.com/bytemare/cryptotools/group/internal"
+	"github.com/bytemare/crypto/group/internal"
 )
 
 // Scalar represents a scalar in the prime-order group.

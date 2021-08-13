@@ -12,7 +12,7 @@ import (
 	"crypto"
 	"testing"
 
-	tests2 "github.com/bytemare/cryptotools/internal/tests"
+	tests2 "github.com/bytemare/crypto/internal/tests"
 )
 
 type data struct {

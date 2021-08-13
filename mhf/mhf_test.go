@@ -11,9 +11,9 @@ package mhf
 import (
 	"testing"
 
-	tests2 "github.com/bytemare/cryptotools/internal/tests"
+	tests2 "github.com/bytemare/crypto/internal/tests"
 
-	"github.com/bytemare/cryptotools/utils"
+	"github.com/bytemare/crypto/utils"
 )
 
 var (

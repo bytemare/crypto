@@ -14,7 +14,7 @@ import (
 
 	"filippo.io/edwards25519"
 
-	"github.com/bytemare/cryptotools/group/internal"
+	"github.com/bytemare/crypto/group/internal"
 )
 
 // Element represents an Edwards25519 point. It wraps an Edwards25519 implementation to leverage its optimized operations.

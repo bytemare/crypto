@@ -7,7 +7,7 @@
 // https://spdx.org/licenses/MIT.html
 
 /*
-Package cryptotools provides some abstract and easy-to-use interfaces to common cryptographic operations.
+Package crypto provides some abstract and easy-to-use interfaces to common cryptographic operations.
 
 It enables using one interface for a variety of underlying primitives, and without the hassle of setting them up.
 
@@ -22,4 +22,4 @@ Available interfaces are:
 - Encoding: for encoding and decoding to and from different formats.
 
 */
-package cryptotools
+package crypto

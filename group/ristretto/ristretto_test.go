@@ -14,7 +14,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	tests3 "github.com/bytemare/cryptotools/internal/tests"
+	tests3 "github.com/bytemare/crypto/internal/tests"
 )
 
 const (

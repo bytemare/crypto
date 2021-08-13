@@ -13,7 +13,7 @@ import (
 	"crypto/rand"
 	"math/big"
 
-	"github.com/bytemare/cryptotools/group/internal"
+	"github.com/bytemare/crypto/group/internal"
 
 	"github.com/armfazh/tozan-ecc/field"
 )

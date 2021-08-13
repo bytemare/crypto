@@ -12,7 +12,7 @@ import (
 	"bytes"
 	"testing"
 
-	tests2 "github.com/bytemare/cryptotools/internal/tests"
+	tests2 "github.com/bytemare/crypto/internal/tests"
 
 	H2C "github.com/armfazh/h2c-go-ref"
 )

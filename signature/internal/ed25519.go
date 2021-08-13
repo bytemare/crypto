@@ -14,7 +14,7 @@ import (
 	"crypto/ed25519"
 	"io"
 
-	"github.com/bytemare/cryptotools/utils"
+	"github.com/bytemare/crypto/utils"
 )
 
 // Ed25519 implements the Signature interfaces and wraps crypto/ed22519.

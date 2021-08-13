@@ -72,7 +72,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=bytemare_cryptotools
+            -Dsonar.projectKey=bytemare_crypto
             -Dsonar.organization=bytemare-github
             -Dsonar.go.coverage.reportPaths=coverage.out
             -Dsonar.verbose=true
