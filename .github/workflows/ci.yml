@@ -73,6 +73,6 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=bytemare_cryptotools
-            -Dsonar.organization=bytemare-cryptotools
+            -Dsonar.organization=bytemare-github
             -Dsonar.go.coverage.reportPaths=coverage.out
             -Dsonar.verbose=true
