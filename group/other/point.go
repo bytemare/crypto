@@ -112,10 +112,6 @@ func (p *Point) Bytes() []byte {
 	x := p.point.X().Polynomial()[0]
 	y := p.point.Y().Polynomial()[0]
 
-	//if p.id == Curve.Edwards25519 {
-	//	return encodeEd25519(x, y)
-	//}
-
 	return encodeSignPrefix(x, y, pointLen(p.Field().BitLen()))
 }
 
@@ -133,19 +129,6 @@ func (p *Point) Decode(input []byte) (internal.Point, error) {
 
 		return p, nil
 	}
-
-	//if p.id == Curve.Edwards25519 {
-	//	x, y, err := decodeEd25519(input)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//
-	//	if err := p.set(x, y); err != nil {
-	//		return nil, err
-	//	}
-	//
-	//	return p, nil
-	//}
 
 	return p.recoverPoint(input)
 }

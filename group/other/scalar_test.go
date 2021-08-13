@@ -54,9 +54,8 @@ func TestScalarArithmetic(t *testing.T) {
 
 	// Test Multiplication and inversion
 	s = g.NewScalar().Random()
-	m := s.Mult(s)
-	i := s.Invert().Mult(m)
-	// i := m.Mult(s.Invert())
+	sqr := s.Mult(s)
+	i := s.Invert().Mult(sqr)
 	if !bytes.Equal(i.Bytes(), s.Bytes()) {
 		t.Fatal("not equal")
 	}

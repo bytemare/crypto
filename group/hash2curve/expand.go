@@ -35,7 +35,6 @@ func ExpandXMD(id crypto.Hash, input, dst []byte, length int) []byte {
 		if len(dst) == minLength {
 			panic(errZeroLenDST)
 		}
-		// panic(errShortDST)
 	}
 
 	return expandXMD(id, input, dst, length)
@@ -47,7 +46,6 @@ func ExpandXOF(id x.Extensible, input, dst []byte, length int) []byte {
 		if len(dst) == minLength {
 			panic(errZeroLenDST)
 		}
-		// panic(errShortDST)
 	}
 
 	return expandXOF(id, input, dst, length)

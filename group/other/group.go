@@ -129,14 +129,3 @@ func (h *Hash2Curve) MultBytes(scalar, element []byte) (internal.Point, error) {
 
 	return e.Mult(s), nil
 }
-
-// func (h *Hash2Curve) checkDSTLen() {
-// 	 // todo bring this back after testing
-// 	 if len(h.dst) < group.DstRecommendedMinLength {
-// 	 	if len(h.dst) == group.DstMinLength {
-// 	 		panic(errParamZeroLenDST)
-// 	 	}
-//
-// 	 	panic(errParamShortDST)
-// 	 }
-// }
