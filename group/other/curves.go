@@ -26,34 +26,16 @@ type curve struct {
 }
 
 var (
-	curve448a     = new(big.Int)
+	curve448a, _  = new(big.Int).SetString("156326", 0)
 	curve448order = C.Curve448.Get().Field().Order()
-	// curve25519a     = new(big.Int)
+	// curve25519a, _     = new(big.Int).SetString("486662", 0)
 	// curve25519order = C.Curve25519.Get().Field().Order()
-	ed448d     = new(big.Int)
+	ed448d, _  = new(big.Int).SetString("-39081", 0)
 	ed448order = C.Edwards448.Get().Field().Order()
-	// ed25519d        = new(big.Int)
+	// ed25519d, _        = new(big.Int).SetString("0x52036cee2b6ffe738cc740797779e89800700a4d4141d8ab75eb4dca135978a3", 0)
 	// ed25519order    = C.Edwards25519.Get().Field().Order()
 	secp256k1order = C.SECP256K1.Get().Field().Order()
 )
-
-func init() {
-	if _, ok := curve448a.SetString("156326", 0); !ok {
-		panic("setting value failed")
-	}
-
-	// if _, ok := curve25519a.SetString("486662", 0); !ok {
-	//	panic("setting value failed")
-	// }
-
-	// if _, ok := ed25519d.SetString("0x52036cee2b6ffe738cc740797779e89800700a4d4141d8ab75eb4dca135978a3", 0); !ok {
-	//	panic("setting value failed")
-	// }
-
-	if _, ok := ed448d.SetString("-39081", 0); !ok {
-		panic("setting value failed")
-	}
-}
 
 func point(curve Curve.EllCurve, x, y string) Curve.Point {
 	X := curve.Field().Elt(x)

@@ -147,35 +147,7 @@ func (p *Point) Decode(input []byte) (internal.Point, error) {
 	//	return p, nil
 	//}
 
-	// Extract x
-	x, err := getX(p.Field(), input)
-	if err != nil {
-		return nil, err
-	}
-
-	// Compute y^2
-	y := p.solver(x)
-	y.ModSqrt(y, p.Field().Order())
-
-	if y == nil {
-		return nil, errParamYNotSquare
-	}
-
-	// Set the sign
-	if byte(y.Bit(0)) != input[0]&1 {
-		y.Neg(y).Mod(y, p.Field().Order())
-	}
-
-	// Verify the point is on curve
-	if err := isOnCurve(x, y, p.Field().Order(), p.solver); err != nil {
-		return nil, err
-	}
-
-	if err := p.set(x, y); err != nil {
-		return nil, err
-	}
-
-	return p, nil
+	return p.recoverPoint(input)
 }
 
 func (p *Point) set(x, y *big.Int) (err error) {

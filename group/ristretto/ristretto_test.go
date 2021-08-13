@@ -21,8 +21,8 @@ const (
 	goodScalar = "243170e83a77812893c234314116e1c007671adfe23325011e3827c1b2ff8d0a"
 	basePoint  = "e2f2ae0a6abc4e71a884a961c500515f58e30b6aa582dd8db6a65945e08d2d76"
 
-	testApp         = "testRistretto255"
-	testVersion     = "0.0"
+	testApp     = "testRistretto255"
+	testVersion = "0.0"
 )
 
 type testGroup struct {

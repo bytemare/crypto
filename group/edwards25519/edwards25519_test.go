@@ -67,7 +67,7 @@ func (v *vectors) run(t *testing.T) {
 		t.Fatalf("Wrong ciphersuite. Expected %q, got %q", v.Ciphersuite, H2C)
 	}
 	for _, vector := range v.Vectors {
-		p := Edwards25519Sha512{}.HashToGroup([]byte(vector.Msg), []byte(v.Dst))
+		p := Group{}.HashToGroup([]byte(vector.Msg), []byte(v.Dst))
 		q := decodePoint(vector.P.X[2:], vector.P.Y[2:])
 		if q.Equal(p.(*Element).element) != 1 {
 			t.Fatalf("Unexpected HashToGroup output. Expected %q, got %q", hex.EncodeToString(q.Bytes()), hex.EncodeToString(p.Bytes()))
