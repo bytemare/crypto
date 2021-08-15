@@ -26,28 +26,25 @@ const (
 )
 
 var errZeroLenDST = errors.New("zero-length DST")
-
 // errShortDST = internal.ParameterError("DST is shorter than recommended length")
 
-// ExpandXMD expands the input and dst using the given fixed length hash function.
-func ExpandXMD(id crypto.Hash, input, dst []byte, length int) []byte {
+func checkDST(dst []byte) {
 	if len(dst) < recommendedMinLength {
 		if len(dst) == minLength {
 			panic(errZeroLenDST)
 		}
 	}
+}
 
+// ExpandXMD expands the input and dst using the given fixed length hash function.
+func ExpandXMD(id crypto.Hash, input, dst []byte, length int) []byte {
+	checkDST(dst)
 	return expandXMD(id, input, dst, length)
 }
 
 // ExpandXOF expands the input and dst using the given extensible output hash function.
 func ExpandXOF(id x.Extensible, input, dst []byte, length int) []byte {
-	if len(dst) < recommendedMinLength {
-		if len(dst) == minLength {
-			panic(errZeroLenDST)
-		}
-	}
-
+	checkDST(dst)
 	return expandXOF(id, input, dst, length)
 }
 

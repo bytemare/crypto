@@ -53,7 +53,7 @@ func (g Group) HashToGroup(input, dst []byte) internal.Point {
 func (g Group) HashToScalar(input, dst []byte) internal.Scalar {
 	sc := hash2curve.HashToScalarXMD(crypto.SHA512, input, dst, canonicalEncodingLength)
 
-	s, err := edwards25519.NewScalar().SetUniformBytes(sc)
+	s, err := edwards25519.NewScalar().SetCanonicalBytes(sc)
 	if err != nil {
 		panic(err)
 	}
