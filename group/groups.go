@@ -68,27 +68,28 @@ var (
 
 // Available reports whether the given Group is linked into the binary.
 func (i Group) Available() bool {
-	return i > 0 && i < maxID && registered[i] != nil
+	_, ok := registered[i]
+	return ok
+}
+
+func (i Group) get() *params {
+	p, ok := registered[i]
+	if !ok {
+		panic(errInvalidID)
+	}
+
+	return p
 }
 
 // MakeDST builds a domain separation tag in the form of <app>-V<version>-CS<id>-<hash-to-curve-ID>, or returns an error.
 func (i Group) MakeDST(app, version string) ([]byte, error) {
-	if !i.Available() {
-		panic(errInvalidID)
-	}
-
-	p := registered[i]
-
+	p := i.get()
 	return []byte(fmt.Sprintf(dstfmt, app, version, p.id, p.h2cID)), nil
 }
 
 // String returns the hash-to-curve string identifier of the ciphersuite.
 func (i Group) String() string {
-	if !i.Available() {
-		panic(errInvalidID)
-	}
-
-	return registered[i].h2cID
+	return i.get().h2cID
 }
 
 type params struct {
@@ -125,74 +126,42 @@ func init() {
 
 // NewScalar returns a new, empty, scalar.
 func (i Group) NewScalar() *Scalar {
-	if !i.Available() {
-		panic(errInvalidID)
-	}
-
-	return newScalar(registered[i].NewScalar())
+	return newScalar(i.get().NewScalar())
 }
 
 // NewElement returns a new, empty, element.
 func (i Group) NewElement() *Point {
-	if !i.Available() {
-		panic(errInvalidID)
-	}
-
-	return newPoint(registered[i].NewElement())
+	return newPoint(i.get().NewElement())
 }
 
 // ElementLength returns the byte size of an encoded element.
 func (i Group) ElementLength() int {
-	if !i.Available() {
-		panic(errInvalidID)
-	}
-
-	return registered[i].ElementLength()
+	return i.get().ElementLength()
 }
 
 // Identity returns the group's identity element.
 func (i Group) Identity() *Point {
-	if !i.Available() {
-		panic(errInvalidID)
-	}
-
-	return newPoint(registered[i].Identity())
+	return newPoint(i.get().Identity())
 }
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
 func (i Group) HashToGroup(input, dst []byte) *Point {
-	if !i.Available() {
-		panic(errInvalidID)
-	}
-
-	return newPoint(registered[i].HashToGroup(input, dst))
+	return newPoint(i.get().HashToGroup(input, dst))
 }
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.
 func (i Group) HashToScalar(input, dst []byte) *Scalar {
-	if !i.Available() {
-		panic(errInvalidID)
-	}
-
-	return newScalar(registered[i].HashToScalar(input, dst))
+	return newScalar(i.get().HashToScalar(input, dst))
 }
 
 // Base returns the group's base point a.k.a. canonical generator.
 func (i Group) Base() *Point {
-	if !i.Available() {
-		panic(errInvalidID)
-	}
-
-	return newPoint(registered[i].Base())
+	return newPoint(i.get().Base())
 }
 
 // MultBytes allows []byte encodings of a scalar and an element of the Group to be multiplied.
 func (i Group) MultBytes(scalar, element []byte) (*Point, error) {
-	if !i.Available() {
-		panic(errInvalidID)
-	}
-
-	p, err := registered[i].MultBytes(scalar, element)
+	p, err := i.get().MultBytes(scalar, element)
 	if err != nil {
 		return nil, err
 	}
