@@ -51,7 +51,7 @@ func (g Group) HashToGroup(input, dst []byte) internal.Point {
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.
 func (g Group) HashToScalar(input, dst []byte) internal.Scalar {
-	sc := hash2curve.HashToScalarXMD(crypto.SHA512, input, dst, canonicalEncodingLength)
+	sc := hash2curve.HashToField25519XMD(crypto.SHA512, input, dst, canonicalEncodingLength)
 
 	s, err := edwards25519.NewScalar().SetCanonicalBytes(sc)
 	if err != nil {

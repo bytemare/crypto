@@ -35,7 +35,7 @@ var (
 
 // HashToEdwards25519 implements hash-to-curve mapping to Edwards25519 of input with dst.
 func HashToEdwards25519(input, dst []byte) *edwards25519.Point {
-	q0, q1 := HashToFieldXMD(crypto.SHA512, input, dst, 32)
+	q0, q1 := doubleHashToField25519XMD(crypto.SHA512, input, dst, 32)
 	p0 := MapToEdwards(q0)
 	p1 := MapToEdwards(q1)
 	p0.Add(p0, p1)

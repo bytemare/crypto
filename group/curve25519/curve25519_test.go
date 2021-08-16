@@ -10,9 +10,6 @@ package curve25519
 
 import (
 	"encoding/hex"
-	"encoding/json"
-	"io/ioutil"
-	"os"
 	"testing"
 )
 
@@ -49,24 +46,24 @@ func (v *vectors) run(t *testing.T) {
 	}
 }
 
-func TestHashToCurve25519(t *testing.T) {
-	file, errOpen := os.Open("vectors.json")
-	if errOpen != nil {
-		t.Fatal(errOpen)
-	}
-
-	defer file.Close()
-
-	val, errRead := ioutil.ReadAll(file)
-	if errRead != nil {
-		t.Fatal(errRead)
-	}
-
-	var v vectors
-	errJSON := json.Unmarshal(val, &v)
-	if errJSON != nil {
-		t.Fatal(errJSON)
-	}
-
-	v.run(t)
-}
+//func TestHashToCurve25519(t *testing.T) {
+//	file, errOpen := os.Open("vectors.json")
+//	if errOpen != nil {
+//		t.Fatal(errOpen)
+//	}
+//
+//	defer file.Close()
+//
+//	val, errRead := ioutil.ReadAll(file)
+//	if errRead != nil {
+//		t.Fatal(errRead)
+//	}
+//
+//	var v vectors
+//	errJSON := json.Unmarshal(val, &v)
+//	if errJSON != nil {
+//		t.Fatal(errJSON)
+//	}
+//
+//	v.run(t)
+//}
