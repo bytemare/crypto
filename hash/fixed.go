@@ -30,6 +30,9 @@ const (
 	// SHA256 identifies the Sha2 hashing function with 256 bit output.
 	SHA256 = Hashing(crypto.SHA256)
 
+	// SHA384 identifies the Sha2 hashing function with 384 bit output.
+	SHA384 = Hashing(crypto.SHA384)
+
 	// SHA512 identifies the Sha2 hashing function with 512 bit output.
 	SHA512 = Hashing(crypto.SHA512)
 
@@ -41,6 +44,7 @@ const (
 
 	// string IDs for the hash functions.
 	sha256s   = "SHA256"
+	sha384s   = "SHA384"
 	sha512s   = "SHA512"
 	sha3_256s = "SHA3-256"
 	sha3_512s = "SHA3-512"
@@ -146,6 +150,7 @@ func init() {
 
 	SHA256.register(sha256.New, sha256s, sha256.BlockSize, sha256.Size, sec128)
 	SHA512.register(sha512.New, sha512s, sha512.BlockSize, sha512.Size, sec256)
+	SHA384.register(sha512.New384, sha384s, sha512.BlockSize, sha512.Size384, sec192)
 	SHA3_256.register(sha3.New256, sha3_256s, blockSHA3256, size256, sec128)
 	SHA3_512.register(sha3.New512, sha3_512s, blockSHA3512, size512, sec256)
 }

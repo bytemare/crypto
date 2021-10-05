@@ -11,10 +11,12 @@ package hash
 var (
 	// output size in bytes.
 	size256 = 32
+	size384 = 48
 	size512 = 64
 
 	// security level in bits.
 	sec128 = 128
+	sec192 = 192
 	sec256 = 256
 )
 

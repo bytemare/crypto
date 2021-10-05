@@ -78,7 +78,7 @@ type memoryHardFunction interface {
 	// Parameterize replaces the functions parameters with the new ones. Must match the amount of parameters.
 	Parameterize(parameters ...int)
 
-	// Returns the string name of the function and its parameters
+	// String returns the string name of the function and its parameters.
 	String() string
 
 	params() []int
