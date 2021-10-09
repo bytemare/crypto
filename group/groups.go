@@ -35,8 +35,8 @@ const (
 	// P256Sha256 identifies a group over P256 with SHA2-512 hash-to-group hashing.
 	P256Sha256
 
-	// P384Sha512 identifies a group over P384 with SHA2-512 hash-to-group hashing.
-	P384Sha512
+	// P384Sha384 identifies a group over P384 with SHA2-384 hash-to-group hashing.
+	P384Sha384
 
 	// P521Sha512 identifies a group over P521 with SHA2-512 hash-to-group hashing.
 	P521Sha512
@@ -115,7 +115,7 @@ func init() {
 
 	Ristretto255Sha512.register(ristretto.H2C, ristretto.Group{})
 	P256Sha256.register(newCurve(H2C.P256_XMDSHA256_SSWU_RO_))
-	P384Sha512.register(newCurve(H2C.P384_XMDSHA512_SSWU_RO_))
+	P384Sha384.register(newCurve(H2C.P384_XMDSHA384_SSWU_RO_))
 	P521Sha512.register(newCurve(H2C.P521_XMDSHA512_SSWU_RO_))
 	Curve25519Sha512.register(curve25519.H2C, curve25519.Group{})
 	Edwards25519Sha512.register(edwards25519.H2C, edwards25519.Group{})
