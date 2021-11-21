@@ -16,6 +16,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -114,6 +115,7 @@ func (vs *vectorStrings) decode() (*vector, error) {
 type set struct {
 	DST   string          `json:"DST"`
 	Hash  string          `json:"hash"`
+	K     int             `json:"k"`
 	Name  string          `json:"name"`
 	Tests []vectorStrings `json:"tests"`
 }
@@ -188,8 +190,18 @@ func msgPrime(h hash.Identifier, input, dst []byte, length int) []byte {
 	return concatenate(zPad, input, lib, zeroByte, dstPrime)
 }
 
+func (s *set) dst() []byte {
+	if isXMD(s.Hash) {
+		h := mapXMD(s.Hash)
+		return vetDSTXMD(h.New(), []byte(s.DST))
+	} else {
+		h := mapXOF(s.Hash)
+		return vetXofDST(h, []byte(s.DST))
+	}
+}
+
 func (s *set) run(t *testing.T) {
-	dst := []byte(s.DST)
+	dst := s.dst()
 	id := mapHash(s.Hash)
 
 	for i, test := range s.Tests {
@@ -199,9 +211,11 @@ func (s *set) run(t *testing.T) {
 				t.Fatalf("%d : %v", i, err)
 			}
 
+			log.Printf("DST %d %v\n%v", len(hex.EncodeToString(dst)), hex.EncodeToString(dst), v.dstPrime)
+
 			dstPrime := dstPrime(dst)
 			if !bytes.Equal(v.dstPrime, dstPrime) {
-				t.Fatalf("%d : invalid DST prime.", i)
+				t.Fatalf("%d : invalid DST prime.\ngot : %v\nwant: %v", i, dstPrime, v.dstPrime)
 			}
 
 			msgPrime := msgPrime(id, v.msg, dst, v.lenInBytes)

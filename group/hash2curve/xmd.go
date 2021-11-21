@@ -12,6 +12,7 @@ package hash2curve
 import (
 	"crypto"
 	"errors"
+	"fmt"
 	"hash"
 	"math"
 )
@@ -51,7 +52,7 @@ func expandXMD(id crypto.Hash, input, dst []byte, length int) []byte {
 }
 
 func dstPrime(dst []byte) []byte {
-	return append(dst, byte(len(dst)))
+	return append(dst, i2osp(len(dst), 1)[0])
 }
 
 // xmd expands the message digest until it reaches the desirable length.
@@ -83,6 +84,10 @@ func xorSlices(bi, b0 []byte) []byte {
 func vetDSTXMD(h hash.Hash, dst []byte) []byte {
 	if len(dst) <= dstMaxLength {
 		return dst
+	}
+
+	if h.Size() > dstMaxLength {
+		panic(fmt.Sprintf("hash output size is too long %v / %d / %d", h, h.Size(), dstMaxLength))
 	}
 
 	// If the tag length exceeds 255 bytes, compute a shorter tag by hashing it

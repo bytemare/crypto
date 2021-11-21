@@ -35,8 +35,8 @@ func HashToField25519XMD(id crypto.Hash, input, dst []byte, length int) []byte {
 	return reduce(uniform, length)
 }
 
-// doubleHashToField25519XMD hashes the input and dst to the field and returns two field elements destined to be mapped to
-// points on the destination curve.
+// doubleHashToField25519XMD hashes the input and dst to the field and returns two field elements destined to be mapped
+// to points on the destination curve.
 func doubleHashToField25519XMD(id crypto.Hash, input, dst []byte, length int) (u, v *field.Element) {
 	l := 48
 	expLength := 2 * 1 * l // 2 elements * ext * security length
