@@ -10,6 +10,9 @@ package edwards25519
 
 import (
 	"encoding/hex"
+	"encoding/json"
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"filippo.io/edwards25519"
@@ -67,29 +70,30 @@ func (v *vectors) run(t *testing.T) {
 		p := Group{}.HashToGroup([]byte(vector.Msg), []byte(v.Dst))
 		q := decodePoint(vector.P.X[2:], vector.P.Y[2:])
 		if q.Equal(p.(*Element).element) != 1 {
-			t.Fatalf("Unexpected HashToGroup output. Expected %q, got %q", hex.EncodeToString(q.Bytes()), hex.EncodeToString(p.Bytes()))
+			t.Fatalf("Unexpected HashToGroup output."+
+				"\n\tExpected %q\n\tgot %q", hex.EncodeToString(q.Bytes()), hex.EncodeToString(p.Bytes()))
 		}
 	}
 }
 
-//func TestHashToEdwards25519(t *testing.T) {
-//	file, errOpen := os.Open("vectors.json")
-//	if errOpen != nil {
-//		t.Fatal(errOpen)
-//	}
-//
-//	defer file.Close()
-//
-//	val, errRead := ioutil.ReadAll(file)
-//	if errRead != nil {
-//		t.Fatal(errRead)
-//	}
-//
-//	var v vectors
-//	errJSON := json.Unmarshal(val, &v)
-//	if errJSON != nil {
-//		t.Fatal(errJSON)
-//	}
-//
-//	v.run(t)
-//}
+func TestHashToEdwards25519(t *testing.T) {
+	file, errOpen := os.Open("vectors.json")
+	if errOpen != nil {
+		t.Fatal(errOpen)
+	}
+
+	defer file.Close()
+
+	val, errRead := ioutil.ReadAll(file)
+	if errRead != nil {
+		t.Fatal(errRead)
+	}
+
+	var v vectors
+	errJSON := json.Unmarshal(val, &v)
+	if errJSON != nil {
+		t.Fatal(errJSON)
+	}
+
+	v.run(t)
+}
