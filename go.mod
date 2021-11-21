@@ -1,6 +1,6 @@
 module github.com/bytemare/crypto
 
-go 1.16
+go 1.17
 
 require (
 	filippo.io/edwards25519 v1.0.0-rc.1
@@ -9,3 +9,5 @@ require (
 	github.com/gtank/ristretto255 v0.1.2
 	golang.org/x/crypto v0.0.0-20210915214749-c084706c2272
 )
+
+require golang.org/x/sys v0.0.0-20210915083310-ed5796bab164 // indirect
