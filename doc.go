@@ -13,7 +13,7 @@ It enables using one interface for a variety of underlying primitives, and witho
 
 Available interfaces are:
 
-- Group: implementing hashing of arbitrary strings into prime-order groups, after hash-to-curve.
+- Group: implementing hashing of arbitrary strings into prime-order groups using the hash-to-curve specification.
 
 - Hash: interface to hashing primitives and exposing common functions such as hashing, hmac, HKDF, and expand-only HKDF.
 
