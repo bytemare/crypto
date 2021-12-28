@@ -16,7 +16,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -210,8 +209,6 @@ func (s *set) run(t *testing.T) {
 			if err != nil {
 				t.Fatalf("%d : %v", i, err)
 			}
-
-			log.Printf("DST %d %v\n%v", len(hex.EncodeToString(dst)), hex.EncodeToString(dst), v.dstPrime)
 
 			dstPrime := dstPrime(dst)
 			if !bytes.Equal(v.dstPrime, dstPrime) {

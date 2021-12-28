@@ -28,15 +28,6 @@ type vectors struct {
 	} `json:"vectors"`
 }
 
-func reverse(b []byte) []byte {
-	l := len(b) - 1
-	for i := 0; i < len(b)/2; i++ {
-		b[i], b[l-i] = b[l-i], b[i]
-	}
-
-	return b
-}
-
 func (v *vectors) run(t *testing.T) {
 	if H2C != v.Ciphersuite {
 		t.Fatalf("Wrong ciphersuite. Expected %q, got %q", v.Ciphersuite, H2C)
@@ -44,7 +35,7 @@ func (v *vectors) run(t *testing.T) {
 	for _, vector := range v.Vectors {
 		p := Group{}.HashToGroup([]byte(vector.Msg), []byte(v.Dst))
 		if hex.EncodeToString(reverse(p.Bytes())) != vector.P.X[2:] {
-			t.Fatalf("Unexpected HashToGroup output. Expected %q, got %q", vector.P.X, hex.EncodeToString(p.Bytes()))
+			t.Fatalf("Unexpected HashToGroup output.\n\tExpected %q\n\tot %q", vector.P.X, hex.EncodeToString(p.Bytes()))
 		}
 	}
 }

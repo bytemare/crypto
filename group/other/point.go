@@ -11,7 +11,6 @@ package other
 
 import (
 	nist "crypto/elliptic"
-	"fmt"
 	"math/big"
 
 	"github.com/bytemare/crypto/group/internal"
@@ -136,7 +135,7 @@ func (p *Point) Decode(input []byte) (internal.Point, error) {
 func (p *Point) set(x, y *big.Int) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("%v", r)
+			err = r.(error)
 		}
 	}()
 

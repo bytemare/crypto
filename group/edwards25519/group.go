@@ -14,7 +14,7 @@ import (
 
 	"filippo.io/edwards25519"
 
-	"github.com/bytemare/crypto/group/hash2curve"
+	"github.com/bytemare/crypto/group/curve25519"
 	"github.com/bytemare/crypto/group/internal"
 )
 
@@ -46,12 +46,12 @@ func (g Group) Identity() internal.Point {
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the group.
 func (g Group) HashToGroup(input, dst []byte) internal.Point {
-	return &Element{hash2curve.HashToEdwards25519(input, dst)}
+	return &Element{curve25519.HashToEdwards25519(input, dst)}
 }
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.
 func (g Group) HashToScalar(input, dst []byte) internal.Scalar {
-	sc := hash2curve.HashToField25519XMD(crypto.SHA512, input, dst, canonicalEncodingLength)
+	sc := curve25519.HashToField25519XMD(crypto.SHA512, input, dst, canonicalEncodingLength)
 
 	s, err := edwards25519.NewScalar().SetCanonicalBytes(sc)
 	if err != nil {

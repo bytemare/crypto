@@ -15,7 +15,6 @@ import (
 	"filippo.io/edwards25519"
 	"filippo.io/edwards25519/field"
 
-	"github.com/bytemare/crypto/group/hash2curve"
 	"github.com/bytemare/crypto/group/internal"
 )
 
@@ -102,7 +101,7 @@ func (e *Element) Decode(in []byte) (internal.Point, error) {
 		return nil, err
 	}
 
-	y := hash2curve.MontgomeryUToEdwardsY(u)
+	y := MontgomeryUToEdwardsY(u)
 
 	if _, err := e.element.SetBytes(y.Bytes()); err != nil {
 		return nil, fmt.Errorf("decoding element : %w", err)

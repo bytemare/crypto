@@ -12,7 +12,11 @@ package group
 import (
 	"errors"
 	"fmt"
+
 	H2C "github.com/armfazh/h2c-go-ref"
+
+	"github.com/bytemare/crypto/group/curve25519"
+	"github.com/bytemare/crypto/group/edwards25519"
 
 	"github.com/bytemare/crypto/group/internal"
 	"github.com/bytemare/crypto/group/other"
@@ -114,10 +118,8 @@ func init() {
 	P256Sha256.register(newCurve(H2C.P256_XMDSHA256_SSWU_RO_))
 	P384Sha384.register(newCurve(H2C.P384_XMDSHA384_SSWU_RO_))
 	P521Sha512.register(newCurve(H2C.P521_XMDSHA512_SSWU_RO_))
-	//Curve25519Sha512.register(curve25519.H2C, curve25519.Group{})
-	Curve25519Sha512.register(newCurve(H2C.Curve25519_XMDSHA512_ELL2_RO_))
-	//Edwards25519Sha512.register(edwards25519.H2C, edwards25519.Group{})
-	Edwards25519Sha512.register(newCurve(H2C.Edwards448_XMDSHA512_ELL2_RO_))
+	Curve25519Sha512.register(curve25519.H2C, curve25519.Group{})
+	Edwards25519Sha512.register(edwards25519.H2C, edwards25519.Group{})
 	Curve448Sha512.register(newCurve(H2C.Curve448_XMDSHA512_ELL2_RO_))
 	Edwards448Sha512.register(newCurve(H2C.Edwards448_XMDSHA512_ELL2_RO_))
 	Secp256k1Sha256.register(newCurve(H2C.Secp256k1_XMDSHA256_SSWU_RO_))
