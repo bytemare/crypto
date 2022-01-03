@@ -23,8 +23,11 @@ var (
 	a, _ = fe().SetBytes([]byte{
 		6, 109, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	})
-	one  = fe().One()
-	zero = fe().Zero()
+	minA   = fe().Negate(a)
+	zero   = fe().Zero()
+	one    = fe().One()
+	minOne = fe().Negate(one)
+	two    = fe().Add(one, one)
 	// one, _ = fe().SetBytes([]byte{
 	//	9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
 	invsqrtD, _ = fe().SetBytes([]byte{
@@ -54,42 +57,37 @@ func MapToEdwards(e *field.Element) *edwards25519.Point {
 
 // Elligator2Montgomery implements the Elligator2 mapping to Curve25519.
 func Elligator2Montgomery(e *field.Element) (x, y *field.Element) {
-	minA := new(field.Element).Negate(a)
-	minOne := new(field.Element).Negate(one)
+	t1 := fe().Square(e)   // u^2
+	t1.Multiply(t1, two)   // t1 = 2u^2
+	e1 := t1.Equal(minOne) //
+	t1.Swap(zero, e1)      // if 2u^2 == -1, t1 = 0
 
-	b := one                              // b = 1
-	z := new(field.Element).Add(one, one) // z = 2
+	x1 := fe().Add(t1, one) // t1 + 1
+	x1.Invert(x1)           // 1 / (t1 + 1)
+	x1.Multiply(x1, minA)   // x1 = -A / (t1 + 1)
 
-	t1 := new(field.Element).Square(e)
-	t1.Multiply(t1, z)
-	e1 := t1.Equal(minOne)
-	t1.Swap(zero, e1)
+	gx1 := fe().Add(x1, a) // x1 + A
+	gx1.Multiply(gx1, x1)  // x1 * (x1 + A)
+	gx1.Add(gx1, one)      // x1 * (x1 + A) + 1
+	gx1.Multiply(gx1, x1)  // x1 * (x1 * (x1 + A) + 1)
 
-	x1 := new(field.Element).Add(t1, one) // u^2 + 1
-	x1.Invert(x1)                         // 1 / (u^2 + 1)
-	x1.Multiply(x1, minA)                 // -A / (u^2 + 1)
+	x2 := fe().Negate(x1) // -x1
+	x2.Subtract(x2, a)    // -x2 - A
 
-	gx1 := new(field.Element).Add(x1, a)
-	gx1.Multiply(gx1, x1)
-	gx1.Add(gx1, b)
-	gx1.Multiply(gx1, x1)
+	gx2 := fe().Multiply(t1, gx1) // t1 * gx1
 
-	x2 := new(field.Element).Negate(x1)
-	x2.Subtract(x2, a)
+	root1, _isSquare := fe().SqrtRatio(gx1, one) // root1 = (+) sqrt(gx1)
+	negRoot1 := fe().Negate(root1)               // negRoot1 = (-) sqrt(gx1)
+	root2, _ := fe().SqrtRatio(gx2, one)         // root2 = (+) sqrt(gx2)
 
-	gx2 := new(field.Element).Multiply(t1, gx1)
-
-	root1, _isSquare := new(field.Element).SqrtRatio(gx1, one)
-	root2, _ := new(field.Element).SqrtRatio(gx2, one)
-
+	// if gx1 is square, set the point to (x1, -root1)
+	// if not, set the point to (x2, +root2)
 	if _isSquare == 1 {
 		x = x1
-		y = root1
-		y.Negate(y.Absolute(y)) // set sgn0(y) == 1, i.e. negative
+		y = negRoot1 // set sgn0(y) == 1, i.e. negative
 	} else {
 		x = x2
-		y = root2
-		y.Absolute(y) // set sgn0(y) == 0, i.e. positive
+		y = root2 // set sgn0(y) == 0, i.e. positive
 	}
 
 	return x, y
@@ -100,7 +98,7 @@ func Elligator2Montgomery(e *field.Element) (x, y *field.Element) {
 func AffineToEdwards(x, y *field.Element) *edwards25519.Point {
 	t := fe().Multiply(x, y)
 
-	p, err := new(edwards25519.Point).SetExtendedCoordinates(x, y, new(field.Element).One(), t)
+	p, err := new(edwards25519.Point).SetExtendedCoordinates(x, y, fe().One(), t)
 	if err != nil {
 		panic(err)
 	}
