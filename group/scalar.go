@@ -48,6 +48,11 @@ func (s *Scalar) Invert() *Scalar {
 	return &Scalar{s.Scalar.Invert()}
 }
 
+// IsZero returns whether the scalar is 0.
+func (s *Scalar) IsZero() bool {
+	return s.IsZero()
+}
+
 // Copy returns a copy of the Scalar.
 func (s *Scalar) Copy() *Scalar {
 	return &Scalar{s.Scalar.Copy()}

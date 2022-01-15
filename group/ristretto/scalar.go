@@ -77,6 +77,11 @@ func (s *Scalar) Invert() internal.Scalar {
 	return &Scalar{ristretto255.NewScalar().Invert(s.scalar)}
 }
 
+// IsZero returns whether the scalar is 0.
+func (s *Scalar) IsZero() bool {
+	return s.scalar.Equal(ristretto255.NewScalar().Zero()) == 1
+}
+
 // Copy returns a copy of the Scalar.
 func (s *Scalar) Copy() internal.Scalar {
 	return &Scalar{ristretto255.NewScalar().Add(ristretto255.NewScalar(), s.scalar)}

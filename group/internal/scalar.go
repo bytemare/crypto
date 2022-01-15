@@ -26,6 +26,9 @@ type Scalar interface {
 	// Invert returns the scalar's modular inverse ( 1 / scalar ), and does not change the receiver.
 	Invert() Scalar
 
+	// IsZero returns whether the scalar is 0.
+	IsZero() bool
+
 	// Copy returns a copy of the Scalar.
 	Copy() Scalar
 

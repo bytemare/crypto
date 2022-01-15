@@ -20,6 +20,8 @@ const (
 	canonicalEncodingLength = 32
 )
 
+var scZero *Scalar
+
 // Scalar represents a Curve25519 scalar. It wraps an Edwards25519 implementation to leverage its optimized operations.
 type Scalar struct {
 	scalar *edwards25519.Scalar
@@ -86,6 +88,11 @@ func (s *Scalar) Invert() internal.Scalar {
 	return &Scalar{edwards25519.NewScalar().Invert(s.scalar)}
 }
 
+// IsZero returns whether the scalar is 0.
+func (s *Scalar) IsZero() bool {
+	return s.scalar.Equal(scZero.scalar) == 1
+}
+
 // Copy returns a copy of the Scalar.
 func (s *Scalar) Copy() internal.Scalar {
 	return &Scalar{edwards25519.NewScalar().Set(s.scalar)}
@@ -118,4 +125,10 @@ func (s *Scalar) Decode(in []byte) (internal.Scalar, error) {
 // Bytes returns the byte encoding of the element.
 func (s *Scalar) Bytes() []byte {
 	return s.scalar.Bytes()
+}
+
+func init() {
+	zeroes := [32]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	sc, _ := edwards25519.NewScalar().SetCanonicalBytes(zeroes[:])
+	scZero = &Scalar{sc}
 }

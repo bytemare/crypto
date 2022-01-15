@@ -102,6 +102,11 @@ func (s *Scalar) Invert() internal.Scalar {
 	}
 }
 
+// IsZero returns whether the scalar is 0.
+func (s *Scalar) IsZero() bool {
+	return s.f.AreEqual(s.s, s.f.Zero())
+}
+
 // Copy returns a copy of the Scalar.
 func (s *Scalar) Copy() internal.Scalar {
 	return &Scalar{
