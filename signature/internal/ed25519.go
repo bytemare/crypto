@@ -12,9 +12,9 @@ package internal
 import (
 	"crypto"
 	"crypto/ed25519"
+	cryptorand "crypto/rand"
+	"fmt"
 	"io"
-
-	"github.com/bytemare/crypto/utils"
 )
 
 // Ed25519 implements the Signature interfaces and wraps crypto/ed22519.
@@ -44,7 +44,11 @@ func (ed *Ed25519) SetPrivateKey(privateKey []byte) {
 
 // GenerateKey generates a fresh private/public key pair and stores it in ed.
 func (ed *Ed25519) GenerateKey() {
-	seed := utils.RandomBytes(ed25519.SeedSize)
+	seed := make([]byte, ed25519.SeedSize)
+	if _, err := cryptorand.Read(seed); err != nil {
+		// We can as well not panic and try again in a loop
+		panic(fmt.Errorf("unexpected error in generating random bytes : %w", err))
+	}
 	ed.SetPrivateKey(seed)
 }
 
@@ -70,8 +74,18 @@ func (ed *Ed25519) SignatureLength() uint {
 
 // SignMessage uses the private key in ed to sign the input. The input doesn't need to be hashed beforehand.
 func (ed *Ed25519) SignMessage(message ...[]byte) []byte {
-	m := utils.Concatenate(message...)
-	return ed25519.Sign(ed.sk, m)
+	length := 0
+	for _, in := range message {
+		length += len(in)
+	}
+
+	buf := make([]byte, 0, length)
+
+	for _, in := range message {
+		buf = append(buf, in...)
+	}
+
+	return ed25519.Sign(ed.sk, buf)
 }
 
 // Sign implements the Signer.Sign() function.

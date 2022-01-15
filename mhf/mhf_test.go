@@ -9,11 +9,11 @@
 package mhf
 
 import (
+	cryptorand "crypto/rand"
+	"fmt"
 	"testing"
 
 	tests2 "github.com/bytemare/crypto/internal/tests"
-
-	"github.com/bytemare/crypto/utils"
 )
 
 var (
@@ -36,7 +36,11 @@ func TestAvailability(t *testing.T) {
 
 func TestMHF(t *testing.T) {
 	password := []byte("password")
-	salt := utils.RandomBytes(32)
+	salt := make([]byte, 32)
+	if _, err := cryptorand.Read(salt); err != nil {
+		// We can as well not panic and try again in a loop
+		panic(fmt.Errorf("unexpected error in generating random bytes : %w", err))
+	}
 	length := 32
 
 	for _, m := range mhfs {
