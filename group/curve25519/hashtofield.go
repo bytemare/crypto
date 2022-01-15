@@ -18,6 +18,8 @@ import (
 )
 
 const (
+	elementLength = 32
+
 	// p25519 is the prime 2^255 - 19 for the field.
 	p25519 = "57896044618658097711785492504343953926634992332820282019728792003956564819949"
 
@@ -41,16 +43,16 @@ func HashToField25519XMD(id crypto.Hash, input, dst []byte, length int) []byte {
 	return reduce(uniform, length)
 }
 
-// doubleHashToField25519XMD hashes the input and dst to the field and returns two field elements destined to be mapped
-// to points on the destination curve.
-func doubleHashToField25519XMD(id crypto.Hash, input, dst []byte, length int) (u, v *field.Element) {
+func hashToField25519XMD(id crypto.Hash, input, dst []byte, count int) (u [2]*field.Element) {
 	l := 48
-	expLength := 2 * 1 * l // 2 elements * ext * security length
+	expLength := count * 1 * l // 1 element * ext * security length
 	uniform := hash2curve.ExpandXMD(id, input, dst, expLength)
-	u = element(reduce(uniform[:l], length))
-	v = element(reduce(uniform[l:2*l], length))
+	for i := 0; i < count; i++ {
+		offset := i * l
+		u[i] = element(reduce(uniform[offset:offset+l], elementLength))
+	}
 
-	return
+	return u
 }
 
 func reduce(input []byte, length int) []byte {

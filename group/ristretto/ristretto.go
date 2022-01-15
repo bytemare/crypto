@@ -55,6 +55,11 @@ func (r Group) HashToGroup(input, dst []byte) internal.Point {
 	return &Point{ristretto255.NewElement().FromUniformBytes(uniform)}
 }
 
+// EncodeToGroup allows arbitrary input to be mapped non-uniformly to points in the Group.
+func (r Group) EncodeToGroup(input, dst []byte) internal.Point {
+	return r.HashToGroup(input, dst)
+}
+
 // HashToScalar allows arbitrary input to be safely mapped to the field.
 func (r Group) HashToScalar(input, dst []byte) internal.Scalar {
 	uniform := hash2curve.ExpandXMD(crypto.SHA512, input, dst, ristrettoInputLength)

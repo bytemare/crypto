@@ -17,8 +17,13 @@ import (
 	"github.com/bytemare/crypto/group/internal"
 )
 
-// H2C represents the hash-to-curve string identifier.
-const H2C = "curve25519_XMD:SHA-512_ELL2_RO_"
+const (
+	// H2C represents the hash-to-curve string identifier.
+	H2C = "curve25519_XMD:SHA-512_ELL2_RO_"
+
+	// E2C represents the encode-to-curve string identifier.
+	E2C = "curve25519_XMD:SHA-512_ELL2_NU_"
+)
 
 // Group represents the Curve25519 group. It exposes a prime-order group API with hash-to-curve operations.
 type Group struct{}
@@ -46,6 +51,11 @@ func (g Group) Identity() internal.Point {
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the group.
 func (g Group) HashToGroup(input, dst []byte) internal.Point {
 	return &Element{HashToEdwards25519(input, dst)}
+}
+
+// EncodeToGroup allows arbitrary input to be mapped non-uniformly to points in the Group.
+func (g Group) EncodeToGroup(input, dst []byte) internal.Point {
+	return &Element{EncodeToEdwards25519(input, dst)}
 }
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.

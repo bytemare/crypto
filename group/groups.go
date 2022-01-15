@@ -150,6 +150,11 @@ func (i Group) HashToGroup(input, dst []byte) *Point {
 	return newPoint(i.get().HashToGroup(input, dst))
 }
 
+// EncodeToGroup allows arbitrary input to be safely mapped to the curve of the Group.
+func (i Group) EncodeToGroup(input, dst []byte) *Point {
+	return newPoint(i.get().HashToGroup(input, dst))
+}
+
 // HashToScalar allows arbitrary input to be safely mapped to the field.
 func (i Group) HashToScalar(input, dst []byte) *Scalar {
 	return newScalar(i.get().HashToScalar(input, dst))

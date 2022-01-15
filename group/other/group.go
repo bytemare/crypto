@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-// Package other wraps an hash-to-curve implementation and exposes functions for operations on points and scalars.
+// Package other wraps a hash-to-curve implementation and exposes functions for operations on points and scalars.
 package other
 
 import (
@@ -92,6 +92,35 @@ func getCurve(id H2C.SuiteID) *curve {
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
 func (h *Hash2Curve) HashToGroup(input, dst []byte) internal.Point {
 	h2 := getH2C(h.suite, dst)
+
+	return &Point{
+		Hash2Curve: h,
+		curve:      getCurve(h.suite),
+		point:      h2.Hash(input),
+	}
+}
+
+// EncodeToGroup allows arbitrary input to be mapped non-uniformly to points in the Group.
+func (h *Hash2Curve) EncodeToGroup(input, dst []byte) internal.Point {
+	var id H2C.SuiteID
+	switch h.suite {
+	case H2C.P256_XMDSHA256_SSWU_RO_:
+		id = H2C.P256_XMDSHA256_SSWU_NU_
+	case H2C.P384_XMDSHA384_SSWU_RO_:
+		id = H2C.P384_XMDSHA384_SSWU_NU_
+	case H2C.P521_XMDSHA512_SSWU_RO_:
+		id = H2C.P521_XMDSHA512_SSWU_NU_
+	case H2C.Curve448_XMDSHA512_ELL2_RO_:
+		id = H2C.Curve448_XMDSHA512_ELL2_NU_
+	case H2C.Edwards448_XMDSHA512_ELL2_RO_:
+		id = H2C.Edwards448_XMDSHA512_ELL2_NU_
+	case H2C.Secp256k1_XMDSHA256_SSWU_RO_:
+		id = H2C.Secp256k1_XMDSHA256_SSWU_NU_
+	default:
+		panic("suite not referenced")
+	}
+
+	h2 := getH2C(id, dst)
 
 	return &Point{
 		Hash2Curve: h,

@@ -34,6 +34,9 @@ type Group interface {
 	// HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
 	HashToGroup(input, dst []byte) Point
 
+	// EncodeToGroup allows arbitrary input to be mapped non-uniformly to points in the Group.
+	EncodeToGroup(input, dst []byte) Point
+
 	// HashToScalar allows arbitrary input to be safely mapped to the field.
 	HashToScalar(input, dst []byte) Scalar
 
