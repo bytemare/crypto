@@ -39,7 +39,7 @@ func (i Identifier) String() string {
 // Signature abstracts digital signature operations, wrapping built-in implementations.
 type Signature interface {
 
-	// GenerateKeys generates a fresh signing key and stores it internally.
+	// GenerateKey generates a fresh signing key and stores it internally.
 	GenerateKey()
 
 	// GetPrivateKey returns the private key.
