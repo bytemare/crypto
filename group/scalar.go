@@ -50,7 +50,7 @@ func (s *Scalar) Invert() *Scalar {
 
 // IsZero returns whether the scalar is 0.
 func (s *Scalar) IsZero() bool {
-	return s.IsZero()
+	return s.Scalar.IsZero()
 }
 
 // Copy returns a copy of the Scalar.
