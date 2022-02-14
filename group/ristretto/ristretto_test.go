@@ -14,7 +14,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	tests3 "github.com/bytemare/crypto/internal/tests"
+	"github.com/bytemare/crypto/internal"
 )
 
 const (
@@ -217,7 +217,7 @@ func TestElement(t *testing.T) {
 }
 
 func TestMultiplication(t *testing.T) {
-	if hasPanic, _ := tests3.ExpectPanic(nil, func() {
+	if hasPanic, _ := internal.ExpectPanic(nil, func() {
 		_ = Group{}.NewElement().Mult(nil)
 	}); !hasPanic {
 		t.Fatal("expected panic on multiplying with nil scalar")
@@ -252,7 +252,7 @@ func TestMultiplication(t *testing.T) {
 	}
 
 	// unblind
-	if hasPanic, _ := tests3.ExpectPanic(nil, func() {
+	if hasPanic, _ := internal.ExpectPanic(nil, func() {
 		_ = bp.InvertMult(nil)
 	}); !hasPanic {
 		t.Fatal("expected panic when invertmult with nil scalar")
@@ -295,13 +295,13 @@ func TestPointArithmetic(t *testing.T) {
 	// Test Addition and Subtraction
 	p := Group{}.Base()
 	c := p.Copy()
-	if hasPanic, _ := tests3.ExpectPanic(nil, func() {
+	if hasPanic, _ := internal.ExpectPanic(nil, func() {
 		p.Add(nil)
 	}); !hasPanic {
 		t.Fatal("expected panic")
 	}
 	a := p.Add(p)
-	if hasPanic, _ := tests3.ExpectPanic(nil, func() {
+	if hasPanic, _ := internal.ExpectPanic(nil, func() {
 		p.Sub(nil)
 	}); !hasPanic {
 		t.Fatal("expected panic")
@@ -324,7 +324,7 @@ func TestPointArithmetic(t *testing.T) {
 	if !bytes.Equal(m.Bytes(), e.Bytes()) {
 		t.Fatal("not equal")
 	}
-	if hasPanic, _ := tests3.ExpectPanic(nil, func() {
+	if hasPanic, _ := internal.ExpectPanic(nil, func() {
 		p.InvertMult(nil)
 	}); !hasPanic {
 		t.Fatal("expected panic")

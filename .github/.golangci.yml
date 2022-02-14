@@ -1,3 +1,4 @@
+
 linters:
   disable-all: true
   enable:
@@ -37,7 +38,6 @@ linters:
     - ineffassign
     - lll
     - makezero
-    - maligned
     - megacheck
     - misspell
     - nakedret

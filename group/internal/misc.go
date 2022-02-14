@@ -15,11 +15,20 @@ import (
 )
 
 var (
-	ErrParamNilScalar    = errors.New("nil or empty scalar")
+	// ErrParamNilScalar indicates a forbidden nil or empty scalar.
+	ErrParamNilScalar = errors.New("nil or empty scalar")
+
+	// ErrParamScalarLength indicates an invalid scalar length.
 	ErrParamScalarLength = errors.New("invalid scalar length")
-	ErrParamNilPoint     = errors.New("nil or empty point")
-	ErrCastElement       = errors.New("could not cast to same group element (wrong group ?)")
-	ErrCastScalar        = errors.New("could not cast to same group scalar (wrong group ?)")
+
+	// ErrParamNilPoint indicated a forbidden nil or empty point.
+	ErrParamNilPoint = errors.New("nil or empty point")
+
+	// ErrCastElement indicates a failed attempt to cast to a point.
+	ErrCastElement = errors.New("could not cast to same group element (wrong group ?)")
+
+	// ErrCastScalar indicates a failed attempt to cast to a scalar.
+	ErrCastScalar = errors.New("could not cast to same group scalar (wrong group ?)")
 )
 
 // RandomBytes returns random bytes of length len (wrapper for crypto/rand).

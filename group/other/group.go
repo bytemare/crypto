@@ -103,6 +103,7 @@ func (h *Hash2Curve) HashToGroup(input, dst []byte) internal.Point {
 // EncodeToGroup allows arbitrary input to be mapped non-uniformly to points in the Group.
 func (h *Hash2Curve) EncodeToGroup(input, dst []byte) internal.Point {
 	var id H2C.SuiteID
+
 	switch h.suite {
 	case H2C.P256_XMDSHA256_SSWU_RO_:
 		id = H2C.P256_XMDSHA256_SSWU_NU_

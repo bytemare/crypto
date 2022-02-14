@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"testing"
 
-	tests2 "github.com/bytemare/crypto/internal/tests"
+	"github.com/bytemare/crypto/internal"
 )
 
 type i2ospTest struct {
@@ -54,28 +54,28 @@ func TestI2OSP(t *testing.T) {
 	}
 
 	length := -1
-	if hasPanic, err := tests2.ExpectPanic(errLengthNegative, func() {
+	if hasPanic, err := internal.ExpectPanic(errLengthNegative, func() {
 		_ = i2osp(1, length)
 	}); !hasPanic {
 		t.Fatalf("expected panic with with negative length: %v", err)
 	}
 
 	length = 0
-	if hasPanic, err := tests2.ExpectPanic(errLengthNegative, func() {
+	if hasPanic, err := internal.ExpectPanic(errLengthNegative, func() {
 		_ = i2osp(1, length)
 	}); !hasPanic {
 		t.Fatalf("expected panic with with 0 length: %v", err)
 	}
 
 	length = 5
-	if hasPanic, err := tests2.ExpectPanic(errLengthTooBig, func() {
+	if hasPanic, err := internal.ExpectPanic(errLengthTooBig, func() {
 		_ = i2osp(1, length)
 	}); !hasPanic {
 		t.Fatalf("expected panic with length too big: %v", err)
 	}
 
 	negative := -1
-	if hasPanic, err := tests2.ExpectPanic(errInputNegative, func() {
+	if hasPanic, err := internal.ExpectPanic(errInputNegative, func() {
 		_ = i2osp(negative, 4)
 	}); !hasPanic {
 		t.Fatalf("expected panic with negative input: %v", err)
@@ -83,7 +83,7 @@ func TestI2OSP(t *testing.T) {
 
 	tooLarge := 1 << 8
 	length = 1
-	if hasPanic, err := tests2.ExpectPanic(errInputLarge, func() {
+	if hasPanic, err := internal.ExpectPanic(errInputLarge, func() {
 		_ = i2osp(tooLarge, length)
 	}); !hasPanic {
 		t.Fatalf("expected panic with exceeding value for the length: %v", err)

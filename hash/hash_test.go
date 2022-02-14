@@ -12,7 +12,7 @@ import (
 	"crypto"
 	"testing"
 
-	tests2 "github.com/bytemare/crypto/internal/tests"
+	"github.com/bytemare/crypto/internal"
 )
 
 type data struct {
@@ -107,7 +107,7 @@ func TestSmallXOFOutput(t *testing.T) {
 	for _, id := range []Extensible{SHAKE128, SHAKE256, BLAKE2XB, BLAKE2XS} {
 		h := id.Get()
 
-		if hasPanic, _ := tests2.ExpectPanic(nil, func() {
+		if hasPanic, _ := internal.ExpectPanic(nil, func() {
 			_ = h.Hash(h.minOutputSize-1, testData.message)
 		}); !hasPanic {
 			t.Fatal("expected panic")

@@ -6,9 +6,17 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-package crypto_tests
+package internal
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+var (
+	errNoPanic        = errors.New("no panic")
+	errNoPanicMessage = errors.New("panic but no message")
+)
 
 func hasPanic(f func()) (has bool, err error) {
 	err = nil
@@ -27,27 +35,27 @@ func hasPanic(f func()) (has bool, err error) {
 		err = fmt.Errorf("%v", report)
 	}
 
-	return
+	return has, err
 }
 
-func ExpectPanic(expectedError error, f func()) (bool, string) {
+func ExpectPanic(expectedError error, f func()) (bool, error) {
 	hasPanic, err := hasPanic(f)
 
 	if !hasPanic {
-		return false, "no panic"
+		return false, errNoPanic
 	}
 
 	if expectedError == nil {
-		return true, ""
+		return true, nil
 	}
 
 	if err == nil {
-		return false, "panic but no message"
+		return false, errNoPanicMessage
 	}
 
 	if err.Error() != expectedError.Error() {
-		return false, fmt.Sprintf("expected %q, got %q", expectedError, err)
+		return false, fmt.Errorf("expected %q, got: %w", expectedError, err)
 	}
 
-	return true, ""
+	return true, nil
 }

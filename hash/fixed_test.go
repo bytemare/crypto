@@ -12,7 +12,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	tests2 "github.com/bytemare/crypto/internal/tests"
+	"github.com/bytemare/crypto/internal"
 )
 
 func TestLongHmacKey(t *testing.T) {
@@ -21,7 +21,7 @@ func TestLongHmacKey(t *testing.T) {
 	for _, id := range []Hashing{SHA256, SHA512, SHA3_256, SHA3_512} {
 		h := id.Get()
 
-		if hasPanic, err := tests2.ExpectPanic(errHmacKeySize, func() {
+		if hasPanic, err := internal.ExpectPanic(errHmacKeySize, func() {
 			_ = h.Hmac(testData.message, longHMACKey)
 		}); !hasPanic {
 			t.Fatalf("expected panic: %v", err)

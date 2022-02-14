@@ -39,6 +39,9 @@ const (
 	// SHA3_256 identifies the Sha3 hashing function with 256 bit output.
 	SHA3_256 = Hashing(crypto.SHA3_256)
 
+	// SHA3_384 identifies the Sha3 hashing function with 384 bit output.
+	SHA3_384 = Hashing(crypto.SHA3_384)
+
 	// SHA3_512 identifies the Sha3 hashing function with 512 bit output.
 	SHA3_512 = Hashing(crypto.SHA3_512)
 
@@ -149,9 +152,10 @@ func init() {
 	registeredHashing = make(map[Hashing]*fixedParams)
 
 	SHA256.register(sha256.New, sha256s, sha256.BlockSize, sha256.Size, sec128)
-	SHA512.register(sha512.New, sha512s, sha512.BlockSize, sha512.Size, sec256)
 	SHA384.register(sha512.New384, sha384s, sha512.BlockSize, sha512.Size384, sec192)
+	SHA512.register(sha512.New, sha512s, sha512.BlockSize, sha512.Size, sec256)
 	SHA3_256.register(sha3.New256, sha3_256s, blockSHA3256, size256, sec128)
+	SHA3_384.register(sha3.New256, sha3_256s, blockSHA3256, size384, sec192)
 	SHA3_512.register(sha3.New512, sha3_512s, blockSHA3512, size512, sec256)
 }
 

@@ -14,7 +14,7 @@ import (
 
 	H2C "github.com/armfazh/h2c-go-ref"
 
-	tests2 "github.com/bytemare/crypto/internal/tests"
+	"github.com/bytemare/crypto/internal"
 )
 
 var (
@@ -48,14 +48,14 @@ func testPointArithmetic(t *testing.T, suite H2C.SuiteID, input []byte) {
 
 	// Test Addition and Subtraction
 	base := g.Base()
-	if hasPanic, _ := tests2.ExpectPanic(nil, func() {
+	if hasPanic, _ := internal.ExpectPanic(nil, func() {
 		base.Add(nil)
 	}); !hasPanic {
 		t.Fatal("expected panic")
 	}
 
 	a := base.Add(base)
-	if hasPanic, _ := tests2.ExpectPanic(nil, func() {
+	if hasPanic, _ := internal.ExpectPanic(nil, func() {
 		a.Sub(nil)
 	}); !hasPanic {
 		t.Fatal("expected panic")
@@ -81,7 +81,7 @@ func testPointArithmetic(t *testing.T, suite H2C.SuiteID, input []byte) {
 	if !bytes.Equal(m.Bytes(), e.Bytes()) {
 		t.Fatal("not equal")
 	}
-	if hasPanic, err := tests2.ExpectPanic(errParamNilScalar, func() {
+	if hasPanic, err := internal.ExpectPanic(errParamNilScalar, func() {
 		m.InvertMult(nil)
 	}); !hasPanic {
 		t.Fatalf("expected panic: %v", err)

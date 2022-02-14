@@ -45,10 +45,12 @@ func (ed *Ed25519) SetPrivateKey(privateKey []byte) {
 // GenerateKey generates a fresh private/public key pair and stores it in ed.
 func (ed *Ed25519) GenerateKey() {
 	seed := make([]byte, ed25519.SeedSize)
+
 	if _, err := cryptorand.Read(seed); err != nil {
 		// We can as well not panic and try again in a loop
 		panic(fmt.Errorf("unexpected error in generating random bytes : %w", err))
 	}
+
 	ed.SetPrivateKey(seed)
 }
 

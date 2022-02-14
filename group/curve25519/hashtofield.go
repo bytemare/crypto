@@ -23,7 +23,7 @@ const (
 	// p25519 is the prime 2^255 - 19 for the field.
 	p25519 = "57896044618658097711785492504343953926634992332820282019728792003956564819949"
 
-	// p252 represents curve25519's sub-group (prime) order
+	// p252 represents curve25519's subgroup (prime) order
 	// = 2^252 + 27742317777372353535851937790883648493.
 	p252 = "7237005577332262213973186563042994240857116359379907606001950938285454250989"
 )
@@ -47,6 +47,7 @@ func hashToField25519XMD(id crypto.Hash, input, dst []byte, count int) (u [2]*fi
 	l := 48
 	expLength := count * 1 * l // 1 element * ext * security length
 	uniform := hash2curve.ExpandXMD(id, input, dst, expLength)
+
 	for i := 0; i < count; i++ {
 		offset := i * l
 		u[i] = element(reduce(uniform[offset:offset+l], elementLength))

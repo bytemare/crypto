@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"testing"
 
-	tests2 "github.com/bytemare/crypto/internal/tests"
+	"github.com/bytemare/crypto/internal"
 )
 
 var (
@@ -53,7 +53,7 @@ func TestKSF(t *testing.T) {
 				t.Fatal("not equal")
 			}
 
-			if hasPanic, _ := tests2.ExpectPanic(nil, func() {
+			if hasPanic, _ := internal.ExpectPanic(nil, func() {
 				_ = m.Harden(password, salt, length)
 			}); hasPanic {
 				t.Fatal("unexpected panic")
@@ -62,7 +62,7 @@ func TestKSF(t *testing.T) {
 			h := m.Get()
 			p := h.params()
 			h.Parameterize(p...)
-			if hasPanic, _ := tests2.ExpectPanic(nil, func() {
+			if hasPanic, _ := internal.ExpectPanic(nil, func() {
 				_ = m.Harden(password, salt, length)
 			}); hasPanic {
 				t.Fatal("unexpected panic")
