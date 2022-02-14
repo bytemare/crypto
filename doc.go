@@ -17,7 +17,7 @@ Available interfaces are:
 
 - Hash: interface to hashing primitives and exposing common functions such as hashing, hmac, HKDF, and expand-only HKDF.
 
-- MHF: for memory hard function, a.k.a. password key derivation functions.
+- KSF: for key stretching function, a.k.a. password key derivation functions.
 
 - Signature: for public key signatures.
 
