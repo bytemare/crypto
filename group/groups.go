@@ -17,7 +17,6 @@ import (
 
 	"github.com/bytemare/crypto/group/curve25519"
 	"github.com/bytemare/crypto/group/edwards25519"
-
 	"github.com/bytemare/crypto/group/internal"
 	"github.com/bytemare/crypto/group/other"
 	"github.com/bytemare/crypto/group/ristretto"

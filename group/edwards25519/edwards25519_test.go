@@ -16,9 +16,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/bytemare/crypto/group/internal"
-
 	"filippo.io/edwards25519"
+
+	"github.com/bytemare/crypto/group/internal"
 )
 
 type vectors struct {

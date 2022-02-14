@@ -13,9 +13,9 @@ import (
 	"crypto/rand"
 	"math/big"
 
-	"github.com/bytemare/crypto/group/internal"
-
 	"github.com/armfazh/tozan-ecc/field"
+
+	"github.com/bytemare/crypto/group/internal"
 )
 
 // Scalar implements the Scalar interface for Hash-to-Curve field elements.

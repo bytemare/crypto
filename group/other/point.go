@@ -13,11 +13,11 @@ import (
 	nist "crypto/elliptic"
 	"math/big"
 
-	"github.com/bytemare/crypto/group/internal"
-
 	Curve "github.com/armfazh/h2c-go-ref/curve"
 	C "github.com/armfazh/tozan-ecc/curve"
 	"github.com/armfazh/tozan-ecc/field"
+
+	"github.com/bytemare/crypto/group/internal"
 )
 
 // Point implements the Point interface for Hash-to-Curve points.

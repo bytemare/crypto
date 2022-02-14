@@ -12,9 +12,9 @@ import (
 	"crypto"
 	"math/big"
 
-	"github.com/bytemare/crypto/group/hash2curve"
-
 	"filippo.io/edwards25519/field"
+
+	"github.com/bytemare/crypto/group/hash2curve"
 )
 
 const (
