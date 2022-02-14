@@ -6,14 +6,14 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-// Package mhf provides an interface to memory hard functions, a.k.a password key derivation functions.
-package mhf
+// Package ksf provides an interface to key stretching functions, a.k.a password key derivation functions.
+package ksf
 
 import "errors"
 
 var errParams = errors.New("invalid amount of parameters")
 
-// Identifier is used to specify the memory hard function to be used.
+// Identifier is used to specify the key stretching function to be used.
 type Identifier byte
 
 const (
@@ -37,13 +37,13 @@ func (i Identifier) Available() bool {
 	return i > 0 && i < maxID
 }
 
-// Get returns an MHF with default parameters.
-func (i Identifier) Get() *MHF {
+// Get returns a KSF with default parameters.
+func (i Identifier) Get() *KSF {
 	if i == 0 || i >= maxID {
 		return nil
 	}
 
-	return &MHF{constructors[i-1]()}
+	return &KSF{constructors[i-1]()}
 }
 
 // Harden uses default parameters for the key derivation function over the input password and salt.
@@ -56,7 +56,7 @@ func (i Identifier) String() string {
 	return i.Get().String()
 }
 
-type constructor func() memoryHardFunction
+type constructor func() keyStretchingFunction
 
 var constructors [maxID - 1]constructor
 
@@ -66,12 +66,12 @@ func (i Identifier) register(c constructor) {
 
 func init() {
 	Argon2id.register(argon2idNew)
-	Scrypt.register(scryptmhfNew)
+	Scrypt.register(scryptKSFNew)
 	PBKDF2Sha512.register(pbkdf2New)
 	Bcrypt.register(bcryptNew)
 }
 
-type memoryHardFunction interface {
+type keyStretchingFunction interface {
 	// Harden uses default parameters for the key derivation function over the input password and salt.
 	Harden(password, salt []byte, length int) []byte
 
@@ -84,18 +84,18 @@ type memoryHardFunction interface {
 	params() []int
 }
 
-// MHF allows customisation of the underlying memory-hard function.
-type MHF struct {
-	memoryHardFunction
+// KSF allows customisation of the underlying key stretching function.
+type KSF struct {
+	keyStretchingFunction
 }
 
-// Set sets m's memory-hard function to the specified one and returns m. Returns nil if the identifier is invalid.
-func (m *MHF) Set(i Identifier) *MHF {
+// Set sets m's key stretching function to the specified one and returns m. Returns nil if the identifier is invalid.
+func (m *KSF) Set(i Identifier) *KSF {
 	if i == 0 || i >= maxID {
 		return nil
 	}
 
-	m.memoryHardFunction = constructors[i-1]()
+	m.keyStretchingFunction = constructors[i-1]()
 
 	return m
 }

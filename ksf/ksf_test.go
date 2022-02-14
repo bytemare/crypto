@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-package mhf
+package ksf
 
 import (
 	cryptorand "crypto/rand"
@@ -17,12 +17,12 @@ import (
 )
 
 var (
-	mhfs    = []Identifier{Argon2id, Scrypt, PBKDF2Sha512, Bcrypt}
-	strings = []string{"Argon2id(1-65536-4)", "Scrypt(32768-8-1)", "PBKDF2(10000-SHA512)", "Bcrypt(10)"}
+	ksfs    = []Identifier{Argon2id, Scrypt, PBKDF2Sha512, Bcrypt}
+	strings = []string{"Argon2id(3-65536-4)", "Scrypt(32768-8-1)", "PBKDF2(10000-SHA512)", "Bcrypt(10)"}
 )
 
 func TestAvailability(t *testing.T) {
-	for _, i := range mhfs {
+	for _, i := range ksfs {
 		if !i.Available() {
 			t.Errorf("%s is not available, but should be", i)
 		}
@@ -34,7 +34,7 @@ func TestAvailability(t *testing.T) {
 	}
 }
 
-func TestMHF(t *testing.T) {
+func TestKSF(t *testing.T) {
 	password := []byte("password")
 	salt := make([]byte, 32)
 	if _, err := cryptorand.Read(salt); err != nil {
@@ -43,7 +43,7 @@ func TestMHF(t *testing.T) {
 	}
 	length := 32
 
-	for _, m := range mhfs {
+	for _, m := range ksfs {
 		t.Run(m.String(), func(t *testing.T) {
 			if !m.Available() {
 				t.Fatal("expected assertion to be true")

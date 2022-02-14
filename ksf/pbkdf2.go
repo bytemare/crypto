@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-package mhf
+package ksf
 
 import (
 	"crypto/sha512"
@@ -23,22 +23,22 @@ const (
 
 var defaultPBKDF2Hash = sha512.New
 
-type pbkdf2mhf struct {
+type pbkdf2KSF struct {
 	iterations int
 }
 
-func pbkdf2New() memoryHardFunction {
-	return &pbkdf2mhf{
+func pbkdf2New() keyStretchingFunction {
+	return &pbkdf2KSF{
 		iterations: defaultPBKDF2iterations,
 	}
 }
 
-func (p *pbkdf2mhf) Harden(password, salt []byte, length int) []byte {
+func (p *pbkdf2KSF) Harden(password, salt []byte, length int) []byte {
 	return pbkdf2.Key(password, salt, p.iterations, length, defaultPBKDF2Hash)
 }
 
 // Parameterize replaces the functions parameters with the new ones. Must match the amount of parameters.
-func (p *pbkdf2mhf) Parameterize(parameters ...int) {
+func (p *pbkdf2KSF) Parameterize(parameters ...int) {
 	if len(parameters) != 1 {
 		panic(errParams)
 	}
@@ -46,10 +46,10 @@ func (p *pbkdf2mhf) Parameterize(parameters ...int) {
 	p.iterations = parameters[0]
 }
 
-func (p *pbkdf2mhf) String() string {
+func (p *pbkdf2KSF) String() string {
 	return fmt.Sprintf(pbkdf2Format, pbkdf2s, p.iterations)
 }
 
-func (p *pbkdf2mhf) params() []int {
+func (p *pbkdf2KSF) params() []int {
 	return []int{p.iterations}
 }
