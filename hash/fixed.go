@@ -104,8 +104,9 @@ func (i Hashing) BlockSize() int {
 	return registeredHashing[i].blockSize
 }
 
-// Extensible returns whether the hash function is extensible, therefore always false.
-func (i Hashing) Extensible() bool {
+// Extendable returns whether the hash function is extendable, therefore always false. This is only to comply to the
+// Identifier interface.
+func (i Hashing) Extendable() bool {
 	return false
 }
 

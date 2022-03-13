@@ -16,7 +16,7 @@ import (
 )
 
 // expandMessage XOF implements https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve#section-5.4.2.
-func expandXOF(x hash.Extensible, input, dst []byte, length int) []byte {
+func expandXOF(x hash.Extendable, input, dst []byte, length int) []byte {
 	dst = vetXofDST(x, dst)
 	len2o := i2osp(length, 2)
 	dstLen2o := i2osp(len(dst), 1)
@@ -25,7 +25,7 @@ func expandXOF(x hash.Extensible, input, dst []byte, length int) []byte {
 }
 
 // If the tag length exceeds 255 bytes, compute a shorter tag by hashing it.
-func vetXofDST(x hash.Extensible, dst []byte) []byte {
+func vetXofDST(x hash.Extendable, dst []byte) []byte {
 	if len(dst) <= dstMaxLength {
 		return dst
 	}

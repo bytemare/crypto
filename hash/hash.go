@@ -32,7 +32,7 @@ type parameters struct {
 type Identifier interface {
 	Available() bool
 	BlockSize() int
-	Extensible() bool
+	Extendable() bool
 	Hash(input ...[]byte) []byte
 	SecurityLevel() int
 	String() string

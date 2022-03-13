@@ -17,12 +17,12 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-// Extensible identifies Extendable-Output Functions.
-type Extensible byte
+// Extendable identifies Extendable-Output Functions.
+type Extendable byte
 
 const (
 	// SHAKE128 identifies the SHAKE128 Extendable-Output Function.
-	SHAKE128 Extensible = 1 + iota
+	SHAKE128 Extendable = 1 + iota
 
 	// SHAKE256 identifies the SHAKE256 Extendable-Output Function.
 	SHAKE256
@@ -51,53 +51,54 @@ type xofParams struct {
 	newHashFunc newXOF
 }
 
-var registeredXOF map[Extensible]*xofParams
+var registeredXOF map[Extendable]*xofParams
 
 // Get returns a pointer to an initialized Hash structure for the according has primitive.
-func (e Extensible) Get() *ExtensibleHash {
+func (e Extendable) Get() *ExtendableHash {
 	p := registeredXOF[e]
 	h := p.newHashFunc()
-	h.Extensible = e
+	h.Extendable = e
 
 	return h
 }
 
 // Available reports whether the given hash function is linked into the binary.
-func (e Extensible) Available() bool {
+func (e Extendable) Available() bool {
 	return e < maxXOF && registeredXOF[e] != nil
 }
 
 // BlockSize returns the hash's block size.
-func (e Extensible) BlockSize() int {
+func (e Extendable) BlockSize() int {
 	return registeredXOF[e].blockSize
 }
 
-// Extensible returns whether the hash function is extensible, therefore always true.
-func (e Extensible) Extensible() bool {
+// Extendable returns whether the hash function is extendable, therefore always true. This is only to comply to the
+// Identifier interface.
+func (e Extendable) Extendable() bool {
 	return true
 }
 
 // Hash returns the hash of the input arguments on the hash's secure minimum output length.
-func (e Extensible) Hash(input ...[]byte) []byte {
+func (e Extendable) Hash(input ...[]byte) []byte {
 	return e.Get().Hash(e.MinOutputSize(), input...)
 }
 
 // MinOutputSize returns the minimal output length necessary to guarantee its bit security level.
-func (e Extensible) MinOutputSize() int {
+func (e Extendable) MinOutputSize() int {
 	return e.Get().minOutputSize
 }
 
 // SecurityLevel returns the hash function's bit security level.
-func (e Extensible) SecurityLevel() int {
+func (e Extendable) SecurityLevel() int {
 	return registeredXOF[e].security
 }
 
 // String returns the hash function's common name.
-func (e Extensible) String() string {
+func (e Extendable) String() string {
 	return registeredXOF[e].name
 }
 
-func (e Extensible) register(f newXOF, name string, blockSize, outputSize, security int) {
+func (e Extendable) register(f newXOF, name string, blockSize, outputSize, security int) {
 	registeredXOF[e] = &xofParams{
 		parameters: parameters{
 			name:       name,
@@ -109,10 +110,10 @@ func (e Extensible) register(f newXOF, name string, blockSize, outputSize, secur
 	}
 }
 
-type newXOF func() *ExtensibleHash
+type newXOF func() *ExtendableHash
 
 func init() {
-	registeredXOF = make(map[Extensible]*xofParams)
+	registeredXOF = make(map[Extendable]*xofParams)
 
 	SHAKE128.register(newShake(sha3.NewShake128, size256), shake128, blockSHAKE128, size256, sec128)
 	SHAKE256.register(newShake(sha3.NewShake256, size512), shake256, blockSHAKE256, size512, sec256)
@@ -165,8 +166,8 @@ func (s shake) Clone() XOF {
 }
 
 func newShake(f func() sha3.ShakeHash, minOutputSize int) newXOF {
-	return func() *ExtensibleHash {
-		return &ExtensibleHash{XOF: &shake{f()}, minOutputSize: minOutputSize}
+	return func() *ExtendableHash {
+		return &ExtendableHash{XOF: &shake{f()}, minOutputSize: minOutputSize}
 	}
 }
 
@@ -176,8 +177,8 @@ func newBlake2xb() newXOF {
 		panic(err)
 	}
 
-	return func() *ExtensibleHash {
-		return &ExtensibleHash{XOF: &blake2bXOF{h}, minOutputSize: size256}
+	return func() *ExtendableHash {
+		return &ExtendableHash{XOF: &blake2bXOF{h}, minOutputSize: size256}
 	}
 }
 
@@ -187,20 +188,20 @@ func newBlake2xs() newXOF {
 		panic(err)
 	}
 
-	return func() *ExtensibleHash {
-		return &ExtensibleHash{XOF: &blake2sXOF{h}, minOutputSize: size256}
+	return func() *ExtendableHash {
+		return &ExtendableHash{XOF: &blake2sXOF{h}, minOutputSize: size256}
 	}
 }
 
-// ExtensibleHash wraps extensible output functions.
-type ExtensibleHash struct {
-	Extensible
+// ExtendableHash wraps extendable output functions.
+type ExtendableHash struct {
+	Extendable
 	XOF
 	minOutputSize int
 }
 
 // Hash returns the hash of the input argument with size output length.
-func (h *ExtensibleHash) Hash(size int, input ...[]byte) []byte {
+func (h *ExtendableHash) Hash(size int, input ...[]byte) []byte {
 	if size < h.minOutputSize {
 		panic(errSmallOutputSize)
 	}
@@ -218,12 +219,12 @@ func (h *ExtensibleHash) Hash(size int, input ...[]byte) []byte {
 }
 
 // Write implements io.Writer.
-func (h *ExtensibleHash) Write(p []byte) (n int, err error) {
+func (h *ExtendableHash) Write(p []byte) (n int, err error) {
 	return h.XOF.Write(p)
 }
 
 // Read returns size bytes from the current hash.
-func (h *ExtensibleHash) Read(size int) []byte {
+func (h *ExtendableHash) Read(size int) []byte {
 	if size < h.minOutputSize {
 		panic(errSmallOutputSize)
 	}
@@ -235,6 +236,6 @@ func (h *ExtensibleHash) Read(size int) []byte {
 }
 
 // Reset resets the Hash to its initial state.
-func (h *ExtensibleHash) Reset() {
+func (h *ExtendableHash) Reset() {
 	h.XOF.Reset()
 }

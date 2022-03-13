@@ -145,7 +145,7 @@ func mapXMD(name string) crypto.Hash {
 	}
 }
 
-func mapXOF(name string) hash.Extensible {
+func mapXOF(name string) hash.Extendable {
 	switch name {
 	case "SHAKE128":
 		return hash.SHAKE128
@@ -179,7 +179,7 @@ func msgPrime(h hash.Identifier, input, dst []byte, length int) []byte {
 	lib := i2osp(length, 2)
 	dstPrime := dstPrime(dst)
 
-	if h.Extensible() {
+	if h.Extendable() {
 		return concatenate(input, lib, dstPrime)
 	}
 
@@ -250,7 +250,12 @@ func TestExpander_Vectors(t *testing.T) {
 				return errOpen
 			}
 
-			defer file.Close()
+			defer func(file *os.File) {
+				err := file.Close()
+				if err != nil {
+
+				}
+			}(file)
 
 			val, errRead := ioutil.ReadAll(file)
 			if errRead != nil {

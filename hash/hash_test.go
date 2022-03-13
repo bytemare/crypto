@@ -92,7 +92,7 @@ func TestHash(t *testing.T) {
 		}
 	}
 
-	for _, id := range []Extensible{SHAKE128, SHAKE256, BLAKE2XB, BLAKE2XS} {
+	for _, id := range []Extendable{SHAKE128, SHAKE256, BLAKE2XB, BLAKE2XS} {
 		h := id.Get()
 
 		hh := h.Hash(h.minOutputSize, testData.message)
@@ -104,7 +104,7 @@ func TestHash(t *testing.T) {
 }
 
 func TestSmallXOFOutput(t *testing.T) {
-	for _, id := range []Extensible{SHAKE128, SHAKE256, BLAKE2XB, BLAKE2XS} {
+	for _, id := range []Extendable{SHAKE128, SHAKE256, BLAKE2XB, BLAKE2XS} {
 		h := id.Get()
 
 		if hasPanic, _ := internal.ExpectPanic(nil, func() {

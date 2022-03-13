@@ -43,8 +43,8 @@ func ExpandXMD(id crypto.Hash, input, dst []byte, length int) []byte {
 	return expandXMD(id, input, dst, length)
 }
 
-// ExpandXOF expands the input and dst using the given extensible output hash function.
-func ExpandXOF(id x.Extensible, input, dst []byte, length int) []byte {
+// ExpandXOF expands the input and dst using the given extendable output hash function.
+func ExpandXOF(id x.Extendable, input, dst []byte, length int) []byte {
 	checkDST(dst)
 	return expandXOF(id, input, dst, length)
 }
