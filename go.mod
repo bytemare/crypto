@@ -4,10 +4,10 @@ go 1.17
 
 require (
 	filippo.io/edwards25519 v1.0.0-rc.1
-	github.com/armfazh/h2c-go-ref v0.0.0-20210916204857-d98699b22b80
-	github.com/armfazh/tozan-ecc v0.1.3
+	github.com/armfazh/h2c-go-ref v0.0.0-20220222212046-ff45165972af
+	github.com/armfazh/tozan-ecc v0.1.4
 	github.com/gtank/ristretto255 v0.1.2
-	golang.org/x/crypto v0.0.0-20210915214749-c084706c2272
+	golang.org/x/crypto v0.0.0-20220313003712-b769efc7c000
 )
 
-require golang.org/x/sys v0.0.0-20210915083310-ed5796bab164 // indirect
+require golang.org/x/sys v0.0.0-20220310020820-b874c991c1a5 // indirect
