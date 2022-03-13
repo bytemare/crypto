@@ -17,7 +17,7 @@ import (
 	"math"
 )
 
-var errLengthTooLarge = errors.New("hash function's output length to low for requested length")
+var errLengthTooLarge = errors.New("the hash function's output length is to low for requested length")
 
 // expandXMD implements https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve#section-5.4.1.
 func expandXMD(id crypto.Hash, input, dst []byte, length int) []byte {
