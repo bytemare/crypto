@@ -40,4 +40,4 @@ vectors:
 .PHONY: cover
 cover:
 	@echo "Testing with coverage ..."
-	@go test -v -race -covermode=atomic -coverpkg=./... -coverprofile=./coverage.out ./tests
+	@go test -v -race -covermode=atomic -coverpkg=./... -coverprofile=./coverage.out ./...
