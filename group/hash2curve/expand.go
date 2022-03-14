@@ -12,7 +12,6 @@ package hash2curve
 import (
 	"crypto"
 	"errors"
-	"hash"
 
 	x "github.com/bytemare/crypto/hash"
 )
@@ -47,14 +46,4 @@ func ExpandXMD(id crypto.Hash, input, dst []byte, length int) []byte {
 func ExpandXOF(id x.Extendable, input, dst []byte, length int) []byte {
 	checkDST(dst)
 	return expandXOF(id, input, dst, length)
-}
-
-func _hash(h hash.Hash, input ...[]byte) []byte {
-	h.Reset()
-
-	for _, i := range input {
-		_, _ = h.Write(i)
-	}
-
-	return h.Sum(nil)
 }

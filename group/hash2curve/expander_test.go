@@ -253,7 +253,6 @@ func TestExpander_Vectors(t *testing.T) {
 			defer func(file *os.File) {
 				err := file.Close()
 				if err != nil {
-
 				}
 			}(file)
 

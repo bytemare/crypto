@@ -10,13 +10,20 @@
 package hash2curve
 
 import (
+	"errors"
 	"math"
 
 	"github.com/bytemare/crypto/hash"
 )
 
+var errXOFHighOutput = errors.New("XOF dst hashing is too long")
+
 // expandMessage XOF implements https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve#section-5.4.2.
 func expandXOF(x hash.Extendable, input, dst []byte, length int) []byte {
+	if length > math.MaxUint16 {
+		panic(errLengthTooLarge)
+	}
+
 	dst = vetXofDST(x, dst)
 	len2o := i2osp(length, 2)
 	dstLen2o := i2osp(len(dst), 1)
@@ -32,6 +39,9 @@ func vetXofDST(x hash.Extendable, dst []byte) []byte {
 
 	k := x.SecurityLevel()
 	size := int(math.Ceil(float64(2*k) / float64(8)))
+	if size > math.MaxUint8 {
+		panic(errXOFHighOutput)
+	}
 
 	return x.Get().Hash(size, []byte(dstLongPrefix), dst)
 }

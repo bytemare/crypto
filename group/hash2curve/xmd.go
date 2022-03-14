@@ -17,7 +17,7 @@ import (
 	"math"
 )
 
-var errLengthTooLarge = errors.New("the hash function's output length is to low for requested length")
+var errLengthTooLarge = errors.New("requested byte length is too high")
 
 // expandXMD implements https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve#section-5.4.1.
 func expandXMD(id crypto.Hash, input, dst []byte, length int) []byte {
@@ -27,7 +27,7 @@ func expandXMD(id crypto.Hash, input, dst []byte, length int) []byte {
 	blockSize := h.BlockSize()
 
 	ell := math.Ceil(float64(length) / float64(b))
-	if ell > 255 {
+	if ell > 255 || length > math.MaxUint16 || len(dst) > math.MaxUint8 {
 		panic(errLengthTooLarge)
 	}
 
@@ -92,4 +92,14 @@ func vetDSTXMD(h hash.Hash, dst []byte) []byte {
 
 	// If the tag length exceeds 255 bytes, compute a shorter tag by hashing it
 	return _hash(h, []byte(dstLongPrefix), dst)
+}
+
+func _hash(h hash.Hash, input ...[]byte) []byte {
+	h.Reset()
+
+	for _, i := range input {
+		_, _ = h.Write(i)
+	}
+
+	return h.Sum(nil)
 }
