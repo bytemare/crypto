@@ -26,19 +26,6 @@ func encodeSignPrefix(x, y *big.Int, pointLen int) []byte {
 	return compressed
 }
 
-type solver func(x *big.Int) *big.Int
-
-func isOnCurve(x, y, order *big.Int, solve solver) error {
-	y2 := new(big.Int).Mul(y, y)
-	y2.Mod(y2, order)
-
-	if solve(x).Cmp(y2) != 0 {
-		return errParamNotOnCurve
-	}
-
-	return nil
-}
-
 // y^2 = x^3 + b.
 func solveKoblitz(x *big.Int) *big.Int {
 	var a int64 = 7
@@ -104,4 +91,23 @@ func (p *Point) recoverPoint(input []byte) (*Point, error) {
 	}
 
 	return p, nil
+}
+
+type solver func(x *big.Int) *big.Int
+
+func isOnCurve(x, y, order *big.Int, solve solver) error {
+	// Reject integers below 0 or higher than the field order.
+	if x.Sign() < 0 || x.Cmp(order) >= 0 ||
+		y.Sign() < 0 || y.Cmp(order) >= 0 {
+		return errParamNotOnCurve
+	}
+
+	y2 := new(big.Int).Mul(y, y)
+	y2.Mod(y2, order)
+
+	if solve(x).Cmp(y2) != 0 {
+		return errParamNotOnCurve
+	}
+
+	return nil
 }
