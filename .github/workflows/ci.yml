@@ -1,58 +1,68 @@
 name: Crypto
 on:
   push:
-    tags:
-      - v*
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    # The branches below must be a subset of the branches above
+    branches: [ main ]
 
 jobs:
-  lint-and-test:
-    name: Lint and Test
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        GOVER: [ '1.17', '1.16', '1.15' ]
+        GOVER: [ '1.18' ]
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 # pin@v2
         with:
           fetch-depth: 0
       - name: Setup Go-${{ matrix.GOVER }}
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492 # pin@v2
         with:
           go-version: ${{ matrix.GOVER }}
 
       # Linting
-      #- name: Linting
-      #  uses: golangci/golangci-lint-action@v2
-      #  with:
-      #    version: latest
-      #    args: --config=./.github/.golangci.yml ./...
+      - name: Linting
+        uses: golangci/golangci-lint-action@5c56cd6c9dc07901af25baab6f2b0d9f3b7c3018 # pin@v2
+        with:
+          version: latest
+          args: --config=./.github/.golangci.yml ./...
+          only-new-issues: true
 
-      # Testing
-      - name: Testing
-        run: go test -v ./...
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 # pin@v2
+        with:
+          fetch-depth: 0
+      - name: Setup Go
+        uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492 # pin@v2
+        with:
+          go-version: '1.18'
+
+      # Test
+      - name: Run Tests
+        run: make test
 
   analyze:
     name: Analyze
-    needs: [ lint-and-test ]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 # pin@v2
         with:
           fetch-depth: 0
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492 # pin@v2
         with:
-          go-version: '1.17'
+          go-version: '1.18'
 
       # Coverage
       - name: Run coverage
@@ -60,13 +70,13 @@ jobs:
 
       # Codecov
       - name: Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@29386c70ef20e286228c72b668a06fd0e8399192 # pin@v1
         with:
           file: ./coverage.out
 
       # Sonar
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+        uses: SonarSource/sonarcloud-github-action@25b0be1ad1c39388799624b0d0914282bc36ac8e # pin@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -75,4 +85,7 @@ jobs:
             -Dsonar.projectKey=bytemare_crypto
             -Dsonar.organization=bytemare-github
             -Dsonar.go.coverage.reportPaths=coverage.out
+            -Dsonar.sources=.
+            -Dsonar.test.exclusions=tests/**
+            -Dsonar.tests=tests/
             -Dsonar.verbose=true

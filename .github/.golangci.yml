@@ -1,9 +1,11 @@
-
 linters:
   disable-all: true
   enable:
     - asciicheck
+    - bidichk
     - bodyclose
+    - containedctx
+    - contextcheck
     - cyclop
     - deadcode
     - depguard
@@ -11,6 +13,7 @@ linters:
     - dupl
     - durationcheck
     - errcheck
+    - errname
     - errorlint
     - exportloopref
     - forbidigo
@@ -38,11 +41,13 @@ linters:
     - ineffassign
     - lll
     - makezero
+    #- maligned
     - megacheck
     - misspell
     - nakedret
     - nestif
     - nilerr
+    - nilnil
     - noctx
     - nolintlint
     - paralleltest
@@ -54,6 +59,8 @@ linters:
     - staticcheck
     - structcheck
     - stylecheck
+    #- tagliatelle
+    - tenv
     - testpackage
     - thelper
     - tparallel
@@ -62,6 +69,7 @@ linters:
     - unparam
     - unused
     - varcheck
+    #- varnamelen
     - wastedassign
     - whitespace
     #- wrapcheck
@@ -102,7 +110,7 @@ linters-settings:
   gocyclo:
     min-complexity: 15
   godox:
-    keywords: # default keywords are TODO, BUG, and FIXME, these can be overwritten by this setting
+    keywords:
       - NOTE
       - OPTIMIZE
       - HACK
@@ -138,16 +146,8 @@ linters-settings:
     enable:
       - atomicalign
     disable-all: false
-  depguard:
-    list-type: blacklist
-    packages:
-      # logging is allowed only by logutils.Log, logrus
-      # is allowed to use only in logutils package
-      - github.com/sirupsen/logrus
-    packages-with-error-message:
-      - github.com/sirupsen/logrus: "logging is allowed only by logutils.Log"
   lll:
-    line-length: 145
+    line-length: 120
     # tab width ('\t') in spaces. Default to 1.
     tab-width: 4
   maligned:
@@ -204,4 +204,4 @@ run:
   tests: false
 
 output:
- #format: github-actions
+  format: github-actions
