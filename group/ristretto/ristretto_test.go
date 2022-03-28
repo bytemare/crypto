@@ -142,7 +142,11 @@ func TestScalar(t *testing.T) {
 				}
 
 				if len(s.Bytes()) != canonicalEncodingLength {
-					t.Fatalf("invalid random scalar length. Expected %d, got %d", canonicalEncodingLength, len(s.Bytes()))
+					t.Fatalf(
+						"invalid random scalar length. Expected %d, got %d",
+						canonicalEncodingLength,
+						len(s.Bytes()),
+					)
 				}
 
 				cpy, _ := Group{}.NewScalar().Decode(s.Bytes())

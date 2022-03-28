@@ -6,6 +6,7 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
+// Package internal exposes some common internal functions.
 package internal
 
 import (
@@ -38,6 +39,8 @@ func hasPanic(f func()) (has bool, err error) {
 	return has, err
 }
 
+// ExpectPanic executes the function f with the expectation to recover from a panic. If no panic occurred or if the
+// panic message is not the one expected, ExpectPanic returns (false, error).
 func ExpectPanic(expectedError error, f func()) (bool, error) {
 	hasPanic, err := hasPanic(f)
 

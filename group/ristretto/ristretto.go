@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-// Package ristretto wraps "github.com/gtank/ristretto255" and exposes a simple prime-order group API with hash-to-curve.
+// Package ristretto wraps github.com/gtank/ristretto255 and exposes a simple prime-order group API with hash-to-curve.
 package ristretto
 
 import (

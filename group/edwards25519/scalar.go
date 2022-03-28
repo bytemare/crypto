@@ -22,7 +22,8 @@ const (
 
 var scZero *Scalar
 
-// Scalar represents an Edwards25519 scalar. It wraps an Edwards25519 implementation to leverage its optimized operations.
+// Scalar represents an Edwards25519 scalar.
+// It wraps an Edwards25519 implementation to leverage its optimized operations.
 type Scalar struct {
 	scalar *edwards25519.Scalar
 }

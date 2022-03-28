@@ -81,10 +81,11 @@ func (i Group) get() *params {
 	return p
 }
 
-// MakeDST builds a domain separation tag in the form of <app>-V<version>-CS<id>-<hash-to-curve-ID>, or returns an error.
-func (i Group) MakeDST(app, version string) ([]byte, error) {
+// MakeDST builds a domain separation tag in the form of <app>-V<version>-CS<id>-<hash-to-curve-ID>,
+// and returns no error.
+func (i Group) MakeDST(app, version string) []byte {
 	p := i.get()
-	return []byte(fmt.Sprintf(dstfmt, app, version, p.id, p.h2cID)), nil
+	return []byte(fmt.Sprintf(dstfmt, app, version, p.id, p.h2cID))
 }
 
 // String returns the hash-to-curve string identifier of the ciphersuite.

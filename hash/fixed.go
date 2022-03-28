@@ -69,7 +69,8 @@ type fixedParams struct {
 
 var registeredHashing map[Hashing]*fixedParams
 
-// FromCrypto returns a Hashing identifier given a hash function defined in the built-in crypto, if it has been registered.
+// FromCrypto returns a Hashing identifier given a hash function defined in the built-in crypto,
+// if it has been registered.
 func FromCrypto(h crypto.Hash) Hashing {
 	i := Hashing(h)
 	if i.Available() {

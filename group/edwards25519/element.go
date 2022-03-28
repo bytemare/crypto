@@ -17,7 +17,8 @@ import (
 	"github.com/bytemare/crypto/group/internal"
 )
 
-// Element represents an Edwards25519 point. It wraps an Edwards25519 implementation to leverage its optimized operations.
+// Element represents an Edwards25519 point.
+// It wraps an Edwards25519 implementation to leverage its optimized operations.
 type Element struct {
 	element *edwards25519.Point
 }
