@@ -27,4 +27,6 @@ This project tries to be as Go idiomatic as possible. Conventions from [Effectiv
 
 By contributing to this project, you agree that your contributions will be licensed under the project's [License](https://github.com/bytemare/crypto/blob/main/LICENSE).
 
+All contributions (including pull requests) must agree to the [Developer Certificate of Origin (DCO) version 1.1](http://developercertificate.org). It states that the contributor has the right to submit the patch for inclusion into the project. Simply submitting a contribution implies this agreement, however, please include the "Signed-off-by" git tag in every commit (this tag is a conventional way to confirm that you agree to the DCO).
+
 Thanks! :heart:
