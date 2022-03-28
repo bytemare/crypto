@@ -44,8 +44,10 @@ func TestExpander_ZeroDST(t *testing.T) {
 
 func TestExpander_LongDST(t *testing.T) {
 	msg := []byte("test")
-	longDST := []byte("a255_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
-		"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+	longDST := []byte(
+		"a255_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+			"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+	)
 	length := 32
 
 	xmd1 := crypto.SHA256
@@ -228,7 +230,14 @@ func (s *set) run(t *testing.T) {
 			}
 
 			if !bytes.Equal(v.uniformBytes, x) {
-				t.Fatalf("%d : invalid hash (length %d vs %d). expected %q, got %q", i, len(x), v.lenInBytes, v.uniformBytes, x)
+				t.Fatalf(
+					"%d : invalid hash (length %d vs %d). expected %q, got %q",
+					i,
+					len(x),
+					v.lenInBytes,
+					v.uniformBytes,
+					x,
+				)
 			}
 		})
 	}

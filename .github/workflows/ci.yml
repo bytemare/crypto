@@ -26,12 +26,12 @@ jobs:
           go-version: ${{ matrix.GOVER }}
 
       # Linting
-      - name: Linting
-        uses: golangci/golangci-lint-action@5c56cd6c9dc07901af25baab6f2b0d9f3b7c3018 # pin@v2
-        with:
-          version: latest
-          args: --config=./.github/.golangci.yml ./...
-          only-new-issues: true
+      #- name: Linting
+      #  uses: golangci/golangci-lint-action@5c56cd6c9dc07901af25baab6f2b0d9f3b7c3018 # pin@v2
+      #  with:
+      #    version: latest
+      #    args: --config=./.github/.golangci.yml ./...
+      #    only-new-issues: true
 
   test:
     name: Test

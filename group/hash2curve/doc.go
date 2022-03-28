@@ -9,5 +9,6 @@
 // Package hash2curve provides hash-to-curve compatible hashing over arbitrary input.
 //
 // Currently, it is specifically suited for hashing to Ristretto255, Curve25519, and Edwards25519.
-// It implements the latest hash-to-curve specification to date (https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve-11).
+// It implements the latest hash-to-curve specification to date
+// (https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve/).
 package hash2curve

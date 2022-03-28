@@ -6,7 +6,8 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-// Package signature provides additional abstraction and modularity to digital signature schemes of built-in implementations
+// Package signature provides additional abstraction and modularity to digital signature schemes
+// of built-in implementations.
 package signature
 
 import (
@@ -56,7 +57,8 @@ type Signature interface {
 	// SignatureLength returns the byte size of a signature.
 	SignatureLength() uint
 
-	// SignMessage uses the internal private key to sign the message. The message argument doesn't need to be hashed beforehand.
+	// SignMessage uses the internal private key to sign the message.
+	// The message argument doesn't need to be hashed beforehand.
 	SignMessage(message ...[]byte) []byte
 
 	// Sign implements the Signer.Sign() function.

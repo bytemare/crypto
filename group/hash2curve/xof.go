@@ -38,6 +38,7 @@ func vetXofDST(x hash.Extendable, dst []byte) []byte {
 	}
 
 	k := x.SecurityLevel()
+
 	size := int(math.Ceil(float64(2*k) / float64(8)))
 	if size > math.MaxUint8 {
 		panic(errXOFHighOutput)

@@ -50,8 +50,16 @@ func (h *h2gTest) decode() (*h2gTestBytes, error) {
 }
 
 var h2gTests = []h2gTest{
-	{x: "68656c6c6f", dst: "564f50524630362d48617368546f47726f75702d000001", p: "723c88cc59988d39889aa607b6696d423e7718a36d4825e0f940b3c3a534396a"},
-	{x: "776f726c64", dst: "564f50524630362d48617368546f47726f75702d000001", p: "a47c0a13c42a26ab06e60d2e251ba591334a289f4fdfe3b17ed3321a9527f44c"},
+	{
+		x:   "68656c6c6f",
+		dst: "564f50524630362d48617368546f47726f75702d000001",
+		p:   "723c88cc59988d39889aa607b6696d423e7718a36d4825e0f940b3c3a534396a",
+	},
+	{
+		x:   "776f726c64",
+		dst: "564f50524630362d48617368546f47726f75702d000001",
+		p:   "a47c0a13c42a26ab06e60d2e251ba591334a289f4fdfe3b17ed3321a9527f44c",
+	},
 }
 
 func TestRistretto_HashToGroup(t *testing.T) {
@@ -65,7 +73,11 @@ func TestRistretto_HashToGroup(t *testing.T) {
 			e := Group{}.HashToGroup(v.x, v.dst)
 
 			if !bytes.Equal(e.Bytes(), v.p) {
-				t.Fatalf("Mappings do not match.\n\tExpected: %v\n\tActual: %v\n", hex.EncodeToString(v.p), hex.EncodeToString(e.Bytes()))
+				t.Fatalf(
+					"Mappings do not match.\n\tExpected: %v\n\tActual: %v\n",
+					hex.EncodeToString(v.p),
+					hex.EncodeToString(e.Bytes()),
+				)
 			}
 		})
 	}

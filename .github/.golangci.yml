@@ -12,7 +12,7 @@ linters:
     - dogsled
     - dupl
     - durationcheck
-    - errcheck
+    #- errcheck
     - errname
     - errorlint
     - exportloopref
@@ -53,12 +53,12 @@ linters:
     - paralleltest
     - prealloc
     - predeclared
-    - revive
+    #- revive
     - rowserrcheck
     - sqlclosecheck
     - staticcheck
     - structcheck
-    - stylecheck
+    #- stylecheck
     #- tagliatelle
     - tenv
     - testpackage
@@ -181,6 +181,9 @@ issues:
   # excluded by default patterns execute `golangci-lint run --help`
   exclude:
     - "should have a package comment, unless it's in another file for this package"
+
+  path:
+    - internal
 
   #exclude-rules:
   #  # Exclude some linters from running on tests files.
