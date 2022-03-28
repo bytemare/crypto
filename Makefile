@@ -1,20 +1,26 @@
 PACKAGES    := $(shell go list ./...)
 COMMIT      := $(shell git rev-parse HEAD)
 
+GH_ACTIONS = .github/workflows
+
 .PHONY: update
 update:
-	@echo "Updating dependencies and linters ..."
+	@echo "Updating dependencies..."
 	@go get -u
 	@go mod tidy
-	@go get -u mvdan.cc/gofumpt@latest github.com/daixiang0/gci
+	@echo "Updating Github Actions pins..."
+	@$(foreach file, $(wildcard $(GH_ACTIONS)/*.yml), pin-github-action $(file);)
+	@echo "Updating linters..."
+	@go get -u mvdan.cc/gofumpt@latest github.com/daixiang0/gci github.com/segmentio/golines@latest
 	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
 
 .PHONY: fmt
 fmt:
 	@echo "Formatting ..."
 	@go mod tidy
+	@golines -m 120 -t 4 -w .
 	@gofumpt -w -extra .
-	@gci write --Section Standard --Section Default --Section "Prefix(github.com/bytemare/crypto)" .
+	@gci write --Section Standard --Section Default --Section "Prefix($(shell go list -m))" .
 
 .PHONY: lint
 
@@ -30,12 +36,12 @@ license:
 .PHONY: test
 test:
 	@echo "Running all tests ..."
-	@go test -v ./tests
+	@go test -v ./...
 
-.PHONY: vectors
-vectors:
-	@echo "Testing vectors ..."
-	@go test -v tests/vectors_test.go
+#.PHONY: vectors
+#vectors:
+#	@echo "Testing vectors ..."
+#	@go test -v tests/vectors_test.go
 
 .PHONY: cover
 cover:
