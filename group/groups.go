@@ -55,6 +55,8 @@ const (
 
 	// Secp256k1Sha256 identifies a group over Secp256k1 with SHA2-512 hash-to-group hashing.
 	Secp256k1Sha256
+
+	maxID
 )
 
 const dstfmt = "%s-V%s-CS%s-%s"
