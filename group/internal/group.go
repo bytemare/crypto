@@ -28,9 +28,6 @@ type Group interface {
 	// ElementLength returns the byte size of an encoded element.
 	ElementLength() int
 
-	// Identity returns the group's identity element.
-	Identity() Point
-
 	// HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
 	HashToGroup(input, dst []byte) Point
 

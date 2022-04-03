@@ -107,6 +107,10 @@ func (e *Element) Decode(in []byte) (internal.Point, error) {
 		return nil, fmt.Errorf("decoding element : %w", err)
 	}
 
+	if e.IsIdentity() {
+		return nil, internal.ErrIdentity
+	}
+
 	return e, nil
 }
 

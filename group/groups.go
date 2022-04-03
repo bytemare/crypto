@@ -140,11 +140,6 @@ func (i Group) ElementLength() int {
 	return i.get().ElementLength()
 }
 
-// Identity returns the group's identity element.
-func (i Group) Identity() *Point {
-	return newPoint(i.get().Identity())
-}
-
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
 func (i Group) HashToGroup(input, dst []byte) *Point {
 	return newPoint(i.get().HashToGroup(input, dst))

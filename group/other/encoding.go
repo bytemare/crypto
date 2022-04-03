@@ -6,11 +6,13 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-// Package other wraps an hash-to-curve implementation and exposes functions for operations on points and scalars.
+// Package other wraps a hash-to-curve implementation and exposes functions for operations on points and scalars.
 package other
 
 import (
 	"math/big"
+
+	"github.com/bytemare/crypto/group/internal"
 )
 
 func pointLen(bitLen int) int {
@@ -88,6 +90,10 @@ func (p *Point) recoverPoint(input []byte) (*Point, error) {
 
 	if err := p.set(x, y); err != nil {
 		return nil, err
+	}
+
+	if p.point.IsIdentity() {
+		return nil, internal.ErrIdentity
 	}
 
 	return p, nil
