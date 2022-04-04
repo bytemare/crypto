@@ -29,7 +29,7 @@ type Point interface {
 	// Copy returns a copy of the point.
 	Copy() Point
 
-	// Decode decodes the input an sets the current point to its value, and returns it.
+	// Decode decodes the input a sets the current point to its value, and returns it.
 	Decode(in []byte) (Point, error)
 
 	// Bytes returns the compressed byte encoding of the point.

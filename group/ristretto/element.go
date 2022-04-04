@@ -96,6 +96,11 @@ func (p *Point) Decode(in []byte) (internal.Point, error) {
 		return nil, err
 	}
 
+	// superfluous identity check
+	if el.Equal(ristretto255.NewElement().Zero()) == 1 {
+		return nil, internal.ErrIdentity
+	}
+
 	p.point = el
 
 	return p, nil
