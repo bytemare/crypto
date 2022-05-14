@@ -160,7 +160,6 @@ func TestScalar(t *testing.T) {
 }
 
 func TestNilElement(t *testing.T) {
-	// Test if the element in the test is the base point
 	_, err := Group{}.NewElement().Decode(nil)
 	if err == nil {
 		t.Fatal("expected error on nil input")
@@ -349,7 +348,7 @@ func TestPointArithmetic(t *testing.T) {
 }
 
 func TestScalarArithmetic(t *testing.T) {
-	// Test Addition and Substraction
+	// Test Addition and Subtraction
 	s := Group{}.NewScalar().Random()
 	if !bytes.Equal(s.Add(nil).Bytes(), s.Bytes()) {
 		t.Fatal("not equal")

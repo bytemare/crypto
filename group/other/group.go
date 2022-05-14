@@ -10,6 +10,8 @@
 package other
 
 import (
+	"errors"
+
 	H2C "github.com/armfazh/h2c-go-ref"
 
 	"github.com/bytemare/crypto/group/internal"
@@ -43,31 +45,46 @@ func (h *Hash2Curve) NewScalar() internal.Scalar {
 }
 
 // ElementLength returns the byte size of an encoded element.
-func (h *Hash2Curve) ElementLength() int {
+func (h *Hash2Curve) ElementLength() uint {
 	h2 := getH2C(h.suite, nil)
 
 	return pointLen(h2.GetCurve().Field().BitLen())
 }
 
-// NewElement returns a new, empty, element.
-func (h *Hash2Curve) NewElement() internal.Point {
+// NewElement returns the identity point (point at infinity).
+func (h *Hash2Curve) NewElement() internal.Element {
 	h2 := getH2C(h.suite, nil)
 
 	return &Point{
 		Hash2Curve: h,
 		curve:      getCurve(h.suite),
-		point:      curves[h.suite].New(h2.GetCurve()).base,
+		point:      curves[h.suite].New(h2.GetCurve()).Identity(),
 	}
 }
 
 // Identity returns the group's identity element.
-func (h *Hash2Curve) Identity() internal.Point {
+func (h *Hash2Curve) Identity() internal.Element {
 	h2 := getH2C(h.suite, nil)
 
 	return &Point{
 		Hash2Curve: h,
 		curve:      getCurve(h.suite),
 		point:      h2.GetCurve().Identity(),
+	}
+}
+
+const (
+	minLength            = 0
+	recommendedMinLength = 16
+)
+
+var errZeroLenDST = errors.New("zero-length DST")
+
+func checkDST(dst []byte) {
+	if len(dst) < recommendedMinLength {
+		if len(dst) == minLength {
+			panic(errZeroLenDST)
+		}
 	}
 }
 
@@ -90,7 +107,8 @@ func getCurve(id H2C.SuiteID) *curve {
 }
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
-func (h *Hash2Curve) HashToGroup(input, dst []byte) internal.Point {
+func (h *Hash2Curve) HashToGroup(input, dst []byte) internal.Element {
+	checkDST(dst)
 	h2 := getH2C(h.suite, dst)
 
 	return &Point{
@@ -101,7 +119,7 @@ func (h *Hash2Curve) HashToGroup(input, dst []byte) internal.Point {
 }
 
 // EncodeToGroup allows arbitrary input to be mapped non-uniformly to points in the Group.
-func (h *Hash2Curve) EncodeToGroup(input, dst []byte) internal.Point {
+func (h *Hash2Curve) EncodeToGroup(input, dst []byte) internal.Element {
 	var id H2C.SuiteID
 
 	switch h.suite {
@@ -111,10 +129,10 @@ func (h *Hash2Curve) EncodeToGroup(input, dst []byte) internal.Point {
 		id = H2C.P384_XMDSHA384_SSWU_NU_
 	case H2C.P521_XMDSHA512_SSWU_RO_:
 		id = H2C.P521_XMDSHA512_SSWU_NU_
-	case H2C.Curve448_XMDSHA512_ELL2_RO_:
-		id = H2C.Curve448_XMDSHA512_ELL2_NU_
-	case H2C.Edwards448_XMDSHA512_ELL2_RO_:
-		id = H2C.Edwards448_XMDSHA512_ELL2_NU_
+	case H2C.Curve448_XOFSHAKE256_ELL2_RO_:
+		id = H2C.Curve448_XOFSHAKE256_ELL2_NU_
+	case H2C.Edwards448_XOFSHAKE256_ELL2_RO_:
+		id = H2C.Edwards448_XOFSHAKE256_ELL2_NU_
 	case H2C.Secp256k1_XMDSHA256_SSWU_RO_:
 		id = H2C.Secp256k1_XMDSHA256_SSWU_NU_
 	default:
@@ -132,6 +150,7 @@ func (h *Hash2Curve) EncodeToGroup(input, dst []byte) internal.Point {
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.
 func (h *Hash2Curve) HashToScalar(input, dst []byte) internal.Scalar {
+	checkDST(dst)
 	h2 := getH2C(h.suite, dst)
 
 	return &Scalar{
@@ -141,12 +160,18 @@ func (h *Hash2Curve) HashToScalar(input, dst []byte) internal.Scalar {
 }
 
 // Base returns the group's base point a.k.a. canonical generator.
-func (h *Hash2Curve) Base() internal.Point {
-	return h.NewElement()
+func (h *Hash2Curve) Base() internal.Element {
+	h2 := getH2C(h.suite, nil)
+
+	return &Point{
+		Hash2Curve: h,
+		curve:      getCurve(h.suite),
+		point:      curves[h.suite].New(h2.GetCurve()).base,
+	}
 }
 
 // MultBytes allows []byte encodings of a scalar and an element of the Group to be multiplied.
-func (h *Hash2Curve) MultBytes(scalar, element []byte) (internal.Point, error) {
+func (h *Hash2Curve) MultBytes(scalar, element []byte) (internal.Element, error) {
 	s, err := h.NewScalar().Decode(scalar)
 	if err != nil {
 		return nil, err

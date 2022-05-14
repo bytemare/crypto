@@ -28,35 +28,39 @@ const (
 // Group represents the Ristretto255 group. It exposes a prime-order group API with hash-to-curve operations.
 type Group struct{}
 
+func New() internal.Group {
+	return Group{}
+}
+
 // NewScalar returns a new, empty, scalar.
 func (r Group) NewScalar() internal.Scalar {
 	return &Scalar{ristretto255.NewScalar()}
 }
 
 // ElementLength returns the byte size of an encoded element.
-func (r Group) ElementLength() int {
+func (r Group) ElementLength() uint {
 	return canonicalEncodingLength
 }
 
-// NewElement returns a new, empty, element.
-func (r Group) NewElement() internal.Point {
+// NewElement returns the identity point (point at infinity).
+func (r Group) NewElement() internal.Element {
 	return &Point{ristretto255.NewElement()}
 }
 
 // Identity returns the group's identity element.
-func (r Group) Identity() internal.Point {
+func (r Group) Identity() internal.Element {
 	return &Point{ristretto255.NewElement().Zero()}
 }
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the group.
-func (r Group) HashToGroup(input, dst []byte) internal.Point {
+func (r Group) HashToGroup(input, dst []byte) internal.Element {
 	uniform := hash2curve.ExpandXMD(crypto.SHA512, input, dst, ristrettoInputLength)
 
 	return &Point{ristretto255.NewElement().FromUniformBytes(uniform)}
 }
 
 // EncodeToGroup allows arbitrary input to be mapped non-uniformly to points in the Group.
-func (r Group) EncodeToGroup(input, dst []byte) internal.Point {
+func (r Group) EncodeToGroup(input, dst []byte) internal.Element {
 	return r.HashToGroup(input, dst)
 }
 
@@ -68,12 +72,12 @@ func (r Group) HashToScalar(input, dst []byte) internal.Scalar {
 }
 
 // Base returns group's base point a.k.a. canonical generator.
-func (r Group) Base() internal.Point {
+func (r Group) Base() internal.Element {
 	return &Point{ristretto255.NewElement().Base()}
 }
 
 // MultBytes allows []byte encodings of a scalar and an element of the group to be multiplied.
-func (r Group) MultBytes(s, e []byte) (internal.Point, error) {
+func (r Group) MultBytes(s, e []byte) (internal.Element, error) {
 	sc, err := r.NewScalar().Decode(s)
 	if err != nil {
 		return nil, err

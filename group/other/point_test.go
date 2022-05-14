@@ -12,12 +12,13 @@ import (
 	"bytes"
 	"crypto/elliptic"
 	"crypto/rand"
+	"github.com/bytemare/crypto/group/internal"
 	"math/big"
 	"testing"
 
 	H2C "github.com/armfazh/h2c-go-ref"
 
-	"github.com/bytemare/crypto/internal"
+	panic "github.com/bytemare/crypto/internal"
 )
 
 var (
@@ -172,14 +173,14 @@ func testPointArithmetic(t *testing.T, suite H2C.SuiteID, input []byte) {
 
 	// Test Addition and Subtraction
 	base := g.Base()
-	if hasPanic, _ := internal.ExpectPanic(nil, func() {
+	if hasPanic, _ := panic.ExpectPanic(nil, func() {
 		base.Add(nil)
 	}); !hasPanic {
 		t.Fatal("expected panic")
 	}
 
 	a := base.Add(base)
-	if hasPanic, _ := internal.ExpectPanic(nil, func() {
+	if hasPanic, _ := panic.ExpectPanic(nil, func() {
 		a.Sub(nil)
 	}); !hasPanic {
 		t.Fatal("expected panic")
@@ -191,7 +192,7 @@ func testPointArithmetic(t *testing.T, suite H2C.SuiteID, input []byte) {
 
 	// Test Multiplication and inversion
 	base = g.Base()
-	s := g.HashToScalar(input, nil)
+	s := g.HashToScalar(input, dst)
 	penc := base.Bytes()
 	senc := s.Bytes()
 	m := base.Mult(s)
@@ -205,7 +206,7 @@ func testPointArithmetic(t *testing.T, suite H2C.SuiteID, input []byte) {
 	if !bytes.Equal(m.Bytes(), e.Bytes()) {
 		t.Fatal("not equal")
 	}
-	if hasPanic, err := internal.ExpectPanic(errParamNilScalar, func() {
+	if hasPanic, err := panic.ExpectPanic(internal.ErrParamNilScalar, func() {
 		m.InvertMult(nil)
 	}); !hasPanic {
 		t.Fatalf("expected panic: %v", err)
@@ -218,7 +219,7 @@ func testPointArithmetic(t *testing.T, suite H2C.SuiteID, input []byte) {
 	// Test identity
 	id := base.Sub(base)
 	if !id.IsIdentity() {
-		t.Fatal("expected assertion to be true")
+		t.Fatal("expected identity element")
 	}
 }
 

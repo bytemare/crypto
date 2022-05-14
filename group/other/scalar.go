@@ -118,7 +118,7 @@ func (s *Scalar) Copy() internal.Scalar {
 // Decode decodes the input an sets the current scalar to its value, and returns it.
 func (s *Scalar) Decode(in []byte) (internal.Scalar, error) {
 	if len(in) == 0 {
-		return nil, errParamNilScalar
+		return nil, internal.ErrParamNilScalar
 	}
 
 	// warning - SetBytes interprets the input as a non-signed integer, so this will always be negative

@@ -12,17 +12,19 @@ package group
 import (
 	"errors"
 	"fmt"
+	"sync"
 
 	H2C "github.com/armfazh/h2c-go-ref"
 
 	"github.com/bytemare/crypto/group/curve25519"
 	"github.com/bytemare/crypto/group/edwards25519"
 	"github.com/bytemare/crypto/group/internal"
+	"github.com/bytemare/crypto/group/nist"
 	"github.com/bytemare/crypto/group/other"
 	"github.com/bytemare/crypto/group/ristretto"
 )
 
-// Group defines registered groups for use in the implementation.
+// Group identifies prime-order groups over elliptic curves with hash-to-group operations.
 type Group byte
 
 const (
@@ -47,125 +49,148 @@ const (
 	// Edwards25519Sha512 identifies a group over Edwards25519 with SHA2-512 hash-to-group hashing.
 	Edwards25519Sha512
 
-	// Curve448Sha512 identifies a group over Curve448 with SHA2-512 hash-to-group hashing.
-	Curve448Sha512
+	// Curve448Shake256 identifies a group over Curve448 with Shake256 hash-to-group hashing.
+	//Curve448Shake256
 
-	// Edwards448Sha512 identifies a group over Edwards448 with SHA2-512 hash-to-group hashing.
-	Edwards448Sha512
-
-	// Secp256k1Sha256 identifies a group over Secp256k1 with SHA2-512 hash-to-group hashing.
-	Secp256k1Sha256
+	// Edwards448Shake256 identifies a group over Edwards448 with Shake256 hash-to-group hashing.
+	//Edwards448Shake256
 
 	maxID
-)
 
-const dstfmt = "%s-V%s-CS%s-%s"
+	dstfmt               = "%s-V%02d-CS%02d-%s"
+	minLength            = 0
+	recommendedMinLength = 16
+)
 
 var (
-	registered   map[Group]*params
-	errInvalidID = errors.New("invalid group identifier")
+	once          [maxID - 1]sync.Once
+	groups        [maxID - 1]*params
+	errInvalidID  = errors.New("invalid group identifier")
+	errZeroLenDST = errors.New("zero-length DST")
 )
 
-// Available reports whether the given Group is linked into the binary.
-func (i Group) Available() bool {
-	_, ok := registered[i]
-	return ok
-}
-
-func (i Group) get() *params {
-	p, ok := registered[i]
-	if !ok {
-		panic(errInvalidID)
-	}
-
-	return p
-}
-
-// MakeDST builds a domain separation tag in the form of <app>-V<version>-CS<id>-<hash-to-curve-ID>,
-// and returns no error.
-func (i Group) MakeDST(app, version string) []byte {
-	p := i.get()
-	return []byte(fmt.Sprintf(dstfmt, app, version, p.id, p.h2cID))
-}
-
-// String returns the hash-to-curve string identifier of the ciphersuite.
-func (i Group) String() string {
-	return i.get().h2cID
-}
-
 type params struct {
-	id    Group
 	h2cID string
 	internal.Group
 }
 
-func (i Group) register(identifier string, g internal.Group) {
-	registered[i] = &params{
-		id:    i,
-		h2cID: identifier,
-		Group: g,
+// Available reports whether the given Group is linked into the binary.
+func (g Group) Available() bool {
+	return 0 < g && g < maxID
+}
+
+func (g Group) get() *params {
+	if !g.Available() {
+		panic(errInvalidID)
 	}
+
+	once[g-1].Do(g.init)
+
+	return groups[g-1]
 }
 
-func newCurve(id H2C.SuiteID) (string, internal.Group) {
-	return string(id), other.New(id)
+// MakeDST builds a domain separation tag in the form of <app>-V<version>-CS<id>-<hash-to-curve-ID>,
+// and returns no error.
+func (g Group) MakeDST(app string, version uint8) []byte {
+	p := g.get()
+	return []byte(fmt.Sprintf(dstfmt, app, version, g, p.h2cID))
 }
 
-func init() {
-	registered = make(map[Group]*params)
-
-	Ristretto255Sha512.register(ristretto.H2C, ristretto.Group{})
-	P256Sha256.register(newCurve(H2C.P256_XMDSHA256_SSWU_RO_))
-	P384Sha384.register(newCurve(H2C.P384_XMDSHA384_SSWU_RO_))
-	P521Sha512.register(newCurve(H2C.P521_XMDSHA512_SSWU_RO_))
-	Curve25519Sha512.register(curve25519.H2C, curve25519.Group{})
-	Edwards25519Sha512.register(edwards25519.H2C, edwards25519.Group{})
-	Curve448Sha512.register(newCurve(H2C.Curve448_XMDSHA512_ELL2_RO_))
-	Edwards448Sha512.register(newCurve(H2C.Edwards448_XMDSHA512_ELL2_RO_))
-	Secp256k1Sha256.register(newCurve(H2C.Secp256k1_XMDSHA256_SSWU_RO_))
+// String returns the hash-to-curve string identifier of the ciphersuite.
+func (g Group) String() string {
+	return g.get().h2cID
 }
 
 // NewScalar returns a new, empty, scalar.
-func (i Group) NewScalar() *Scalar {
-	return newScalar(i.get().NewScalar())
+func (g Group) NewScalar() *Scalar {
+	return newScalar(g.get().NewScalar())
 }
 
-// NewElement returns a new, empty, element.
-func (i Group) NewElement() *Point {
-	return newPoint(i.get().NewElement())
+// NewElement returns the identity point (point at infinity).
+func (g Group) NewElement() *Point {
+	return newPoint(g.get().NewElement())
 }
 
 // ElementLength returns the byte size of an encoded element.
-func (i Group) ElementLength() int {
-	return i.get().ElementLength()
+func (g Group) ElementLength() uint {
+	return g.get().ElementLength()
+}
+
+func checkDST(dst []byte) {
+	if len(dst) < recommendedMinLength {
+		if len(dst) == minLength {
+			panic(errZeroLenDST)
+		}
+	}
 }
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
-func (i Group) HashToGroup(input, dst []byte) *Point {
-	return newPoint(i.get().HashToGroup(input, dst))
+// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
+func (g Group) HashToGroup(input, dst []byte) *Point {
+	checkDST(dst)
+	return newPoint(g.get().HashToGroup(input, dst))
 }
 
 // EncodeToGroup allows arbitrary input to be safely mapped to the curve of the Group.
-func (i Group) EncodeToGroup(input, dst []byte) *Point {
-	return newPoint(i.get().HashToGroup(input, dst))
+// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
+func (g Group) EncodeToGroup(input, dst []byte) *Point {
+	checkDST(dst)
+	return newPoint(g.get().HashToGroup(input, dst))
 }
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.
-func (i Group) HashToScalar(input, dst []byte) *Scalar {
-	return newScalar(i.get().HashToScalar(input, dst))
+// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
+func (g Group) HashToScalar(input, dst []byte) *Scalar {
+	checkDST(dst)
+	return newScalar(g.get().HashToScalar(input, dst))
 }
 
 // Base returns the group's base point a.k.a. canonical generator.
-func (i Group) Base() *Point {
-	return newPoint(i.get().Base())
+func (g Group) Base() *Point {
+	return newPoint(g.get().Base())
 }
 
 // MultBytes allows []byte encodings of a scalar and an element of the Group to be multiplied.
-func (i Group) MultBytes(scalar, element []byte) (*Point, error) {
-	p, err := i.get().MultBytes(scalar, element)
+func (g Group) MultBytes(scalar, element []byte) (*Point, error) {
+	p, err := g.get().MultBytes(scalar, element)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Point{p}, nil
+}
+
+func newH2Cgroup(id H2C.SuiteID) (string, func() internal.Group) {
+	get := func() internal.Group {
+		return other.New(id)
+	}
+	return string(id), get
+}
+
+func (g Group) initGroup(h2cID string, get func() internal.Group) {
+	groups[g-1] = &params{
+		h2cID: h2cID,
+		Group: get(),
+	}
+}
+
+func (g Group) init() {
+	switch g {
+	case Ristretto255Sha512:
+		g.initGroup(ristretto.H2C, ristretto.New)
+	case P256Sha256:
+		g.initGroup(nist.H2CP256, nist.P256)
+	case P384Sha384:
+		g.initGroup(nist.H2CP384, nist.P384)
+	case P521Sha512:
+		g.initGroup(nist.H2CP521, nist.P521)
+	case Curve25519Sha512:
+		g.initGroup(curve25519.H2C, curve25519.New)
+	case Edwards25519Sha512:
+		g.initGroup(edwards25519.H2C, edwards25519.New)
+		//case Curve448Shake256:
+		//	g.initGroup(newH2Cgroup(H2C.Curve448_XOFSHAKE256_ELL2_RO_))
+		//case Edwards448Shake256:
+		//	g.initGroup(newH2Cgroup(H2C.Edwards448_XOFSHAKE256_ELL2_RO_))
+	}
 }

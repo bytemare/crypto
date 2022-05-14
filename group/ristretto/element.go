@@ -23,7 +23,7 @@ type Point struct {
 }
 
 // Add adds the argument to the receiver, sets the receiver to the result and returns it.
-func (p *Point) Add(element internal.Point) internal.Point {
+func (p *Point) Add(element internal.Element) internal.Element {
 	if element == nil {
 		panic(internal.ErrParamNilPoint)
 	}
@@ -37,7 +37,7 @@ func (p *Point) Add(element internal.Point) internal.Point {
 }
 
 // Sub subtracts the argument from the receiver, sets the receiver to the result and returns it.
-func (p *Point) Sub(element internal.Point) internal.Point {
+func (p *Point) Sub(element internal.Element) internal.Element {
 	if element == nil {
 		panic(internal.ErrParamNilPoint)
 	}
@@ -51,7 +51,7 @@ func (p *Point) Sub(element internal.Point) internal.Point {
 }
 
 // Mult returns the scalar multiplication of the receiver element with the given scalar.
-func (p *Point) Mult(scalar internal.Scalar) internal.Point {
+func (p *Point) Mult(scalar internal.Scalar) internal.Element {
 	if scalar == nil {
 		panic(internal.ErrParamNilScalar)
 	}
@@ -65,7 +65,7 @@ func (p *Point) Mult(scalar internal.Scalar) internal.Point {
 }
 
 // InvertMult returns the scalar multiplication of the receiver element with the inverse of the given scalar.
-func (p *Point) InvertMult(scalar internal.Scalar) internal.Point {
+func (p *Point) InvertMult(scalar internal.Scalar) internal.Element {
 	if scalar == nil {
 		panic(internal.ErrParamNilScalar)
 	}
@@ -80,7 +80,7 @@ func (p *Point) IsIdentity() bool {
 }
 
 // Copy returns a copy of the element.
-func (p *Point) Copy() internal.Point {
+func (p *Point) Copy() internal.Element {
 	n := ristretto255.NewElement()
 	if err := n.Decode(p.point.Encode(nil)); err != nil {
 		panic(err)
@@ -90,7 +90,7 @@ func (p *Point) Copy() internal.Point {
 }
 
 // Decode decodes the input an sets the current element to its value, and returns it.
-func (p *Point) Decode(in []byte) (internal.Point, error) {
+func (p *Point) Decode(in []byte) (internal.Element, error) {
 	el, err := decodeElement(in)
 	if err != nil {
 		return nil, err
@@ -112,7 +112,7 @@ func (p *Point) Bytes() []byte {
 }
 
 // Base returns the group's base point.
-func (p *Point) Base() internal.Point {
+func (p *Point) Base() internal.Element {
 	p.point = ristretto255.NewElement().Base()
 	return p
 }

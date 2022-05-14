@@ -11,6 +11,7 @@ package other
 
 import (
 	nist "crypto/elliptic"
+	"log"
 	"math/big"
 
 	Curve "github.com/armfazh/h2c-go-ref/curve"
@@ -28,7 +29,7 @@ type Point struct {
 }
 
 // Add adds the argument to the receiver, sets the receiver to the result and returns it.
-func (p *Point) Add(element internal.Point) internal.Point {
+func (p *Point) Add(element internal.Element) internal.Element {
 	if element == nil {
 		panic("element is nil")
 	}
@@ -46,7 +47,7 @@ func (p *Point) Add(element internal.Point) internal.Point {
 }
 
 // Sub subtracts the argument from the receiver, sets the receiver to the result and returns it.
-func (p *Point) Sub(element internal.Point) internal.Point {
+func (p *Point) Sub(element internal.Element) internal.Element {
 	if element == nil {
 		panic("element is nil")
 	}
@@ -64,7 +65,7 @@ func (p *Point) Sub(element internal.Point) internal.Point {
 }
 
 // Mult returns the scalar multiplication of the receiver element with the given scalar.
-func (p *Point) Mult(scalar internal.Scalar) internal.Point {
+func (p *Point) Mult(scalar internal.Scalar) internal.Element {
 	sc, ok := scalar.(*Scalar)
 	if !ok {
 		panic("could not cast to hash2curve scalar")
@@ -84,9 +85,9 @@ func (p *Point) Mult(scalar internal.Scalar) internal.Point {
 }
 
 // InvertMult returns the scalar multiplication of the receiver element with the inverse of the given scalar.
-func (p *Point) InvertMult(s internal.Scalar) internal.Point {
+func (p *Point) InvertMult(s internal.Scalar) internal.Element {
 	if s == nil {
-		panic(errParamNilScalar)
+		panic(internal.ErrParamNilScalar)
 	}
 
 	return p.Mult(s.Invert())
@@ -98,7 +99,7 @@ func (p *Point) IsIdentity() bool {
 }
 
 // Copy returns a copy of the element.
-func (p *Point) Copy() internal.Point {
+func (p *Point) Copy() internal.Element {
 	return &Point{
 		Hash2Curve: p.Hash2Curve,
 		curve:      p.curve,
@@ -108,14 +109,23 @@ func (p *Point) Copy() internal.Point {
 
 // Bytes returns the compressed byte encoding of the element.
 func (p *Point) Bytes() []byte {
-	x := p.point.X().Polynomial()[0]
-	y := p.point.Y().Polynomial()[0]
+	var x, y *big.Int
+	if p.point.X() == nil {
+		x = big.NewInt(0)
+		y = big.NewInt(1)
+	} else {
+		x = p.point.X().Polynomial()[0]
+		y = p.point.Y().Polynomial()[0]
+	}
 
-	return encodeSignPrefix(x, y, pointLen(p.Field().BitLen()))
+	log.Println(x.Bytes())
+	log.Println(y.Bytes())
+
+	return encodeSignPrefix448(x, y, pointLen(p.Field().BitLen()))
 }
 
-// Decode decodes the input an sets the current element to its value, and returns it.
-func (p *Point) Decode(input []byte) (internal.Point, error) {
+// Decode decodes the input and sets the current element to its value, and returns it.
+func (p *Point) Decode(input []byte) (internal.Element, error) {
 	if p.id == Curve.P256 || p.id == Curve.P384 || p.id == Curve.P521 {
 		x, y := nist.UnmarshalCompressed(h2cToNist(p.id), input)
 		if x == nil {
@@ -127,6 +137,10 @@ func (p *Point) Decode(input []byte) (internal.Point, error) {
 		}
 
 		return p, nil
+	}
+
+	if p.id == Curve.Curve448 || p.id == Curve.Edwards448 {
+		return p.recover448(input)
 	}
 
 	return p.recoverPoint(input)
@@ -145,6 +159,20 @@ func (p *Point) set(x, y *big.Int) (err error) {
 	p.point = p.NewPoint(X, Y)
 
 	return err
+}
+
+func getY(f field.Field, input []byte) (*big.Int, error) {
+	byteLen := (f.BitLen() + 7) / 8
+	if len(input) != 1+byteLen {
+		return nil, errParamInvalidSize
+	}
+
+	y := new(big.Int).SetBytes(input[1:])
+	if y.Cmp(f.Order()) >= 0 {
+		return nil, errParamDecYExceeds
+	}
+
+	return y, nil
 }
 
 func getX(f field.Field, input []byte) (*big.Int, error) {

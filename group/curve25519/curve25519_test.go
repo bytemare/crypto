@@ -35,7 +35,7 @@ type vector struct {
 }
 
 func (v *vector) run(t *testing.T) {
-	var p internal.Point
+	var p internal.Element
 	if v.Ciphersuite == H2C {
 		p = Group{}.HashToGroup([]byte(v.Msg), []byte(v.Dst))
 	}
@@ -43,8 +43,10 @@ func (v *vector) run(t *testing.T) {
 		p = Group{}.EncodeToGroup([]byte(v.Msg), []byte(v.Dst))
 	}
 
-	if hex.EncodeToString(reverse(p.Bytes())) != v.P.X[2:] {
-		t.Fatalf("Unexpected HashToGroup output.\n\tExpected %q\n\tot %q", v.P.X, hex.EncodeToString(p.Bytes()))
+	exp, _ := hex.DecodeString(v.P.X[2:])
+
+	if hex.EncodeToString(p.Bytes()) != hex.EncodeToString(reverse(exp)) {
+		t.Fatalf("Unexpected HashToGroup output.\n\tExpected %q\n\tot %q", hex.EncodeToString(reverse(exp)), hex.EncodeToString(p.Bytes()))
 	}
 }
 

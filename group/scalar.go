@@ -30,16 +30,25 @@ func (s *Scalar) Random() *Scalar {
 
 // Add returns the sum of the scalars, and does not change the receiver.
 func (s *Scalar) Add(scalar *Scalar) *Scalar {
+	if scalar == nil {
+		panic(internal.ErrParamNilScalar)
+	}
 	return &Scalar{s.Scalar.Add(scalar.Scalar)}
 }
 
 // Sub returns the difference between the scalars, and does not change the receiver.
 func (s *Scalar) Sub(scalar *Scalar) *Scalar {
+	if scalar == nil {
+		panic(internal.ErrParamNilScalar)
+	}
 	return &Scalar{s.Scalar.Sub(scalar.Scalar)}
 }
 
 // Mult returns the multiplication of the scalars, and does not change the receiver.
 func (s *Scalar) Mult(scalar *Scalar) *Scalar {
+	if scalar == nil {
+		panic(internal.ErrParamNilScalar)
+	}
 	return &Scalar{s.Scalar.Mult(scalar.Scalar)}
 }
 

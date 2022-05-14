@@ -36,15 +36,6 @@ type vector struct {
 	Msg string `json:"msg"`
 }
 
-func reverse(b []byte) []byte {
-	l := len(b) - 1
-	for i := 0; i < len(b)/2; i++ {
-		b[i], b[l-i] = b[l-i], b[i]
-	}
-
-	return b
-}
-
 func decodePoint(x, y string) *edwards25519.Point {
 	xb, err := hex.DecodeString(x)
 	if err != nil {
@@ -69,7 +60,7 @@ func decodePoint(x, y string) *edwards25519.Point {
 }
 
 func (v *vector) run(t *testing.T) {
-	var p internal.Point
+	var p internal.Element
 	if v.Ciphersuite == H2C {
 		p = Group{}.HashToGroup([]byte(v.Msg), []byte(v.Dst))
 	}

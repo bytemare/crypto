@@ -15,9 +15,9 @@ import (
 
 var (
 	errParamDecXExceeds     = errors.New("invalid point decompression ( x exceeds order)")
+	errParamDecYExceeds     = errors.New("invalid point decompression ( y exceeds order)")
 	errParamYNotSquare      = errors.New("y coordinate is not a square mod p")
 	errParamNotOnCurve      = errors.New("point is not on curve")
-	errParamNilScalar       = errors.New("nil or empty scalar")
 	errParamNegScalar       = errors.New("negative scalar")
 	errParamScalarTooBig    = errors.New("scalar too big")
 	errParamNotRandomOracle = errors.New("function is not indifferentiable from a random oracle")

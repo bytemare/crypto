@@ -24,7 +24,7 @@ type Element struct {
 }
 
 // Add returns the sum of the Elements, and does not change the receiver.
-func (e *Element) Add(element internal.Point) internal.Point {
+func (e *Element) Add(element internal.Element) internal.Element {
 	if element == nil {
 		panic(internal.ErrParamNilPoint)
 	}
@@ -38,7 +38,7 @@ func (e *Element) Add(element internal.Point) internal.Point {
 }
 
 // Sub returns the difference between the Elements, and does not change the receiver.
-func (e *Element) Sub(element internal.Point) internal.Point {
+func (e *Element) Sub(element internal.Element) internal.Element {
 	if element == nil {
 		panic(internal.ErrParamNilPoint)
 	}
@@ -52,7 +52,7 @@ func (e *Element) Sub(element internal.Point) internal.Point {
 }
 
 // Mult returns the scalar multiplication of the receiver element with the given scalar.
-func (e *Element) Mult(scalar internal.Scalar) internal.Point {
+func (e *Element) Mult(scalar internal.Scalar) internal.Element {
 	if scalar == nil {
 		panic(internal.ErrParamNilScalar)
 	}
@@ -66,7 +66,7 @@ func (e *Element) Mult(scalar internal.Scalar) internal.Point {
 }
 
 // InvertMult returns the scalar multiplication of the receiver element with the inverse of the given scalar.
-func (e *Element) InvertMult(scalar internal.Scalar) internal.Point {
+func (e *Element) InvertMult(scalar internal.Scalar) internal.Element {
 	if scalar == nil {
 		panic(internal.ErrParamNilScalar)
 	}
@@ -81,7 +81,7 @@ func (e *Element) IsIdentity() bool {
 }
 
 // Copy returns a copy of the element.
-func (e *Element) Copy() internal.Point {
+func (e *Element) Copy() internal.Element {
 	n := edwards25519.NewIdentityPoint()
 	if _, err := n.SetBytes(e.element.Bytes()); err != nil {
 		panic(err)
@@ -91,7 +91,7 @@ func (e *Element) Copy() internal.Point {
 }
 
 // Decode decodes the input an sets the current element to its value, and returns it.
-func (e *Element) Decode(in []byte) (internal.Point, error) {
+func (e *Element) Decode(in []byte) (internal.Element, error) {
 	if len(in) == 0 {
 		return nil, internal.ErrParamNilPoint
 	}
