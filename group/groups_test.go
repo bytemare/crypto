@@ -12,7 +12,7 @@ import (
 	"encoding/hex"
 	"github.com/bytemare/crypto/group/curve25519"
 	"github.com/bytemare/crypto/group/edwards25519"
-	"github.com/bytemare/crypto/group/nist"
+	"github.com/bytemare/crypto/group/old"
 	"github.com/bytemare/crypto/group/ristretto"
 	"testing"
 )
@@ -26,9 +26,9 @@ type group struct {
 func testGroups() []*group {
 	return []*group{
 		{"Ristretto255", ristretto.H2C, Ristretto255Sha512},
-		{"P256", nist.H2CP256, P256Sha256},
-		{"P384", nist.H2CP384, P384Sha384},
-		{"P521", nist.H2CP521, P521Sha512},
+		{"P256", old.H2CP256, P256Sha256},
+		{"P384", old.H2CP384, P384Sha384},
+		{"P521", old.H2CP521, P521Sha512},
 		{"Curve25519", curve25519.H2C, Curve25519Sha512},
 		{"Edwards25519", edwards25519.H2C, Edwards25519Sha512},
 		//{"Curve448", string(h2c.Curve448_XOFSHAKE256_ELL2_RO_), Curve448Shake256},

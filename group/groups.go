@@ -19,7 +19,7 @@ import (
 	"github.com/bytemare/crypto/group/curve25519"
 	"github.com/bytemare/crypto/group/edwards25519"
 	"github.com/bytemare/crypto/group/internal"
-	"github.com/bytemare/crypto/group/nist"
+	"github.com/bytemare/crypto/group/old"
 	"github.com/bytemare/crypto/group/other"
 	"github.com/bytemare/crypto/group/ristretto"
 )
@@ -179,11 +179,11 @@ func (g Group) init() {
 	case Ristretto255Sha512:
 		g.initGroup(ristretto.H2C, ristretto.New)
 	case P256Sha256:
-		g.initGroup(nist.H2CP256, nist.P256)
+		g.initGroup(old.H2CP256, old.P256)
 	case P384Sha384:
-		g.initGroup(nist.H2CP384, nist.P384)
+		g.initGroup(old.H2CP384, old.P384)
 	case P521Sha512:
-		g.initGroup(nist.H2CP521, nist.P521)
+		g.initGroup(old.H2CP521, old.P521)
 	case Curve25519Sha512:
 		g.initGroup(curve25519.H2C, curve25519.New)
 	case Edwards25519Sha512:

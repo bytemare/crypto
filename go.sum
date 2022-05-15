@@ -1,5 +1,7 @@
 filippo.io/edwards25519 v1.0.0-rc.1 h1:m0VOOB23frXZvAOK44usCgLWvtsxIoMCTBGJZlpmGfU=
 filippo.io/edwards25519 v1.0.0-rc.1/go.mod h1:N1IkdkCkiLB6tki+MYJoSx2JTY9NUlxZE7eHn5EwJns=
+filippo.io/nistec v0.0.0-20220513155737-c4b6d02e738c h1:x4epP2lA8b5UYoIFjcVpN+MfJQeX5M5Yilmc1VH0YDw=
+filippo.io/nistec v0.0.0-20220513155737-c4b6d02e738c/go.mod h1:84fxC9mi+MhC2AERXI4LSa8cmSVOzrFikg6hZ4IfCyw=
 github.com/armfazh/h2c-go-ref v0.0.0-20220505194003-0f886a011293 h1:B3sNVzEH15SyvmFBCZBR4UMBm4aL/eEkf6g8YJk+fiQ=
 github.com/armfazh/h2c-go-ref v0.0.0-20220505194003-0f886a011293/go.mod h1:mtUQsERQBqNOHy8yMHF+K6tvXNgjPpTk8k7VYxKK6pU=
 github.com/armfazh/tozan-ecc v0.1.4 h1:PnCI4iLifKiXcDBVX6B5LqCWreN56lxlspgZdVdOhvA=

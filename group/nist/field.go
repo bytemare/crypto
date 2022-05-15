@@ -6,6 +6,7 @@ import (
 )
 
 var (
+	minusOne = big.NewInt(-1)
 	zero = big.NewInt(0)
 	one  = big.NewInt(1)
 )
@@ -128,11 +129,6 @@ func (f field) Inv(x *big.Int) *big.Int {
 // Returns x^n.
 func (f field) Exp(x *big.Int, n *big.Int) *big.Int {
 	return new(big.Int).Exp(x, n, f.prime)
-}
-
-// Returns 1/x, and 0 if x=0.
-func (f field) Inv0(e *big.Int) *big.Int {
-	return f.Inv(e)
 }
 
 func (f field) CMov(x, y *big.Int, b bool) *big.Int {

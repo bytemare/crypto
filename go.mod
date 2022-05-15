@@ -10,4 +10,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220507011949-2cf3adece122
 )
 
-require golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect
+require (
+	filippo.io/nistec v0.0.0-20220513155737-c4b6d02e738c // indirect
+	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6 // indirect
+)
