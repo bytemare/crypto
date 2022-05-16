@@ -7,8 +7,8 @@ import (
 
 var (
 	minusOne = big.NewInt(-1)
-	zero = big.NewInt(0)
-	one  = big.NewInt(1)
+	zero     = big.NewInt(0)
+	one      = big.NewInt(1)
 )
 
 type field struct {

@@ -1,8 +1,7 @@
-package new
+package internal
 
 import (
 	"crypto/subtle"
-	"log"
 )
 
 type NistECPoint[Point any] interface {
@@ -27,12 +26,30 @@ func (e *Element[Point]) Add(p, q *Element[Point]) *Element[Point] {
 	return e
 }
 
-func (e *Element[Point]) Sub(_ *Element[Point]) *Element[Point] {
-	panic("subtraction for NIST elements not implemented")
+func (e *Element[Point]) negate(p *Element[Point]) Point {
+	b := p.Bytes() // get the compressed encoding of p. p[0] denotes the sign of y.
+	switch b[0] {
+	case 0x02:
+		b[0] = 0x03
+	case 0x03:
+		b[0] = 0x02
+	}
+	n := e.group.curve.newPoint()
+	if _, err := n.SetBytes(b); err != nil {
+		panic(err)
+	}
+
+	return n
+}
+
+func (e *Element[Point]) Sub(p, q *Element[Point]) *Element[Point] {
+	e.p = e.negate(q)
+	e.p.Add(e.p, p.p)
+
+	return e
 }
 
 func (e *Element[Point]) Mult(scalar *Scalar, element *Element[Point]) *Element[Point] {
-	log.Printf("sc: %d / %v", len(scalar.Bytes()), scalar.Bytes())
 	if _, err := e.p.ScalarMult(element.p, scalar.Bytes()); err != nil {
 		panic(err)
 	}

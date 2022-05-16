@@ -6,30 +6,30 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-package old
+package nist
 
 import (
 	"github.com/bytemare/crypto/group/internal"
-	nist "github.com/bytemare/crypto/group/old/internal"
+	nist "github.com/bytemare/crypto/group/nist/internal"
 )
 
 // Point implements the Point interface for group elements over NIST curves.
-type Point struct {
-	group *nist.Group
-	point *nist.Point
+type Point[P nist.NistECPoint[P]] struct {
+	group *nist.Group[P]
+	point *nist.Element[P]
 }
 
-func (p *Point) newPoint(point *nist.Point) *Point {
-	return &Point{p.group, point}
+func (p *Point[any]) newPoint(point *nist.Element[any]) *Point[any] {
+	return &Point[any]{p.group, point}
 }
 
 // Add returns the sum of the Elements, and does not change the receiver.
-func (p *Point) Add(element internal.Element) internal.Element {
+func (p *Point[any]) Add(element internal.Element) internal.Element {
 	if element == nil {
 		panic(internal.ErrParamNilPoint)
 	}
 
-	e, ok := element.(*Point)
+	e, ok := element.(*Point[any])
 	if !ok {
 		panic(internal.ErrCastElement)
 	}
@@ -38,12 +38,12 @@ func (p *Point) Add(element internal.Element) internal.Element {
 }
 
 // Sub returns the difference between the Elements, and does not change the receiver.
-func (p *Point) Sub(element internal.Element) internal.Element {
+func (p *Point[any]) Sub(element internal.Element) internal.Element {
 	if element == nil {
 		panic(internal.ErrParamNilPoint)
 	}
 
-	ele, ok := element.(*Point)
+	ele, ok := element.(*Point[any])
 	if !ok {
 		panic(internal.ErrCastElement)
 	}
@@ -52,12 +52,12 @@ func (p *Point) Sub(element internal.Element) internal.Element {
 }
 
 // Mult returns the scalar multiplication of the receiver element with the given scalar, and does not change the receiver.
-func (p *Point) Mult(scalar internal.Scalar) internal.Element {
+func (p *Point[any]) Mult(scalar internal.Scalar) internal.Element {
 	if scalar == nil {
 		panic(internal.ErrParamNilScalar)
 	}
 
-	sc, ok := scalar.(*Scalar)
+	sc, ok := scalar.(*Scalar[any])
 	if !ok {
 		panic(internal.ErrCastElement)
 	}
@@ -66,7 +66,7 @@ func (p *Point) Mult(scalar internal.Scalar) internal.Element {
 }
 
 // InvertMult returns the scalar multiplication of the receiver element with the inverse of the given scalar, and does not change the receiver.
-func (p *Point) InvertMult(scalar internal.Scalar) internal.Element {
+func (p *Point[any]) InvertMult(scalar internal.Scalar) internal.Element {
 	if scalar == nil {
 		panic(internal.ErrParamNilScalar)
 	}
@@ -75,17 +75,17 @@ func (p *Point) InvertMult(scalar internal.Scalar) internal.Element {
 }
 
 // IsIdentity returns whether the element is the Group's identity element.
-func (p *Point) IsIdentity() bool {
+func (p *Point[any]) IsIdentity() bool {
 	return p.point.IsIdentity()
 }
 
 // Copy returns a copy of the element.
-func (p *Point) Copy() internal.Element {
+func (p *Point[any]) Copy() internal.Element {
 	return p.newPoint(p.point.Copy())
 }
 
 // Decode sets p to the value of the decoded input, and returns p.
-func (p *Point) Decode(in []byte) (internal.Element, error) {
+func (p *Point[any]) Decode(in []byte) (internal.Element, error) {
 	_, err := p.point.Decode(in)
 	if err != nil {
 		return nil, err
@@ -95,6 +95,6 @@ func (p *Point) Decode(in []byte) (internal.Element, error) {
 }
 
 // Bytes returns the compressed byte encoding of the element.
-func (p *Point) Bytes() []byte {
+func (p *Point[any]) Bytes() []byte {
 	return p.point.Bytes()
 }

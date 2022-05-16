@@ -17,7 +17,7 @@ type Scalar struct {
 	f *field
 }
 
-func NewScalar(g Group) *Scalar {
+func NewScalar[Point NistECPoint[Point]](g Group[Point]) *Scalar {
 	return &Scalar{
 		s: g.scalarField.Zero(),
 		f: g.scalarField,
@@ -126,5 +126,7 @@ func (s *Scalar) Decode(in []byte) (*Scalar, error) {
 
 // Bytes returns the byte encoding of the scalar.
 func (s *Scalar) Bytes() []byte {
-	return s.s.Bytes()
+	byteLen := (s.f.BitLen() + 7) / 8
+	scalar := make([]byte, byteLen)
+	return s.s.FillBytes(scalar)
 }
