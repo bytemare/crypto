@@ -6,12 +6,13 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-// Package group exposes a prime-order elliptic curve groups with additional hash-to-curve operations.
+// Package group exposes prime-order elliptic curve groups with additional hash-to-curve operations.
 package group
 
 import (
 	"errors"
 	"fmt"
+	"github.com/bytemare/crypto/group/nist"
 	"sync"
 
 	H2C "github.com/armfazh/h2c-go-ref"
@@ -19,7 +20,6 @@ import (
 	"github.com/bytemare/crypto/group/curve25519"
 	"github.com/bytemare/crypto/group/edwards25519"
 	"github.com/bytemare/crypto/group/internal"
-	"github.com/bytemare/crypto/group/old"
 	"github.com/bytemare/crypto/group/other"
 	"github.com/bytemare/crypto/group/ristretto"
 )
@@ -31,8 +31,8 @@ const (
 	// Ristretto255Sha512 identifies the Ristretto255 group with SHA2-512 hash-to-group hashing.
 	Ristretto255Sha512 Group = 1 + iota
 
-	// decaf448 is not implemented.
-	decaf448
+	// decaf448Shake256 is not implemented.
+	decaf448Shake256
 
 	// P256Sha256 identifies a group over P256 with SHA2-512 hash-to-group hashing.
 	P256Sha256
@@ -179,11 +179,14 @@ func (g Group) init() {
 	case Ristretto255Sha512:
 		g.initGroup(ristretto.H2C, ristretto.New)
 	case P256Sha256:
-		g.initGroup(old.H2CP256, old.P256)
+		g.initGroup(nist.H2CP256, nist.P256)
+		//g.initGroup(newH2Cgroup(H2C.P256_XMDSHA256_SSWU_RO_))
 	case P384Sha384:
-		g.initGroup(old.H2CP384, old.P384)
+		g.initGroup(nist.H2CP384, nist.P384)
+		//g.initGroup(newH2Cgroup(H2C.P384_XMDSHA384_SSWU_RO_))
 	case P521Sha512:
-		g.initGroup(old.H2CP521, old.P521)
+		g.initGroup(nist.H2CP521, nist.P521)
+		//g.initGroup(newH2Cgroup(H2C.P521_XMDSHA512_SSWU_RO_))
 	case Curve25519Sha512:
 		g.initGroup(curve25519.H2C, curve25519.New)
 	case Edwards25519Sha512:

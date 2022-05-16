@@ -33,7 +33,7 @@ type GenericElement[Scalar GenericScalar[Scalar], Element any] interface {
 	Add(Element) Element
 
 	// Sub returns the difference between the Elements, and does not change the receiver.
-	Sub(Element) Element
+	// Sub(Element) Element
 
 	// Mult returns the scalar multiplication of the receiver with the given Scalar.
 	Mult(Scalar) Element

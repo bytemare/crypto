@@ -2,8 +2,9 @@ package group
 
 import (
 	"bytes"
-	"github.com/bytemare/crypto/group/internal"
 	"testing"
+
+	"github.com/bytemare/crypto/group/internal"
 
 	errPanic "github.com/bytemare/crypto/internal"
 )
@@ -15,6 +16,11 @@ func TestPoint_Decode(t *testing.T) {
 		decoded, err := group.id.NewElement().Decode(encoded)
 		if err != nil {
 			t.Fatal(err)
+		}
+		reencoded := decoded.Bytes()
+
+		if !bytes.Equal(encoded, reencoded) {
+			t.Fatal("expected equality when en/decoding element")
 		}
 
 		if !element.Sub(decoded).IsIdentity() {
@@ -89,7 +95,8 @@ func testPointArithmetic(t *testing.T, g Group) {
 	}
 
 	// Test identity
-	id := base.Sub(base)
+	zero := g.NewScalar()
+	id := base.Mult(zero)
 	if !id.IsIdentity() {
 		t.Fatal("expected identity element")
 	}
