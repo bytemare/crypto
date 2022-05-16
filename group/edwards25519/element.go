@@ -111,8 +111,3 @@ func (e *Element) Decode(in []byte) (internal.Element, error) {
 func (e *Element) Bytes() []byte {
 	return e.element.Bytes()
 }
-
-// BytesMontgomery returns the bi-rationally equivalent Curve25519 encoded point.
-func (e *Element) BytesMontgomery() []byte {
-	return e.element.BytesMontgomery()
-}

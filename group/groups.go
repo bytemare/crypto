@@ -12,8 +12,9 @@ package group
 import (
 	"errors"
 	"fmt"
-	"github.com/bytemare/crypto/group/nist"
 	"sync"
+
+	"github.com/bytemare/crypto/group/nist"
 
 	H2C "github.com/armfazh/h2c-go-ref"
 
@@ -64,22 +65,17 @@ const (
 
 var (
 	once          [maxID - 1]sync.Once
-	groups        [maxID - 1]*params
+	groups        [maxID - 1]internal.Group
 	errInvalidID  = errors.New("invalid group identifier")
 	errZeroLenDST = errors.New("zero-length DST")
 )
-
-type params struct {
-	h2cID string
-	internal.Group
-}
 
 // Available reports whether the given Group is linked into the binary.
 func (g Group) Available() bool {
 	return 0 < g && g < maxID
 }
 
-func (g Group) get() *params {
+func (g Group) get() internal.Group {
 	if !g.Available() {
 		panic(errInvalidID)
 	}
@@ -93,12 +89,12 @@ func (g Group) get() *params {
 // and returns no error.
 func (g Group) MakeDST(app string, version uint8) []byte {
 	p := g.get()
-	return []byte(fmt.Sprintf(dstfmt, app, version, g, p.h2cID))
+	return []byte(fmt.Sprintf(dstfmt, app, version, g, p.Ciphersuite()))
 }
 
 // String returns the hash-to-curve string identifier of the ciphersuite.
 func (g Group) String() string {
-	return g.get().h2cID
+	return g.get().Ciphersuite()
 }
 
 // NewScalar returns a new, empty, scalar.
@@ -160,6 +156,11 @@ func (g Group) MultBytes(scalar, element []byte) (*Point, error) {
 	return &Point{p}, nil
 }
 
+// Ciphersuite returns the hash-to-curve ciphersuite identifier.
+func (g Group) Ciphersuite() string {
+	return g.get().Ciphersuite()
+}
+
 func newH2Cgroup(id H2C.SuiteID) (string, func() internal.Group) {
 	get := func() internal.Group {
 		return other.New(id)
@@ -167,30 +168,24 @@ func newH2Cgroup(id H2C.SuiteID) (string, func() internal.Group) {
 	return string(id), get
 }
 
-func (g Group) initGroup(h2cID string, get func() internal.Group) {
-	groups[g-1] = &params{
-		h2cID: h2cID,
-		Group: get(),
-	}
+func (g Group) initGroup(get func() internal.Group) {
+	groups[g-1] = get()
 }
 
 func (g Group) init() {
 	switch g {
 	case Ristretto255Sha512:
-		g.initGroup(ristretto.H2C, ristretto.New)
+		g.initGroup(ristretto.New)
 	case P256Sha256:
-		g.initGroup(nist.H2CP256, nist.P256)
-		//g.initGroup(newH2Cgroup(H2C.P256_XMDSHA256_SSWU_RO_))
+		g.initGroup(nist.P256)
 	case P384Sha384:
-		g.initGroup(nist.H2CP384, nist.P384)
-		//g.initGroup(newH2Cgroup(H2C.P384_XMDSHA384_SSWU_RO_))
+		g.initGroup(nist.P384)
 	case P521Sha512:
-		g.initGroup(nist.H2CP521, nist.P521)
-		//g.initGroup(newH2Cgroup(H2C.P521_XMDSHA512_SSWU_RO_))
+		g.initGroup(nist.P521)
 	case Curve25519Sha512:
-		g.initGroup(curve25519.H2C, curve25519.New)
+		g.initGroup(curve25519.New)
 	case Edwards25519Sha512:
-		g.initGroup(edwards25519.H2C, edwards25519.New)
+		g.initGroup(edwards25519.New)
 		//case Curve448Shake256:
 		//	g.initGroup(newH2Cgroup(H2C.Curve448_XOFSHAKE256_ELL2_RO_))
 		//case Edwards448Shake256:

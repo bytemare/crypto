@@ -9,6 +9,7 @@
 package curve25519
 
 import (
+	"bytes"
 	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
@@ -23,6 +24,25 @@ type vectors struct {
 	Ciphersuite string   `json:"ciphersuite"`
 	Dst         string   `json:"dst"`
 	Vectors     []vector `json:"vectors"`
+}
+
+func TestID(t *testing.T) {
+	group := New()
+	element := group.Base().Mult(group.NewScalar().Random())
+	encoded := element.Bytes()
+	decoded, err := group.NewElement().Decode(encoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reencoded := decoded.Bytes()
+
+	if !bytes.Equal(encoded, reencoded) {
+		t.Fatal("expected equality when en/decoding element")
+	}
+
+	if !element.Sub(decoded).IsIdentity() {
+		t.Fatal("expected equality when en/decoding element")
+	}
 }
 
 type vector struct {

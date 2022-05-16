@@ -27,6 +27,7 @@ const (
 	// orderPrime represents curve25519's subgroup (prime) order
 	// = 2^252 + 27742317777372353535851937790883648493
 	// = 0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed
+	// cofactor h = 8
 	orderPrime = "7237005577332262213973186563042994240857116359379907606001950938285454250989"
 )
 
@@ -92,6 +93,11 @@ func (g Group) MultBytes(s, e0 []byte) (internal.Element, error) {
 	}
 
 	return e1.Mult(sc), nil
+}
+
+// Ciphersuite returns the hash-to-curve ciphersuite identifier.
+func (g Group) Ciphersuite() string {
+	return H2C
 }
 
 func adjust(in []byte, length int) []byte {

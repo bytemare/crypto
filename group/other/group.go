@@ -184,3 +184,7 @@ func (h *Hash2Curve) MultBytes(scalar, element []byte) (internal.Element, error)
 
 	return e.Mult(s), nil
 }
+
+func (h *Hash2Curve) Ciphersuite() string {
+	return string(h.suite)
+}

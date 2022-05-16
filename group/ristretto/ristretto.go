@@ -90,3 +90,8 @@ func (r Group) MultBytes(s, e []byte) (internal.Element, error) {
 
 	return el.Mult(sc), nil
 }
+
+// Ciphersuite returns the hash-to-curve ciphersuite identifier.
+func (r Group) Ciphersuite() string {
+	return H2C
+}

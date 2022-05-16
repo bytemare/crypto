@@ -2,6 +2,7 @@ package group
 
 import (
 	"bytes"
+	"log"
 	"testing"
 
 	"github.com/bytemare/crypto/group/internal"
@@ -22,6 +23,12 @@ func TestPoint_Decode(t *testing.T) {
 		if !bytes.Equal(encoded, reencoded) {
 			t.Fatal("expected equality when en/decoding element")
 		}
+
+		log.Printf("en: %v", encoded)
+		log.Printf("re: %v", reencoded)
+		log.Printf("el: %v", element.Bytes())
+		log.Printf("de: %v", decoded.Bytes())
+		log.Printf("sb: %v", element.Sub(decoded).Bytes())
 
 		if !element.Sub(decoded).IsIdentity() {
 			t.Fatal("expected equality when en/decoding element")

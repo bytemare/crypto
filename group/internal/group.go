@@ -42,4 +42,7 @@ type Group interface {
 
 	// MultBytes allows []byte encodings of a scalar and an element of the Group to be multiplied.
 	MultBytes(scalar, element []byte) (Element, error)
+
+	// Ciphersuite returns the hash-to-curve ciphersuite identifier.
+	Ciphersuite() string
 }

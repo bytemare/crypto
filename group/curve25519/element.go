@@ -11,12 +11,12 @@ package curve25519
 
 import (
 	"fmt"
-
-	ed "github.com/bytemare/crypto/group/edwards25519"
+	"log"
 
 	"filippo.io/edwards25519"
 	"filippo.io/edwards25519/field"
 
+	ed "github.com/bytemare/crypto/group/edwards25519"
 	"github.com/bytemare/crypto/group/internal"
 )
 
@@ -53,6 +53,9 @@ func (e *Element) Sub(element internal.Element) internal.Element {
 	if !ok {
 		panic(internal.ErrCastElement)
 	}
+
+	log.Printf("e1: %v", e.element.Bytes())
+	log.Printf("e2: %v", ele.element.Bytes())
 
 	return &Element{edwards25519.NewIdentityPoint().Subtract(e.element, ele.element)}
 }
@@ -96,7 +99,7 @@ func (e *Element) Copy() internal.Element {
 	return &Element{element: n}
 }
 
-// Decode decodes the input an sets the current element to its value, and returns it.
+// Decode decodes the input and sets the current element to its value, and returns it.
 func (e *Element) Decode(in []byte) (internal.Element, error) {
 	u, err := new(field.Element).SetBytes(in)
 	if err != nil {

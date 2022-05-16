@@ -38,19 +38,20 @@ const (
 // Group represents the prime-order group over the P256 curve.
 // It exposes a prime-order group API with hash-to-curve operations.
 type Group[Point nist.NistECPoint[Point]] struct {
+	h2c   string
 	group *nist.Group[Point]
 }
 
 func P256() internal.Group {
-	return &Group[*nistec.P256Point]{nist.P256()}
+	return &Group[*nistec.P256Point]{H2CP256, nist.P256()}
 }
 
 func P384() internal.Group {
-	return &Group[*nistec.P384Point]{nist.P384()}
+	return &Group[*nistec.P384Point]{H2CP384, nist.P384()}
 }
 
 func P521() internal.Group {
-	return &Group[*nistec.P521Point]{nist.P521()}
+	return &Group[*nistec.P521Point]{H2CP521, nist.P521()}
 }
 
 // NewScalar returns a new, empty, scalar.
@@ -114,4 +115,9 @@ func (g Group[any]) MultBytes(s, e []byte) (internal.Element, error) {
 	}
 
 	return g.newPoint(p), nil
+}
+
+// Ciphersuite returns the hash-to-curve ciphersuite identifier.
+func (g Group[any]) Ciphersuite() string {
+	return g.h2c
 }
