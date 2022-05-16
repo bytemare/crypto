@@ -41,14 +41,6 @@ func reduce(input []byte, modulo *big.Int) *big.Int {
 	i := new(big.Int).SetBytes(input)
 	i.Mod(i, modulo)
 
-	// If necessary, build a buffer of right size, so it gets correctly interpreted.
-	//b := i.Bytes()
-	//if l := length - len(b); l > 0 {
-	//	buf := make([]byte, l, length)
-	//	buf = append(buf, b...)
-	//	b = buf
-	//}
-
 	return i
 }
 
