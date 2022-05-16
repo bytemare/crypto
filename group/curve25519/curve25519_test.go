@@ -46,7 +46,11 @@ func (v *vector) run(t *testing.T) {
 	exp, _ := hex.DecodeString(v.P.X[2:])
 
 	if hex.EncodeToString(p.Bytes()) != hex.EncodeToString(reverse(exp)) {
-		t.Fatalf("Unexpected HashToGroup output.\n\tExpected %q\n\tot %q", hex.EncodeToString(reverse(exp)), hex.EncodeToString(p.Bytes()))
+		t.Fatalf(
+			"Unexpected HashToGroup output.\n\tExpected %q\n\tot %q",
+			hex.EncodeToString(reverse(exp)),
+			hex.EncodeToString(p.Bytes()),
+		)
 	}
 }
 

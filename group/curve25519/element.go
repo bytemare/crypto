@@ -11,6 +11,7 @@ package curve25519
 
 import (
 	"fmt"
+
 	ed "github.com/bytemare/crypto/group/edwards25519"
 
 	"filippo.io/edwards25519"
