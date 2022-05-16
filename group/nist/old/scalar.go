@@ -1,104 +1,130 @@
-// SPDX-License-Identifier: MIT
-//
-// Copyright (C) 2021 Daniel Bourdrez. All Rights Reserved.
-//
-// This source code is licensed under the MIT license found in the
-// LICENSE file in the root directory of this source tree or at
-// https://spdx.org/licenses/MIT.html
-
-package old
+package internal
 
 import (
+	"errors"
 	"github.com/bytemare/crypto/group/internal"
-	nist "github.com/bytemare/crypto/group/old/internal"
+	"math/big"
 )
 
-// Scalar implements the Scalar interface for group scalars.
+var (
+	errParamNegScalar    = errors.New("negative scalar")
+	errParamScalarTooBig = errors.New("scalar too big")
+)
+
+// Scalar implements the Scalar interface for NIST group scalars.
 type Scalar struct {
-	group  *nist.Group
-	scalar *nist.Scalar
+	s *big.Int
+	f *field
 }
 
-func (s *Scalar) newScalar(scalar *nist.Scalar) *Scalar {
-	return &Scalar{s.group, scalar}
+func NewScalar(g Group) *Scalar {
+	return &Scalar{
+		s: g.scalarField.Zero(),
+		f: g.scalarField,
+	}
 }
 
-// Random sets the current scalar to a new random scalar and returns it.
-func (s *Scalar) Random() internal.Scalar {
-	s.scalar.Random()
+// Random sets s to a random scalar in the field.
+func (s *Scalar) Random() *Scalar {
+	s.s = s.f.Random()
 	return s
 }
 
-// Add returns the sum of the scalars, and does not change the receiver.
-func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
+// Add sets s to s1 + s2, and returns s.
+func (s *Scalar) Add(s1, s2 *Scalar) *Scalar {
+	if s1 == nil || s2 == nil {
+		panic(internal.ErrParamNilScalar)
+	}
+
+	if !s1.f.IsEqual(s2.f) {
+		panic("incompatible fields")
+	}
+
+	s.s = s.f.add(s1.s, s2.s)
+
+	return s
+}
+
+// Sub sets s to s1 - s2, and returns s.
+func (s *Scalar) Sub(s1, s2 *Scalar) *Scalar {
+	if s1 == nil || s2 == nil {
+		panic(internal.ErrParamNilScalar)
+	}
+
+	if !s1.f.IsEqual(s2.f) {
+		panic("incompatible fields")
+	}
+
+	s.s = s.f.sub(s1.s, s2.s)
+
+	return s
+}
+
+// Mult sets s to s * scalar, and returns s.
+func (s *Scalar) Mult(s1, s2 *Scalar) *Scalar {
+	if s1 == nil || s2 == nil {
+		panic(internal.ErrParamNilScalar)
+	}
+
+	if !s1.f.IsEqual(s2.f) {
+		panic("incompatible fields")
+	}
+
+	s.s = s.f.Mul(s1.s, s2.s)
+
+	return s
+}
+
+// Invert set s to the modular inverse ( s^-1 = 1 mod N ) of scalar, and returns s.
+func (s *Scalar) Invert(scalar *Scalar) *Scalar {
 	if scalar == nil {
 		panic(internal.ErrParamNilScalar)
 	}
 
-	sc, ok := scalar.(*Scalar)
-	if !ok {
-		panic(internal.ErrCastScalar)
+	if !s.f.IsEqual(scalar.f) {
+		panic("incompatible fields")
 	}
 
-	return s.newScalar(s.group.NewScalar().Add(s.scalar, sc.scalar))
-}
+	s.s = s.f.Inv(scalar.s)
 
-// Sub returns the difference between the scalars, and does not change the receiver.
-func (s *Scalar) Sub(scalar internal.Scalar) internal.Scalar {
-	if scalar == nil {
-		panic(internal.ErrParamNilScalar)
-	}
-
-	sc, ok := scalar.(*Scalar)
-	if !ok {
-		panic("could not cast to same group scalar : wrong group ?")
-	}
-
-	return s.newScalar(s.group.NewScalar().Sub(s.scalar, sc.scalar))
-}
-
-// Mult returns the multiplication of the scalars, and does not change the receiver.
-func (s *Scalar) Mult(scalar internal.Scalar) internal.Scalar {
-	if scalar == nil {
-		panic(internal.ErrParamNilScalar)
-	}
-
-	sc, ok := scalar.(*Scalar)
-	if !ok {
-		panic("could not cast to same group scalar : wrong group ?")
-	}
-
-	return s.newScalar(s.group.NewScalar().Mult(s.scalar, sc.scalar))
-}
-
-// Invert returns the scalar's modular inverse ( 1 / scalar ), and does not change the receiver.
-func (s *Scalar) Invert() internal.Scalar {
-	return s.newScalar(s.group.NewScalar().Invert(s.scalar))
+	return s
 }
 
 // IsZero returns whether the scalar is 0.
 func (s *Scalar) IsZero() bool {
-	return s.scalar.IsZero()
+	return s.f.AreEqual(s.s, s.f.Zero())
 }
 
 // Copy returns a copy of the Scalar.
-func (s *Scalar) Copy() internal.Scalar {
-	return s.newScalar(s.scalar.Copy())
+func (s *Scalar) Copy() *Scalar {
+	return &Scalar{
+		s: new(big.Int).Set(s.s),
+		f: s.f,
+	}
 }
 
-// Decode decodes the input an sets the current scalar to its value, and returns it.
-func (s *Scalar) Decode(in []byte) (internal.Scalar, error) {
-	sc, err := s.scalar.Decode(in)
-	if err != nil {
-		return nil, err
+// Decode decodes the input and sets the current scalar to its value, and returns it.
+func (s *Scalar) Decode(in []byte) (*Scalar, error) {
+	if len(in) == 0 {
+		return nil, internal.ErrParamNilScalar
 	}
 
-	s.scalar = sc
+	// warning - SetBytes interprets the input as a non-signed integer, so this will always be negative
+	e := new(big.Int).SetBytes(in)
+	if e.Sign() < 0 {
+		return nil, errParamNegScalar
+	}
+
+	if s.f.Order().Cmp(e) <= 0 {
+		return nil, errParamScalarTooBig
+	}
+
+	s.s = s.f.Element(e)
 
 	return s, nil
 }
 
-// Bytes returns the byte encoding of the element.
+// Bytes returns the byte encoding of the scalar.
 func (s *Scalar) Bytes() []byte {
-	return s.scalar.Bytes()
+	return s.s.Bytes()
 }

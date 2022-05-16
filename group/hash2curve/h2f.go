@@ -2,9 +2,10 @@ package hash2curve
 
 import (
 	"crypto"
+	"math/big"
+
 	"github.com/bytemare/crypto/group/internal"
 	"github.com/bytemare/crypto/hash"
-	"math/big"
 )
 
 func HashToFieldXOF(id hash.Extendable, input, dst []byte, count, ext, securityLength int, modulo *big.Int) []*big.Int {

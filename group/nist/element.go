@@ -1,86 +1,100 @@
-package nist
+// SPDX-License-Identifier: MIT
+//
+// Copyright (C) 2021 Daniel Bourdrez. All Rights Reserved.
+//
+// This source code is licensed under the MIT license found in the
+// LICENSE file in the root directory of this source tree or at
+// https://spdx.org/licenses/MIT.html
+
+package old
 
 import (
-	"crypto/subtle"
-	"filippo.io/nistec"
+	"github.com/bytemare/crypto/group/internal"
+	nist "github.com/bytemare/crypto/group/old/internal"
 )
 
-type NistECPoint[Point any] interface {
-	Add(p1, p2 Point) Point
-	BytesCompressed() []byte
-	Double(p Point) Point
-	ScalarBaseMult(scalar []byte) (Point, error)
-	ScalarMult(p Point, scalar []byte) (Point, error)
-	Select(p1, p2 Point, cond int) Point
-	Set(p Point) Point
-	SetBytes(b []byte) (Point, error)
-	SetGenerator() Point
+// Point implements the Point interface for group elements over NIST curves.
+type Point struct {
+	group *nist.Group
+	point *nist.Point
 }
 
-func NewP256Point() *Element[*nistec.P256Point] {
-	return &Element[*nistec.P256Point]{p: nistec.NewP256Point(), new: nistec.NewP256Point}
+func (p *Point) newPoint(point *nist.Point) *Point {
+	return &Point{p.group, point}
 }
 
-func NewP384Point() *Element[*nistec.P384Point] {
-	return &Element[*nistec.P384Point]{p: nistec.NewP384Point(), new: nistec.NewP384Point}
-}
-
-func NewP521Point() *Element[*nistec.P521Point] {
-	return &Element[*nistec.P521Point]{p: nistec.NewP521Point(), new: nistec.NewP521Point}
-}
-
-type Element[Point NistECPoint[Point]] struct {
-	p   Point
-	new func() Point
-}
-
-func (e *Element[Point]) Add(element *Element[Point]) *Element[Point] {
-	e.p.Add(e.p, element.p)
-	return e
-}
-
-func (e *Element[Point]) Sub(_ *Element[Point]) *Element[Point] {
-	panic("subtraction for NIST elements not implemented")
-}
-
-func (e *Element[Point]) Mult(scalar Scalar) *Element[Point] {
-	if _, err := e.p.ScalarMult(e.p, scalar.Bytes()); err != nil {
-		panic(err)
+// Add returns the sum of the Elements, and does not change the receiver.
+func (p *Point) Add(element internal.Element) internal.Element {
+	if element == nil {
+		panic(internal.ErrParamNilPoint)
 	}
 
-	return e
+	e, ok := element.(*Point)
+	if !ok {
+		panic(internal.ErrCastElement)
+	}
+
+	return p.newPoint(p.group.NewPoint().Add(p.point, e.point))
 }
 
-func (e *Element[Point]) InvertMult(scalar Scalar) *Element[Point] {
-	return e.Mult(scalar.Invert())
+// Sub returns the difference between the Elements, and does not change the receiver.
+func (p *Point) Sub(element internal.Element) internal.Element {
+	if element == nil {
+		panic(internal.ErrParamNilPoint)
+	}
+
+	ele, ok := element.(*Point)
+	if !ok {
+		panic(internal.ErrCastElement)
+	}
+
+	return p.newPoint(p.group.NewPoint().Sub(p.point, ele.point))
 }
 
-func (e *Element[Point]) IsIdentity() bool {
-	b := e.p.BytesCompressed()
-	i := e.new().BytesCompressed()
-	return subtle.ConstantTimeCompare(b, i) == 1
+// Mult returns the scalar multiplication of the receiver element with the given scalar, and does not change the receiver.
+func (p *Point) Mult(scalar internal.Scalar) internal.Element {
+	if scalar == nil {
+		panic(internal.ErrParamNilScalar)
+	}
+
+	sc, ok := scalar.(*Scalar)
+	if !ok {
+		panic(internal.ErrCastElement)
+	}
+
+	return p.newPoint(p.group.NewPoint().Mult(sc.scalar, p.point))
 }
 
-func (e *Element[Point]) Copy() *Element[Point] {
-	p, err := e.new().SetBytes(e.p.BytesCompressed())
+// InvertMult returns the scalar multiplication of the receiver element with the inverse of the given scalar, and does not change the receiver.
+func (p *Point) InvertMult(scalar internal.Scalar) internal.Element {
+	if scalar == nil {
+		panic(internal.ErrParamNilScalar)
+	}
+
+	return p.Mult(scalar.Invert())
+}
+
+// IsIdentity returns whether the element is the Group's identity element.
+func (p *Point) IsIdentity() bool {
+	return p.point.IsIdentity()
+}
+
+// Copy returns a copy of the element.
+func (p *Point) Copy() internal.Element {
+	return p.newPoint(p.point.Copy())
+}
+
+// Decode sets p to the value of the decoded input, and returns p.
+func (p *Point) Decode(in []byte) (internal.Element, error) {
+	_, err := p.point.Decode(in)
 	if err != nil {
-		panic(err)
-	}
-
-	return &Element[Point]{
-		p:   p,
-		new: e.new,
-	}
-}
-
-func (e *Element[Point]) Decode(in []byte) (*Element[Point], error) {
-	if _, err := e.p.SetBytes(in); err != nil {
 		return nil, err
 	}
 
-	return e, nil
+	return p, nil
 }
 
-func (e *Element[Point]) Bytes() []byte {
-	return e.p.BytesCompressed()
+// Bytes returns the compressed byte encoding of the element.
+func (p *Point) Bytes() []byte {
+	return p.point.Bytes()
 }
