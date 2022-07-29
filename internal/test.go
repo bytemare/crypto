@@ -1,12 +1,3 @@
-// SPDX-License-Identifier: MIT
-//
-// Copyright (C) 2021 Daniel Bourdrez. All Rights Reserved.
-//
-// This source code is licensed under the MIT license found in the
-// LICENSE file in the root directory of this source tree or at
-// https://spdx.org/licenses/MIT.html
-
-// Package internal exposes some common internal functions.
 package internal
 
 import (
@@ -20,21 +11,15 @@ var (
 )
 
 func hasPanic(f func()) (has bool, err error) {
-	err = nil
-	var report interface{}
-	func() {
-		defer func() {
-			if report = recover(); report != nil {
-				has = true
-			}
-		}()
-
-		f()
+	defer func() {
+		var report any
+		if report = recover(); report != nil {
+			has = true
+			err = fmt.Errorf("%v", report)
+		}
 	}()
 
-	if has {
-		err = fmt.Errorf("%v", report)
-	}
+	f()
 
 	return has, err
 }
