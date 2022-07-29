@@ -46,7 +46,7 @@ jobs:
 
       # Test
       - name: Run Tests
-        run: make test
+        run: cd .github && make test
 
   analyze:
     name: Analyze
@@ -64,7 +64,7 @@ jobs:
 
       # Coverage
       - name: Run coverage
-        run: make cover
+        run: cd .github && go cover
 
       # Codecov
       - name: Codecov
