@@ -31,7 +31,7 @@ func (s *Scalar) Random() *Scalar {
 // Add returns the sum of the scalars, and does not change the receiver.
 func (s *Scalar) Add(scalar *Scalar) *Scalar {
 	if scalar == nil {
-		panic(internal.ErrParamNilScalar)
+		return &Scalar{s.Scalar.Copy()}
 	}
 
 	return &Scalar{s.Scalar.Add(scalar.Scalar)}
@@ -40,24 +40,33 @@ func (s *Scalar) Add(scalar *Scalar) *Scalar {
 // Sub returns the difference between the scalars, and does not change the receiver.
 func (s *Scalar) Sub(scalar *Scalar) *Scalar {
 	if scalar == nil {
-		panic(internal.ErrParamNilScalar)
+		return &Scalar{s.Scalar.Copy()}
 	}
 
-	return &Scalar{s.Scalar.Sub(scalar.Scalar)}
+	return &Scalar{s.Scalar.Subtract(scalar.Scalar)}
 }
 
 // Mult returns the multiplication of the scalars, and does not change the receiver.
 func (s *Scalar) Mult(scalar *Scalar) *Scalar {
 	if scalar == nil {
-		panic(internal.ErrParamNilScalar)
+		s2 := Scalar{}
+		return s2.Zero()
 	}
 
-	return &Scalar{s.Scalar.Mult(scalar.Scalar)}
+	return &Scalar{s.Scalar.Multiply(scalar.Scalar)}
 }
 
 // Invert returns the scalar's modular inverse ( 1 / scalar ), and does not change the receiver.
 func (s *Scalar) Invert() *Scalar {
 	return &Scalar{s.Scalar.Invert()}
+}
+
+func (s *Scalar) Equal(scalar *Scalar) int {
+	if scalar == nil {
+		return 0
+	}
+
+	return s.Scalar.Equal(scalar.Scalar)
 }
 
 // IsZero returns whether the scalar is 0.
@@ -83,4 +92,9 @@ func (s *Scalar) Decode(in []byte) (*Scalar, error) {
 // Bytes returns the byte encoding of the element.
 func (s *Scalar) Bytes() []byte {
 	return s.Scalar.Bytes()
+}
+
+func (s *Scalar) Zero() *Scalar {
+	s.Scalar.Zero()
+	return s
 }

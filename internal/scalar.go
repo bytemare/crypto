@@ -17,11 +17,11 @@ type Scalar interface {
 	// Add returns the sum of the scalars, and does not change the receiver.
 	Add(scalar Scalar) Scalar
 
-	// Sub returns the difference between the scalars, and does not change the receiver.
-	Sub(scalar Scalar) Scalar
+	// Subtract returns the difference between the scalars, and does not change the receiver.
+	Subtract(scalar Scalar) Scalar
 
-	// Mult returns the multiplication of the scalars, and does not change the receiver.
-	Mult(scalar Scalar) Scalar
+	// Multiply returns the multiplication of the scalars, and does not change the receiver.
+	Multiply(scalar Scalar) Scalar
 
 	// Invert returns the scalar's modular inverse ( 1 / scalar ), and does not change the receiver.
 	Invert() Scalar
@@ -37,4 +37,10 @@ type Scalar interface {
 
 	// Bytes returns the byte encoding of the element.
 	Bytes() []byte
+
+	// Equal returns 1 if the scalars are equal, and 0 otherwise.
+	Equal(scalar Scalar) int
+
+	// Zero sets the scalar to 0, and returns it.
+	Zero() Scalar
 }

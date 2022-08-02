@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-package ristretto
+package group
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"github.com/bytemare/crypto/internal"
+	"github.com/bytemare/crypto/ristretto"
 )
 
 const (
@@ -33,8 +33,6 @@ type testGroup struct {
 	scalar, element string // hex encoding of a scalar and element
 	scal, elem      bool   // says whether the scalar or element is supposed to be valid
 }
-
-const h2cInput = "H2C Input"
 
 // todo: adapt to different hashing algorithms
 var tests = []testGroup{
@@ -100,19 +98,12 @@ var tests = []testGroup{
 	},
 }
 
-func TestNilScalar(t *testing.T) {
-	_, err := Group{}.NewScalar().Decode(nil)
-	if err == nil {
-		t.Fatal("expected error on nil input")
-	}
-}
-
-func TestScalar(t *testing.T) {
+func TestRistrettoScalar(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := Group{}.NewScalar().Random()
-			if len(s.Bytes()) != canonicalEncodingLength {
-				t.Fatalf("invalid random scalar length. Expected %d, got %d", canonicalEncodingLength, len(s.Bytes()))
+			s := ristretto.Group{}.NewScalar().Random()
+			if len(s.Bytes()) != 32 {
+				t.Fatalf("invalid random scalar length. Expected %d, got %d", 32, len(s.Bytes()))
 			}
 
 			// Grab the bytes of the encoding
@@ -121,7 +112,7 @@ func TestScalar(t *testing.T) {
 				t.Fatalf("#%s: bad hex encoding in test vector: %v", tt.name, err)
 			}
 
-			s, err = Group{}.NewScalar().Decode(encoding)
+			s, err = ristretto.Group{}.NewScalar().Decode(encoding)
 
 			switch tt.scal {
 			case false:
@@ -141,15 +132,15 @@ func TestScalar(t *testing.T) {
 					t.Fatal("scalar is nil, should not happen")
 				}
 
-				if len(s.Bytes()) != canonicalEncodingLength {
+				if len(s.Bytes()) != 32 {
 					t.Fatalf(
 						"invalid random scalar length. Expected %d, got %d",
-						canonicalEncodingLength,
+						32,
 						len(s.Bytes()),
 					)
 				}
 
-				cpy, _ := Group{}.NewScalar().Decode(s.Bytes())
+				cpy, _ := ristretto.Group{}.NewScalar().Decode(s.Bytes())
 				cpy = cpy.Invert()
 				if bytes.Equal(cpy.Bytes(), s.Bytes()) {
 					t.Fatal("scalar inversion resulted in same scalar")
@@ -159,16 +150,9 @@ func TestScalar(t *testing.T) {
 	}
 }
 
-func TestNilElement(t *testing.T) {
-	_, err := Group{}.NewElement().Decode(nil)
-	if err == nil {
-		t.Fatal("expected error on nil input")
-	}
-}
-
-func TestElement(t *testing.T) {
+func TestRistrettoElement(t *testing.T) {
 	// Test if the element in the test is the base point
-	bp := Group{}.NewElement().(*Point).Base()
+	bp := ristretto.Group{}.NewElement().(*ristretto.Element).Base()
 
 	// Grab the bytes of the encoding
 	encoding, err := hex.DecodeString(tests[0].element)
@@ -189,7 +173,7 @@ func TestElement(t *testing.T) {
 			}
 
 			// Test decoding
-			e, err := Group{}.NewElement().Decode(encoding)
+			e, err := ristretto.Group{}.NewElement().Decode(encoding)
 
 			switch tt.elem {
 			case false:
@@ -216,147 +200,5 @@ func TestElement(t *testing.T) {
 				}
 			}
 		})
-	}
-}
-
-func TestMultiplication(t *testing.T) {
-	if hasPanic, _ := internal.ExpectPanic(nil, func() {
-		_ = Group{}.NewElement().Mult(nil)
-	}); !hasPanic {
-		t.Fatal("expected panic on multiplying with nil scalar")
-	}
-
-	bp := Group{}.NewElement().(*Point).Base()
-	rs := Group{}.NewScalar().Random()
-
-	//
-	m1 := bp.Mult(rs)
-
-	//
-	m2, err := Group{}.MultBytes(rs.Bytes(), Group{}.NewElement().(*Point).Base().Bytes())
-	if err != nil {
-		t.Fatalf("unexpected err ; %v", err)
-	}
-
-	if !bytes.Equal(m1.Bytes(), m2.Bytes()) {
-		t.Fatalf("expected equality in multiplication")
-	}
-
-	// Blind and unblind
-	bp = Group{}.NewElement().(*Point).Base()
-	blinded := bp.Mult(rs)
-
-	if bytes.Equal(blinded.Bytes(), Group{}.NewElement().(*Point).Base().Bytes()) {
-		t.Fatalf("failed multiplication : didn't change")
-	}
-
-	if blinded.IsIdentity() {
-		t.Fatalf("failed multiplication : is identity")
-	}
-
-	// unblind
-	unblinded := blinded.Mult(rs.Invert())
-	if !bytes.Equal(unblinded.Bytes(), Group{}.Base().Bytes()) {
-		t.Fatalf("failed multiplication : unblinding didn't revert")
-	}
-
-	// Multiply from byte values
-	element := Group{}.NewElement().(*Point).Base()
-	scalar := Group{}.NewScalar().Random()
-
-	mult := Group{}.NewElement().(*Point).Base().Mult(scalar)
-
-	bm, err := Group{}.MultBytes(scalar.Bytes(), element.Bytes())
-	if err != nil {
-		t.Fatalf("MultBytes errored for []bytes multiplication")
-	}
-
-	if !bytes.Equal(mult.Bytes(), bm.Bytes()) {
-		t.Fatalf("MultBytes failed. expected %x, got %x", mult.Bytes(), bm.Bytes())
-	}
-
-	// Multiply with invalid values
-	r := Group{}
-	if _, err := r.MultBytes(nil, nil); err == nil {
-		t.Fatal("expected error for nil scalar in MultBytes")
-	}
-
-	if _, err := r.MultBytes(scalar.Bytes(), nil); err == nil {
-		t.Fatal("expected error for nil scalar in MultBytes")
-	}
-}
-
-func TestPointArithmetic(t *testing.T) {
-	input := []byte(h2cInput)
-
-	// Test Addition and Subtraction
-	p := Group{}.Base()
-	c := p.Copy()
-	if hasPanic, _ := internal.ExpectPanic(nil, func() {
-		p.Add(nil)
-	}); !hasPanic {
-		t.Fatal("expected panic")
-	}
-	a := p.Add(p)
-	if hasPanic, _ := internal.ExpectPanic(nil, func() {
-		p.Sub(nil)
-	}); !hasPanic {
-		t.Fatal("expected panic")
-	}
-	r := a.Sub(c)
-	if !bytes.Equal(r.Bytes(), c.Bytes()) {
-		t.Fatal("not equal")
-	}
-
-	// Test Multiplication and inversion
-	p = Group{}.Base()
-	s := Group{}.HashToScalar(input, []byte("test"))
-	penc := p.Bytes()
-	senc := s.Bytes()
-	m := p.Mult(s)
-	e, err := Group{}.MultBytes(senc, penc)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(m.Bytes(), e.Bytes()) {
-		t.Fatal("not equal")
-	}
-
-	i := m.Mult(s.Invert())
-	if !bytes.Equal(i.Bytes(), p.Bytes()) {
-		t.Fatal("not equal")
-	}
-
-	// Test identity
-	p = p.Sub(p)
-	if !p.IsIdentity() {
-		t.Fatal("expected assertion to be true")
-	}
-	if !bytes.Equal(p.Bytes(), Group{}.NewElement().Bytes()) {
-		t.Fatal("not equal")
-	}
-}
-
-func TestScalarArithmetic(t *testing.T) {
-	// Test Addition and Subtraction
-	s := Group{}.NewScalar().Random()
-	if !bytes.Equal(s.Add(nil).Bytes(), s.Bytes()) {
-		t.Fatal("not equal")
-	}
-	a := s.Add(s)
-	if !bytes.Equal(a.Sub(nil).Bytes(), a.Bytes()) {
-		t.Fatal("not equal")
-	}
-	r := a.Sub(s)
-	if !bytes.Equal(r.Bytes(), s.Bytes()) {
-		t.Fatal("not equal")
-	}
-
-	// Test Multiplication and inversion
-	s = Group{}.NewScalar().Random()
-	m := s.Mult(s)
-	i := m.Mult(s.Invert())
-	if !bytes.Equal(i.Bytes(), s.Bytes()) {
-		t.Fatal("not equal")
 	}
 }

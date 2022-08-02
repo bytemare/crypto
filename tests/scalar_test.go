@@ -6,15 +6,12 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-package crypto_test
+package group_test
 
 import (
-	"bytes"
 	"testing"
 
 	"github.com/bytemare/crypto"
-
-	"github.com/bytemare/crypto/internal"
 )
 
 func TestScalar_Arithmetic(t *testing.T) {
@@ -26,39 +23,46 @@ func TestScalar_Arithmetic(t *testing.T) {
 func testScalarArithmetic(t *testing.T, g crypto.Group) {
 	s := g.NewScalar().Random()
 
-	// Expect panic when adding a nil Scalar.
-	if hasPanic, _ := internal.ExpectPanic(nil, func() {
-		s.Add(nil)
-	}); !hasPanic {
-		t.Fatal("expected panic")
+	// Adding and subtracting nil must yield the same element
+	if s.Add(nil).Equal(s) != 1 {
+		t.Fatal("expected equality")
 	}
 
-	// Expect panic when subtracting a nil Element.
-	if hasPanic, _ := internal.ExpectPanic(nil, func() {
-		s.Sub(nil)
-	}); !hasPanic {
-		t.Fatal("expected panic")
+	if s.Sub(nil).Equal(s) != 1 {
+		t.Fatal("expected equality")
 	}
 
 	// Test zero Scalar
-	zero := s.Sub(s)
+	zero := g.NewScalar()
 	if !zero.IsZero() {
 		t.Fatal("expected zero scalar")
 	}
 
-	if !bytes.Equal(s.Add(g.NewScalar()).Bytes(), s.Bytes()) {
+	s = g.NewScalar().Random()
+
+	zero = s.Sub(s)
+	if !zero.IsZero() {
+		t.Fatal("expected zero scalar")
+	}
+
+	if s.Add(zero).Equal(s) != 1 {
 		t.Fatal("expected no change in adding zero scalar")
 	}
-	if !bytes.Equal(s.Sub(g.NewScalar()).Bytes(), s.Bytes()) {
+	if s.Add(zero).Equal(s) != 1 {
 		t.Fatal("not equal")
 	}
 
 	// Test Multiplication and inversion
 	s = g.NewScalar().Random()
 	sqr := s.Mult(s)
+
 	i := s.Invert().Mult(sqr)
-	if !bytes.Equal(i.Bytes(), s.Bytes()) {
+	if i.Equal(s) != 1 {
 		t.Fatal("expected equality")
+	}
+
+	if !s.Multiply(nil).IsZero() {
+		t.Fatal("expected zero")
 	}
 }
 
@@ -78,5 +82,10 @@ func testScalarDecoding(t *testing.T, g crypto.Group) {
 
 	if !dec.Sub(s).IsZero() {
 		t.Fatal("expected assertion to be true")
+	}
+
+	_, err = g.NewScalar().Decode(nil)
+	if err == nil {
+		t.Fatal("expected error on nil input")
 	}
 }

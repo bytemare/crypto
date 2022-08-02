@@ -6,14 +6,13 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-package crypto_test
+package group_test
 
 import (
 	"encoding/hex"
 	"testing"
 
 	"github.com/bytemare/crypto"
-
 	"github.com/bytemare/crypto/edwards25519"
 	"github.com/bytemare/crypto/nist"
 	"github.com/bytemare/crypto/ristretto"
@@ -22,16 +21,17 @@ import (
 type group struct {
 	name string
 	h2c  string
+	e2c  string
 	id   crypto.Group
 }
 
 func testGroups() []*group {
 	return []*group{
-		{"Ristretto255", ristretto.H2C, crypto.Ristretto255Sha512},
-		{"P256", nist.H2CP256, crypto.P256Sha256},
-		{"P384", nist.H2CP384, crypto.P384Sha384},
-		{"P521", nist.H2CP521, crypto.P521Sha512},
-		{"Edwards25519", edwards25519.H2C, crypto.Edwards25519Sha512},
+		{"Ristretto255", ristretto.H2C, ristretto.H2C, crypto.Ristretto255Sha512},
+		{"P256", nist.H2CP256, nist.E2CP256, crypto.P256Sha256},
+		{"P384", nist.H2CP384, nist.E2CP384, crypto.P384Sha384},
+		{"P521", nist.H2CP521, nist.E2CP521, crypto.P521Sha512},
+		{"Edwards25519", edwards25519.H2C, edwards25519.E2C, crypto.Edwards25519Sha512},
 	}
 }
 
@@ -72,7 +72,6 @@ func TestDST(t *testing.T) {
 		crypto.P384Sha384:         "app-V01-CS04-P384_XMD:SHA-384_SSWU_RO_",
 		crypto.P521Sha512:         "app-V01-CS05-P521_XMD:SHA-512_SSWU_RO_",
 		crypto.Edwards25519Sha512: "app-V01-CS06-edwards25519_XMD:SHA-512_ELL2_RO_",
-		// Curve448Shake256:   "app-V01-CS07-curve448_XOF:SHAKE256_ELL2_RO_",
 		// Edwards448Shake256: "app-V01-CS08-edwards448_XOF:SHAKE256_ELL2_RO_",
 	}
 
@@ -142,7 +141,6 @@ func TestGroup_ElementLength(t *testing.T) {
 		crypto.P384Sha384:         49,
 		crypto.P521Sha512:         67,
 		crypto.Edwards25519Sha512: 32,
-		// Curve448Shake256:   57,
 		// Edwards448Shake256: 57,
 	}
 

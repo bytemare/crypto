@@ -24,20 +24,20 @@ const (
 	// H2CP256 represents the hash-to-curve string identifier for P256.
 	H2CP256 = "P256_XMD:SHA-256_SSWU_RO_"
 
-	// H2CP256NU represents the encode-to-curve string identifier for P256.
-	H2CP256NU = "P256_XMD:SHA-256_SSWU_NU_"
+	// E2CP256 represents the encode-to-curve string identifier for P256.
+	E2CP256 = "P256_XMD:SHA-256_SSWU_NU_"
 
 	// H2CP384 represents the hash-to-curve string identifier for P384.
 	H2CP384 = "P384_XMD:SHA-384_SSWU_RO_"
 
-	// H2CP384NU represents the encode-to-curve string identifier for P384.
-	H2CP384NU = "P384_XMD:SHA-384_SSWU_NU_"
+	// E2CP384 represents the encode-to-curve string identifier for P384.
+	E2CP384 = "P384_XMD:SHA-384_SSWU_NU_"
 
 	// H2CP521 represents the hash-to-curve string identifier for P521.
 	H2CP521 = "P521_XMD:SHA-512_SSWU_RO_"
 
-	// H2CP521NU represents the encode-to-curve string identifier for P521.
-	H2CP521NU = "P521_XMD:SHA-512_SSWU_NU_"
+	// E2CP521 represents the encode-to-curve string identifier for P521.
+	E2CP521 = "P521_XMD:SHA-512_SSWU_NU_"
 )
 
 func P256() internal.Group {
@@ -169,17 +169,11 @@ var (
 	p256 Group[*nistec.P256Point]
 	p384 Group[*nistec.P384Point]
 	p521 Group[*nistec.P521Point]
-
-	primeP256, _ = new(big.Int).SetString("115792089210356248762697446949407573530"+
-		"086143415290314195533631308867097853951", 10)
-	primeP384, _ = new(big.Int).SetString("3940200619639447921227904010014361380507973927046544666794"+
-		"8293404245721771496870329047266088258938001861606973112319", 10)
-	primeP521, _ = new(big.Int).SetString("6864797660130609714981900799081393217269435300143305"+
-		"4093944634591855431833976560521225596406614545549772"+
-		"96311391480858037121987999716643812574028291115057151", 10)
 )
 
 func initP256() {
+	primeP256, _ := new(big.Int).SetString("115792089210356248762697446949407573530"+
+		"086143415290314195533631308867097853951", 10)
 	p256.h2c = H2CP256
 	p256.Curve.setCurveParams(
 		primeP256,
@@ -191,6 +185,8 @@ func initP256() {
 }
 
 func initP384() {
+	primeP384, _ := new(big.Int).SetString("3940200619639447921227904010014361380507973927046544666794"+
+		"8293404245721771496870329047266088258938001861606973112319", 10)
 	p384.h2c = H2CP384
 	p384.Curve.setCurveParams(
 		primeP384,
@@ -204,6 +200,9 @@ func initP384() {
 }
 
 func initP521() {
+	primeP521, _ := new(big.Int).SetString("6864797660130609714981900799081393217269435300143305"+
+		"4093944634591855431833976560521225596406614545549772"+
+		"96311391480858037121987999716643812574028291115057151", 10)
 	p521.h2c = H2CP521
 	p521.Curve.setCurveParams(
 		primeP521,

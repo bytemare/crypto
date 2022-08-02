@@ -1,4 +1,12 @@
-package crypto_test
+// SPDX-License-Group: MIT
+//
+// Copyright (C) 2021 Daniel Bourdrez. All Rights Reserved.
+//
+// This source code is licensed under the MIT license found in the
+// LICENSE file in the root directory of this source tree or at
+// https://spdx.org/licenses/MIT.html
+
+package group_test
 
 import (
 	"bytes"
@@ -31,7 +39,7 @@ func BenchmarkScalarBaseMult(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = group.id.Base().Mult(priv)
+			_ = group.id.Base().Multiply(priv)
 			// to do : Prevent the compiler from optimizing out the operation.
 		}
 	})
@@ -40,18 +48,18 @@ func BenchmarkScalarBaseMult(b *testing.B) {
 func BenchmarkScalarMult(b *testing.B) {
 	benchAll(b, func(b *testing.B, group *group) {
 		priv := group.id.NewScalar().Random()
-		pub := group.id.Base().Mult(group.id.NewScalar().Random())
+		pub := group.id.Base().Multiply(group.id.NewScalar().Random())
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			pub = pub.Mult(priv)
+			pub = pub.Multiply(priv)
 		}
 	})
 }
 
 func BenchmarkMarshalUnmarshal(b *testing.B) {
 	benchAll(b, func(b *testing.B, group *group) {
-		pub := group.id.Base().Mult(group.id.NewScalar().Random())
+		pub := group.id.Base().Multiply(group.id.NewScalar().Random())
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
 			buf := pub.Bytes()

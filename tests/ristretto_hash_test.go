@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-package ristretto
+package group
 
 import (
 	"bytes"
@@ -15,6 +15,8 @@ import (
 	"testing"
 
 	"github.com/gtank/ristretto255"
+
+	"github.com/bytemare/crypto/ristretto"
 )
 
 type h2gTestBytes struct {
@@ -70,7 +72,7 @@ func TestRistretto_HashToGroup(t *testing.T) {
 				t.Fatalf("%d : %v", i, err)
 			}
 
-			e := Group{}.HashToGroup(v.x, v.dst)
+			e := ristretto.Group{}.HashToGroup(v.x, v.dst)
 
 			if !bytes.Equal(e.Bytes(), v.p) {
 				t.Fatalf(

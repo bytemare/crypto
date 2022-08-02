@@ -16,7 +16,6 @@ import (
 
 var (
 	errInputNegative  = errors.New("negative input")
-	errInputLarge32   = errors.New("integer too large : > 2^32")
 	errInputLarge     = errors.New("input is too high for length")
 	errLengthNegative = errors.New("length is negative or 0")
 	errLengthTooBig   = errors.New("requested length is > 4")
@@ -41,15 +40,15 @@ func i2osp(value, length int) []byte {
 		panic(errInputLarge)
 	case length == 1:
 		binary.BigEndian.PutUint16(out, uint16(v))
-
 		return out[1:2]
 	case length == 2:
 		binary.BigEndian.PutUint16(out, uint16(v))
-	case length == 3 || length == 4:
+		return out[:2]
+	case length == 3:
 		binary.BigEndian.PutUint32(out, uint32(v))
-	default:
-		panic(errInputLarge32)
+		return out[1:]
+	default: // length == 4
+		binary.BigEndian.PutUint32(out, uint32(v))
+		return out
 	}
-
-	return out[:length]
 }

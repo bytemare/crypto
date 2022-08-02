@@ -44,14 +44,14 @@ func (r Group) ElementLength() uint {
 
 // NewElement returns the identity element (point at infinity).
 func (r Group) NewElement() internal.Element {
-	return &Point{ristretto255.NewElement()}
+	return &Element{ristretto255.NewElement()}
 }
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the group.
 func (r Group) HashToGroup(input, dst []byte) internal.Element {
 	uniform := hash2curve.ExpandXMD(crypto.SHA512, input, dst, ristrettoInputLength)
 
-	return &Point{ristretto255.NewElement().FromUniformBytes(uniform)}
+	return &Element{ristretto255.NewElement().FromUniformBytes(uniform)}
 }
 
 // EncodeToGroup allows arbitrary input to be mapped non-uniformly to points in the Group.
@@ -68,7 +68,7 @@ func (r Group) HashToScalar(input, dst []byte) internal.Scalar {
 
 // Base returns group's base point a.k.a. canonical generator.
 func (r Group) Base() internal.Element {
-	return &Point{ristretto255.NewElement().Base()}
+	return &Element{ristretto255.NewElement().Base()}
 }
 
 // MultBytes allows []byte encodings of a scalar and an element of the group to be multiplied.
@@ -83,7 +83,7 @@ func (r Group) MultBytes(s, e []byte) (internal.Element, error) {
 		return nil, err
 	}
 
-	return el.Mult(sc), nil
+	return el.Multiply(sc), nil
 }
 
 // Ciphersuite returns the hash-to-curve ciphersuite identifier.

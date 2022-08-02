@@ -1,4 +1,12 @@
-package crypto_test
+// SPDX-License-Group: MIT
+//
+// Copyright (C) 2021 Daniel Bourdrez. All Rights Reserved.
+//
+// This source code is licensed under the MIT license found in the
+// LICENSE file in the root directory of this source tree or at
+// https://spdx.org/licenses/MIT.html
+
+package group_test
 
 import (
 	"crypto/elliptic"
@@ -8,7 +16,6 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/bytemare/crypto"
@@ -71,11 +78,6 @@ func decodeEd25519(x, y string) []byte {
 	isXNeg := int(xb[31] & 1)
 	yb[31] |= byte(isXNeg << 7)
 
-	//q, err := new(edwards25519.Element).SetBytes(yb)
-	//if err != nil {
-	//	panic(err)
-	//}
-
 	q, err := crypto.Edwards25519Sha512.NewElement().Decode(yb)
 	if err != nil {
 		panic(err)
@@ -109,10 +111,21 @@ func (v *vector) run(t *testing.T) {
 		return
 	}
 
-	p := v.group.HashToGroup([]byte(v.Msg), []byte(v.Dst))
+	switch v.Ciphersuite[len(v.Ciphersuite)-3:] {
+	case "RO_":
+		p := v.group.HashToGroup([]byte(v.Msg), []byte(v.Dst))
 
-	if hex.EncodeToString(p.Bytes()) != expected {
-		t.Fatalf("Unexpected HashToGroup output.\n\tExpected %q\n\tgot %q", expected, hex.EncodeToString(p.Bytes()))
+		if hex.EncodeToString(p.Bytes()) != expected {
+			t.Fatalf("Unexpected HashToGroup output.\n\tExpected %q\n\tgot %q", expected, hex.EncodeToString(p.Bytes()))
+		}
+	case "NU_":
+		p := v.group.EncodeToGroup([]byte(v.Msg), []byte(v.Dst))
+
+		if hex.EncodeToString(p.Bytes()) != expected {
+			t.Fatalf("Unexpected EncodeToGroup output.\n\tExpected %q\n\tgot %q", expected, hex.EncodeToString(p.Bytes()))
+		}
+	default:
+		t.Fatal("ciphersuite not recognized")
 	}
 }
 
@@ -127,7 +140,7 @@ func TestHashToGroupVectors(t *testing.T) {
 	groups := testGroups()
 	getGroup := func(ciphersuite string) (crypto.Group, bool) {
 		for _, group := range groups {
-			if group.h2c == ciphersuite {
+			if group.h2c == ciphersuite || group.e2c == ciphersuite {
 				return group.id, true
 			}
 		}
@@ -135,10 +148,6 @@ func TestHashToGroupVectors(t *testing.T) {
 	}
 	if err := filepath.Walk("vectors",
 		func(path string, info os.FileInfo, err error) error {
-			if strings.HasSuffix(path, "NU_.json") {
-				return nil
-			}
-
 			if err != nil {
 				return err
 			}

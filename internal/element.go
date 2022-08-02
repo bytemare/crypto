@@ -14,14 +14,12 @@ type Element interface {
 	// Add returns the sum of the Elements, and does not change the receiver.
 	Add(Element) Element
 
-	// Double returns the double of the element, and does not change the receiver.
-	// Double(Element) Element
+	// Subtract returns the difference between the Elements, and does not change the receiver.
+	Subtract(Element) Element
 
-	// Sub returns the difference between the Elements, and does not change the receiver.
-	Sub(Element) Element
-
-	// Mult returns the scalar multiplication of the receiver with the given Scalar, and does not change the receiver.
-	Mult(Scalar) Element
+	// Multiply returns the scalar multiplication of the receiver with the given Scalar,
+	// and does not change the receiver.
+	Multiply(Scalar) Element
 
 	// IsIdentity returns whether the Element is the point at infinity of the Group's underlying curve.
 	IsIdentity() bool
@@ -34,4 +32,19 @@ type Element interface {
 
 	// Bytes returns the compressed byte encoding of the point.
 	Bytes() []byte
+
+	// Double returns the double of the element, and does not change the receiver.
+	Double() Element
+
+	// Base sets the element to the group's base point a.k.a. canonical generator.
+	Base() Element
+
+	// Identity sets the element to the point at infinity of the Group's underlying curve.
+	Identity() Element
+
+	// Equal returns 1 if the elements are equivalent, and 0 otherwise.
+	Equal(element Element) int
+
+	// Negate returns the negative of the Element, and does not change the receiver.
+	Negate() Element
 }

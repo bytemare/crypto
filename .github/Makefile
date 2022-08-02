@@ -34,7 +34,7 @@ license:
 .PHONY: test
 test:
 	@echo "Running all tests ..."
-	@go test -v ../...
+	@go test -v -vet=all ../...
 
 #.PHONY: vectors
 #vectors:
@@ -44,4 +44,4 @@ test:
 .PHONY: cover
 cover:
 	@echo "Testing with coverage ..."
-	@go test -v -race -covermode=atomic -coverpkg=../... -coverprofile=./coverage.out ../...
+	@go test -v -race -covermode=atomic -coverpkg=../... -coverprofile=./coverage.out ../tests

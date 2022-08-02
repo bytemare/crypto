@@ -23,46 +23,63 @@ type Element struct {
 	element *edwards25519.Point
 }
 
+func checkElement(element internal.Element) *Element {
+	if element == nil {
+		panic(internal.ErrParamNilPoint)
+	}
+
+	ec, ok := element.(*Element)
+	if !ok {
+		panic(internal.ErrCastElement)
+	}
+
+	return ec
+}
+
+func (e *Element) Base() internal.Element {
+	e.element.Set(edwards25519.NewGeneratorPoint())
+	return e
+}
+
+func (e *Element) Identity() internal.Element {
+	e.element.Set(edwards25519.NewIdentityPoint())
+	return e
+}
+
 // Add returns the sum of the Elements, and does not change the receiver.
 func (e *Element) Add(element internal.Element) internal.Element {
-	if element == nil {
-		panic(internal.ErrParamNilPoint)
-	}
-
-	ele, ok := element.(*Element)
-	if !ok {
-		panic(internal.ErrCastElement)
-	}
-
-	return &Element{edwards25519.NewIdentityPoint().Add(e.element, ele.element)}
+	ec := checkElement(element)
+	return &Element{edwards25519.NewIdentityPoint().Add(e.element, ec.element)}
 }
 
-// Sub returns the difference between the Elements, and does not change the receiver.
-func (e *Element) Sub(element internal.Element) internal.Element {
-	if element == nil {
-		panic(internal.ErrParamNilPoint)
-	}
-
-	ele, ok := element.(*Element)
-	if !ok {
-		panic(internal.ErrCastElement)
-	}
-
-	return &Element{edwards25519.NewIdentityPoint().Subtract(e.element, ele.element)}
+func (e *Element) Double() internal.Element {
+	return e.Add(e)
 }
 
-// Mult returns the scalar multiplication of the receiver element with the given scalar.
-func (e *Element) Mult(scalar internal.Scalar) internal.Element {
+// Subtract returns the difference between the Elements, and does not change the receiver.
+func (e *Element) Subtract(element internal.Element) internal.Element {
+	ec := checkElement(element)
+	return &Element{edwards25519.NewIdentityPoint().Subtract(e.element, ec.element)}
+}
+
+func (e *Element) Negate() internal.Element {
+	return &Element{edwards25519.NewIdentityPoint().Negate(e.element)}
+}
+
+// Multiply returns the scalar multiplication of the receiver element with the given scalar.
+func (e *Element) Multiply(scalar internal.Scalar) internal.Element {
 	if scalar == nil {
-		panic(internal.ErrParamNilScalar)
+		return &Element{edwards25519.NewIdentityPoint()}
 	}
 
-	sc, ok := scalar.(*Scalar)
-	if !ok {
-		panic(internal.ErrCastElement)
-	}
+	sc := assert(scalar)
 
 	return &Element{edwards25519.NewIdentityPoint().ScalarMult(sc.scalar, e.element)}
+}
+
+func (e *Element) Equal(element internal.Element) int {
+	ec := checkElement(element)
+	return e.element.Equal(ec.element)
 }
 
 // IsIdentity returns whether the element is the Group's identity element.

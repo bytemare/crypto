@@ -33,11 +33,7 @@ func newScalar(field *field) *Scalar {
 	}
 }
 
-func (s *Scalar) check(scalar internal.Scalar) *Scalar {
-	if scalar == nil {
-		panic(internal.ErrParamNilScalar)
-	}
-
+func (s *Scalar) assert(scalar internal.Scalar) *Scalar {
 	sc, ok := scalar.(*Scalar)
 	if !ok {
 		panic("could not cast to same group scalar : wrong group ?")
@@ -58,7 +54,11 @@ func (s *Scalar) Random() internal.Scalar {
 
 // Add returns the sum of the scalars, and does not change the receiver.
 func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
-	sc := s.check(scalar)
+	if scalar == nil {
+		return s
+	}
+
+	sc := s.assert(scalar)
 
 	return &Scalar{
 		s:     s.field.Add(s.s, sc.s),
@@ -66,9 +66,13 @@ func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	}
 }
 
-// Sub returns the difference between the scalars, and does not change the receiver.
-func (s *Scalar) Sub(scalar internal.Scalar) internal.Scalar {
-	sc := s.check(scalar)
+// Subtract returns the difference between the scalars, and does not change the receiver.
+func (s *Scalar) Subtract(scalar internal.Scalar) internal.Scalar {
+	if scalar == nil {
+		return s
+	}
+
+	sc := s.assert(scalar)
 
 	return &Scalar{
 		s:     s.field.sub(s.s, sc.s),
@@ -76,9 +80,13 @@ func (s *Scalar) Sub(scalar internal.Scalar) internal.Scalar {
 	}
 }
 
-// Mult returns the multiplication of the scalars, and does not change the receiver.
-func (s *Scalar) Mult(scalar internal.Scalar) internal.Scalar {
-	sc := s.check(scalar)
+// Multiply returns the multiplication of the scalars, and does not change the receiver.
+func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
+	if scalar == nil {
+		return s.Zero()
+	}
+
+	sc := s.assert(scalar)
 
 	return &Scalar{
 		s:     s.field.Mul(s.s, sc.s),
@@ -91,6 +99,20 @@ func (s *Scalar) Invert() internal.Scalar {
 	return &Scalar{
 		s:     s.field.Inv(s.s),
 		field: s.field,
+	}
+}
+
+func (s *Scalar) Equal(scalar internal.Scalar) int {
+	if scalar == nil {
+		return 0
+	}
+
+	sc := s.assert(scalar)
+	switch sc.s.Cmp(sc.s) {
+	case 0:
+		return 1
+	default:
+		return 0
 	}
 }
 
@@ -134,4 +156,9 @@ func (s *Scalar) Bytes() []byte {
 	scalar := make([]byte, byteLen)
 
 	return s.s.FillBytes(scalar)
+}
+
+func (s *Scalar) Zero() internal.Scalar {
+	s.s = s.field.Zero()
+	return s
 }

@@ -6,29 +6,20 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-package nist_test
+package group_test
 
 import (
-	"bytes"
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
 	"math/big"
 	"testing"
-
-	"github.com/bytemare/crypto/internal"
-	"github.com/bytemare/crypto/nist"
 )
 
-var (
-	dst       = []byte("TestApp-V00-CS123")
-	testInput = []byte("input datafqverqvbdbq")
-)
-
-// TestInvalidCoordinates tests big.Int values that are not valid field elements
+// TestNistInvalidCoordinates tests big.Int values that are not valid field elements
 // (negative or bigger than P). They are expected to return false from
 // IsOnCurve, all other behavior is undefined.
-func TestInvalidCoordinates(t *testing.T) {
+func TestNistInvalidCoordinates(t *testing.T) {
 	tests := []struct {
 		name  string
 		curve elliptic.Curve
@@ -164,75 +155,5 @@ func testInvalidCoordinates(t *testing.T, curveName string, curve elliptic.Curve
 			t.Fatal("(0, mod_sqrt(B)) is not on the curve?")
 		}
 		checkIsOnCurveFalse("P, y", p, yy, p, solver)
-	}
-}
-
-var groups = []internal.Group{nist.P256(), nist.P384(), nist.P521()}
-
-func TestPointEncoding(t *testing.T) {
-	for _, group := range groups {
-		t.Run(group.Ciphersuite(), func(t *testing.T) {
-			e := group.HashToGroup(testInput, dst)
-			b := e.Bytes()
-			n, err := group.NewElement().Decode(b)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if !e.Sub(n).IsIdentity() {
-				t.Fatal("expected assertion to be true")
-			}
-		})
-	}
-}
-
-func testPointArithmetic(t *testing.T, g internal.Group, input []byte) {
-	// Test Addition and Subtraction
-	base := g.Base()
-	if hasPanic, _ := internal.ExpectPanic(nil, func() {
-		base.Add(nil)
-	}); !hasPanic {
-		t.Fatal("expected panic")
-	}
-
-	a := base.Add(base)
-	if hasPanic, _ := internal.ExpectPanic(nil, func() {
-		a.Sub(nil)
-	}); !hasPanic {
-		t.Fatal("expected panic")
-	}
-	sub := a.Sub(base)
-	if !bytes.Equal(sub.Bytes()[1:], base.Bytes()[1:]) {
-		// t.Fatal("not equal")
-	}
-
-	// Test Multiplication and inversion
-	base = g.Base()
-	s := g.HashToScalar(input, dst)
-	penc := base.Bytes()
-	senc := s.Bytes()
-	m := base.Mult(s)
-	if m.IsIdentity() {
-		t.Fatal("base mult s is identity")
-	}
-	e, err := g.MultBytes(senc, penc)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !bytes.Equal(m.Bytes(), e.Bytes()) {
-		t.Fatal("not equal")
-	}
-
-	// Test identity
-	if !base.Sub(base).IsIdentity() {
-		t.Fatal("expected identity element")
-	}
-}
-
-func TestPointArithmetic(t *testing.T) {
-	for _, group := range groups {
-		t.Run(group.Ciphersuite(), func(t *testing.T) {
-			testPointArithmetic(t, group, testInput)
-		})
 	}
 }

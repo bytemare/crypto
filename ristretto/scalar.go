@@ -22,6 +22,15 @@ type Scalar struct {
 	scalar *ristretto255.Scalar
 }
 
+func assert(scalar internal.Scalar) *Scalar {
+	sc, ok := scalar.(*Scalar)
+	if !ok {
+		panic(internal.ErrCastScalar)
+	}
+
+	return sc
+}
+
 // Random sets the current scalar to a new random scalar and returns it.
 func (s *Scalar) Random() internal.Scalar {
 	random := internal.RandomBytes(ristrettoInputLength)
@@ -36,38 +45,29 @@ func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 		return s
 	}
 
-	sc, ok := scalar.(*Scalar)
-	if !ok {
-		panic(internal.ErrCastScalar)
-	}
+	sc := assert(scalar)
 
 	return &Scalar{scalar: ristretto255.NewScalar().Add(s.scalar, sc.scalar)}
 }
 
-// Sub returns the difference between the scalars, and does not change the receiver.
-func (s *Scalar) Sub(scalar internal.Scalar) internal.Scalar {
+// Subtract returns the difference between the scalars, and does not change the receiver.
+func (s *Scalar) Subtract(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s
 	}
 
-	sc, ok := scalar.(*Scalar)
-	if !ok {
-		panic("could not cast to same group scalar : wrong group ?")
-	}
+	sc := assert(scalar)
 
 	return &Scalar{scalar: ristretto255.NewScalar().Subtract(s.scalar, sc.scalar)}
 }
 
-// Mult returns the multiplication of the scalars, and does not change the receiver.
-func (s *Scalar) Mult(scalar internal.Scalar) internal.Scalar {
+// Multiply returns the multiplication of the scalars, and does not change the receiver.
+func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
-		panic("multiplying scalar with nil element")
+		return s.Zero()
 	}
 
-	sc, ok := scalar.(*Scalar)
-	if !ok {
-		panic("could not cast to same group scalar : wrong group ?")
-	}
+	sc := assert(scalar)
 
 	return &Scalar{scalar: ristretto255.NewScalar().Multiply(s.scalar, sc.scalar)}
 }
@@ -75,6 +75,12 @@ func (s *Scalar) Mult(scalar internal.Scalar) internal.Scalar {
 // Invert returns the scalar's modular inverse ( 1 / scalar ).
 func (s *Scalar) Invert() internal.Scalar {
 	return &Scalar{ristretto255.NewScalar().Invert(s.scalar)}
+}
+
+func (s *Scalar) Equal(scalar internal.Scalar) int {
+	sc := assert(scalar)
+
+	return s.scalar.Equal(sc.scalar)
 }
 
 // IsZero returns whether the scalar is 0.
@@ -119,4 +125,9 @@ func decodeScalar(scalar []byte) (*ristretto255.Scalar, error) {
 	}
 
 	return s, nil
+}
+
+func (s *Scalar) Zero() internal.Scalar {
+	s.scalar.Zero()
+	return s
 }

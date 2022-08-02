@@ -11,7 +11,7 @@ package crypto
 
 import "github.com/bytemare/crypto/internal"
 
-// Element represents a point on the curve of the prime-order group.
+// Element represents an element on the curve of the prime-order group.
 type Element struct {
 	internal.Element
 }
@@ -21,43 +21,52 @@ func newPoint(p internal.Element) *Element {
 }
 
 // Add returns the sum of the Points, and does not change the receiver.
-func (p *Element) Add(point *Element) *Element {
-	if point == nil {
-		panic(internal.ErrParamNilScalar)
+func (p *Element) Add(element *Element) *Element {
+	if element == nil {
+		return &Element{p.Element.Copy()}
 	}
 
-	return &Element{p.Element.Add(point.Element)}
+	return &Element{p.Element.Add(element.Element)}
 }
 
-// Sub returns the difference between the Points, and does not change the receiver.
-func (p *Element) Sub(point *Element) *Element {
-	if point == nil {
-		panic(internal.ErrParamNilScalar)
+// Subtract returns the difference between the Points, and does not change the receiver.
+func (p *Element) Subtract(element *Element) *Element {
+	if element == nil {
+		return &Element{p.Element.Copy()}
 	}
 
-	return &Element{p.Element.Sub(point.Element)}
+	return &Element{p.Element.Subtract(element.Element)}
 }
 
-// Mult returns the scalar multiplication of the receiver point with the given scalar.
-func (p *Element) Mult(scalar *Scalar) *Element {
+// Multiply returns the scalar multiplication of the receiver element with the given scalar.
+func (p *Element) Multiply(scalar *Scalar) *Element {
 	if scalar == nil {
-		panic(internal.ErrParamNilScalar)
+		return &Element{p.Element.Identity()}
 	}
 
-	return &Element{p.Element.Mult(scalar.Scalar)}
+	return &Element{p.Element.Multiply(scalar.Scalar)}
 }
 
-// IsIdentity returns whether the point is the Group's identity point.
+// Equal returns 1 if the elements are equivalent, and 0 otherwise.
+func (p *Element) Equal(element *Element) int {
+	if element == nil {
+		return 0
+	}
+
+	return p.Element.Equal(element.Element)
+}
+
+// IsIdentity returns whether the element is the Group's identity element.
 func (p *Element) IsIdentity() bool {
 	return p.Element.IsIdentity()
 }
 
-// Copy returns a copy of the point.
+// Copy returns a copy of the element.
 func (p *Element) Copy() *Element {
 	return &Element{p.Element.Copy()}
 }
 
-// Decode decodes the input and sets the current point to its value, and returns it.
+// Decode decodes the input and sets the current element to its value, and returns it.
 func (p *Element) Decode(in []byte) (*Element, error) {
 	q, err := p.Element.Decode(in)
 	if err != nil {
@@ -67,7 +76,23 @@ func (p *Element) Decode(in []byte) (*Element, error) {
 	return &Element{q}, nil
 }
 
-// Bytes returns the compressed byte encoding of the point.
+// Bytes returns the compressed byte encoding of the element.
 func (p *Element) Bytes() []byte {
 	return p.Element.Bytes()
+}
+
+func (p *Element) Double() *Element {
+	return &Element{p.Element.Double()}
+}
+
+func (p *Element) Base() *Element {
+	return &Element{p.Element.Base()}
+}
+
+func (p *Element) Identity() *Element {
+	return &Element{p.Element.Identity()}
+}
+
+func (p *Element) Negate() *Element {
+	return &Element{p.Element.Negate()}
 }

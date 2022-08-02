@@ -17,41 +17,56 @@ import (
 	"github.com/bytemare/crypto/internal"
 )
 
-// Point implements the Point interface for the Ristretto255 group element.
-type Point struct {
-	point *ristretto255.Element
+// Element implements the Element interface for the Ristretto255 group element.
+type Element struct {
+	element *ristretto255.Element
 }
 
-// Add adds the argument to the receiver, sets the receiver to the result and returns it.
-func (p *Point) Add(element internal.Element) internal.Element {
+func checkElement(element internal.Element) *Element {
 	if element == nil {
 		panic(internal.ErrParamNilPoint)
 	}
 
-	ele, ok := element.(*Point)
+	ec, ok := element.(*Element)
 	if !ok {
 		panic(internal.ErrCastElement)
 	}
 
-	return &Point{ristretto255.NewElement().Add(p.point, ele.point)}
+	return ec
 }
 
-// Sub subtracts the argument from the receiver, sets the receiver to the result and returns it.
-func (p *Point) Sub(element internal.Element) internal.Element {
-	if element == nil {
-		panic(internal.ErrParamNilPoint)
-	}
-
-	ele, ok := element.(*Point)
-	if !ok {
-		panic(internal.ErrCastElement)
-	}
-
-	return &Point{ristretto255.NewElement().Subtract(p.point, ele.point)}
+func (e *Element) Base() internal.Element {
+	e.element.Base()
+	return e
 }
 
-// Mult returns the scalar multiplication of the receiver element with the given scalar.
-func (p *Point) Mult(scalar internal.Scalar) internal.Element {
+func (e *Element) Identity() internal.Element {
+	e.element.Zero()
+	return e
+}
+
+// Add returns the sum of the Elements, and does not change the receiver.
+func (e *Element) Add(element internal.Element) internal.Element {
+	ec := checkElement(element)
+	return &Element{ristretto255.NewElement().Add(e.element, ec.element)}
+}
+
+func (e *Element) Double() internal.Element {
+	return &Element{ristretto255.NewElement().Add(e.element, e.element)}
+}
+
+func (e *Element) Negate() internal.Element {
+	return &Element{ristretto255.NewElement().Negate(e.element)}
+}
+
+// Subtract subtracts the argument from the receiver, sets the receiver to the result and returns it.
+func (e *Element) Subtract(element internal.Element) internal.Element {
+	ec := checkElement(element)
+	return &Element{ristretto255.NewElement().Subtract(e.element, ec.element)}
+}
+
+// Multiply returns the scalar multiplication of the receiver element with the given scalar.
+func (e *Element) Multiply(scalar internal.Scalar) internal.Element {
 	if scalar == nil {
 		panic(internal.ErrParamNilScalar)
 	}
@@ -61,27 +76,32 @@ func (p *Point) Mult(scalar internal.Scalar) internal.Element {
 		panic(internal.ErrCastElement)
 	}
 
-	return &Point{ristretto255.NewElement().ScalarMult(sc.scalar, p.point)}
+	return &Element{ristretto255.NewElement().ScalarMult(sc.scalar, e.element)}
+}
+
+func (e *Element) Equal(element internal.Element) int {
+	ec := checkElement(element)
+	return e.element.Equal(ec.element)
 }
 
 // IsIdentity returns whether the element is the group's identity element.
-func (p *Point) IsIdentity() bool {
+func (e *Element) IsIdentity() bool {
 	id := ristretto255.NewElement().Zero()
-	return p.point.Equal(id) == 1
+	return e.element.Equal(id) == 1
 }
 
 // Copy returns a copy of the element.
-func (p *Point) Copy() internal.Element {
+func (e *Element) Copy() internal.Element {
 	n := ristretto255.NewElement()
-	if err := n.Decode(p.point.Encode(nil)); err != nil {
+	if err := n.Decode(e.element.Encode(nil)); err != nil {
 		panic(err)
 	}
 
-	return &Point{point: n}
+	return &Element{element: n}
 }
 
 // Decode decodes the input an sets the current element to its value, and returns it.
-func (p *Point) Decode(in []byte) (internal.Element, error) {
+func (e *Element) Decode(in []byte) (internal.Element, error) {
 	el, err := decodeElement(in)
 	if err != nil {
 		return nil, err
@@ -92,20 +112,14 @@ func (p *Point) Decode(in []byte) (internal.Element, error) {
 		return nil, internal.ErrIdentity
 	}
 
-	p.point = el
+	e.element = el
 
-	return p, nil
+	return e, nil
 }
 
 // Bytes returns the compressed byte encoding of the element.
-func (p *Point) Bytes() []byte {
-	return p.point.Encode(nil)
-}
-
-// Base returns the group's base point.
-func (p *Point) Base() internal.Element {
-	p.point = ristretto255.NewElement().Base()
-	return p
+func (e *Element) Bytes() []byte {
+	return e.element.Encode(nil)
 }
 
 func decodeElement(element []byte) (*ristretto255.Element, error) {

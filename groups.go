@@ -120,7 +120,7 @@ func (g Group) HashToGroup(input, dst []byte) *Element {
 // The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) EncodeToGroup(input, dst []byte) *Element {
 	checkDST(dst)
-	return newPoint(g.get().HashToGroup(input, dst))
+	return newPoint(g.get().EncodeToGroup(input, dst))
 }
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.

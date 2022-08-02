@@ -20,12 +20,19 @@ const (
 	canonicalEncodingLength = 32
 )
 
-var scZero *Scalar
-
 // Scalar represents an Edwards25519 scalar.
 // It wraps an Edwards25519 implementation to leverage its optimized operations.
 type Scalar struct {
 	scalar *edwards25519.Scalar
+}
+
+func assert(scalar internal.Scalar) *Scalar {
+	sc, ok := scalar.(*Scalar)
+	if !ok {
+		panic(internal.ErrCastScalar)
+	}
+
+	return sc
 }
 
 // Random sets the current scalar to a new random scalar and returns it.
@@ -44,38 +51,29 @@ func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 		return s
 	}
 
-	sc, ok := scalar.(*Scalar)
-	if !ok {
-		panic(internal.ErrCastScalar)
-	}
+	sc := assert(scalar)
 
 	return &Scalar{scalar: edwards25519.NewScalar().Add(s.scalar, sc.scalar)}
 }
 
-// Sub returns the difference between the scalars, and does not change the receiver.
-func (s *Scalar) Sub(scalar internal.Scalar) internal.Scalar {
+// Subtract returns the difference between the scalars, and does not change the receiver.
+func (s *Scalar) Subtract(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s
 	}
 
-	sc, ok := scalar.(*Scalar)
-	if !ok {
-		panic("could not cast to same group scalar : wrong group ?")
-	}
+	sc := assert(scalar)
 
 	return &Scalar{scalar: edwards25519.NewScalar().Subtract(s.scalar, sc.scalar)}
 }
 
-// Mult returns the multiplication of the scalars, and does not change the receiver.
-func (s *Scalar) Mult(scalar internal.Scalar) internal.Scalar {
+// Multiply returns the multiplication of the scalars, and does not change the receiver.
+func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
-		panic("multiplying scalar with nil element")
+		return s.Zero()
 	}
 
-	sc, ok := scalar.(*Scalar)
-	if !ok {
-		panic("could not cast to same group scalar : wrong group ?")
-	}
+	sc := assert(scalar)
 
 	return &Scalar{scalar: edwards25519.NewScalar().Multiply(s.scalar, sc.scalar)}
 }
@@ -85,9 +83,19 @@ func (s *Scalar) Invert() internal.Scalar {
 	return &Scalar{edwards25519.NewScalar().Invert(s.scalar)}
 }
 
+func (s *Scalar) Equal(scalar internal.Scalar) int {
+	if scalar == nil {
+		return 0
+	}
+
+	sc := assert(scalar)
+
+	return s.scalar.Equal(sc.scalar)
+}
+
 // IsZero returns whether the scalar is 0.
 func (s *Scalar) IsZero() bool {
-	return s.scalar.Equal(scZero.scalar) == 1
+	return s.scalar.Equal(edwards25519.NewScalar()) == 1
 }
 
 // Copy returns a copy of the Scalar.
@@ -124,8 +132,7 @@ func (s *Scalar) Bytes() []byte {
 	return s.scalar.Bytes()
 }
 
-func init() {
-	zeroes := [32]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-	sc, _ := edwards25519.NewScalar().SetCanonicalBytes(zeroes[:])
-	scZero = &Scalar{sc}
+func (s *Scalar) Zero() internal.Scalar {
+	s.scalar.Set(edwards25519.NewScalar())
+	return s
 }

@@ -33,12 +33,29 @@ func checkElement[Point nistECPoint[Point]](element internal.Element) *Element[P
 	return ec
 }
 
-// Add returns the sum of the Elements, and does not change the receiver.
-func (e *Element[P]) Add(element internal.Element) internal.Element {
-	ec := checkElement[P](element)
+func (e *Element[Point]) Base() internal.Element {
+	e.p.SetGenerator()
+	return e
+}
 
-	return &Element[P]{
+func (e *Element[Point]) Identity() internal.Element {
+	e.p = e.new()
+	return e
+}
+
+// Add returns the sum of the Elements, and does not change the receiver.
+func (e *Element[Point]) Add(element internal.Element) internal.Element {
+	ec := checkElement[Point](element)
+
+	return &Element[Point]{
 		p:   e.new().Add(e.p, ec.p),
+		new: e.new,
+	}
+}
+
+func (e *Element[Point]) Double() internal.Element {
+	return &Element[Point]{
+		p:   e.new().Double(e.p),
 		new: e.new,
 	}
 }
@@ -60,8 +77,16 @@ func (e *Element[Point]) negate() Point {
 	return neg
 }
 
-// Sub returns the difference between the Elements, and does not change the receiver.
-func (e *Element[P]) Sub(element internal.Element) internal.Element {
+// Negate returns the negative of the Element, and does not change the receiver.
+func (e *Element[P]) Negate() internal.Element {
+	return &Element[P]{
+		p:   e.negate(),
+		new: e.new,
+	}
+}
+
+// Subtract returns the difference between the Elements, and does not change the receiver.
+func (e *Element[P]) Subtract(element internal.Element) internal.Element {
 	ec := checkElement[P](element).negate()
 
 	return &Element[P]{
@@ -70,9 +95,9 @@ func (e *Element[P]) Sub(element internal.Element) internal.Element {
 	}
 }
 
-// Mult returns the scalar multiplication of the receiver element with the given scalar,
+// Multiply returns the scalar multiplication of the receiver element with the given scalar,
 // and does not change the receiver.
-func (e *Element[P]) Mult(scalar internal.Scalar) internal.Element {
+func (e *Element[P]) Multiply(scalar internal.Scalar) internal.Element {
 	p := e.new()
 	if _, err := p.ScalarMult(e.p, scalar.Bytes()); err != nil {
 		panic(err)
@@ -82,6 +107,12 @@ func (e *Element[P]) Mult(scalar internal.Scalar) internal.Element {
 		p:   p,
 		new: e.new,
 	}
+}
+
+func (e *Element[Point]) Equal(element internal.Element) int {
+	ec := checkElement[Point](element)
+
+	return subtle.ConstantTimeCompare(e.p.Bytes(), ec.p.Bytes())
 }
 
 // IsIdentity returns whether the element is the Group's identity element.
