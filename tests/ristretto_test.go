@@ -14,7 +14,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"github.com/bytemare/crypto/ristretto"
+	ristretto2 "github.com/bytemare/crypto/internal/ristretto"
 )
 
 const (
@@ -101,7 +101,7 @@ var tests = []testGroup{
 func TestRistrettoScalar(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := ristretto.Group{}.NewScalar().Random()
+			s := ristretto2.Group{}.NewScalar().Random()
 			if len(s.Bytes()) != 32 {
 				t.Fatalf("invalid random scalar length. Expected %d, got %d", 32, len(s.Bytes()))
 			}
@@ -112,7 +112,7 @@ func TestRistrettoScalar(t *testing.T) {
 				t.Fatalf("#%s: bad hex encoding in test vector: %v", tt.name, err)
 			}
 
-			s, err = ristretto.Group{}.NewScalar().Decode(encoding)
+			s, err = ristretto2.Group{}.NewScalar().Decode(encoding)
 
 			switch tt.scal {
 			case false:
@@ -140,7 +140,7 @@ func TestRistrettoScalar(t *testing.T) {
 					)
 				}
 
-				cpy, _ := ristretto.Group{}.NewScalar().Decode(s.Bytes())
+				cpy, _ := ristretto2.Group{}.NewScalar().Decode(s.Bytes())
 				cpy = cpy.Invert()
 				if bytes.Equal(cpy.Bytes(), s.Bytes()) {
 					t.Fatal("scalar inversion resulted in same scalar")
@@ -152,7 +152,7 @@ func TestRistrettoScalar(t *testing.T) {
 
 func TestRistrettoElement(t *testing.T) {
 	// Test if the element in the test is the base point
-	bp := ristretto.Group{}.NewElement().(*ristretto.Element).Base()
+	bp := ristretto2.Group{}.NewElement().(*ristretto2.Element).Base()
 
 	// Grab the bytes of the encoding
 	encoding, err := hex.DecodeString(tests[0].element)
@@ -173,7 +173,7 @@ func TestRistrettoElement(t *testing.T) {
 			}
 
 			// Test decoding
-			e, err := ristretto.Group{}.NewElement().Decode(encoding)
+			e, err := ristretto2.Group{}.NewElement().Decode(encoding)
 
 			switch tt.elem {
 			case false:

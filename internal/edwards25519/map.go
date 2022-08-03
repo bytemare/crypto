@@ -6,8 +6,7 @@ import (
 
 	"filippo.io/edwards25519"
 	"filippo.io/edwards25519/field"
-
-	"github.com/bytemare/crypto/hash2curve"
+	"github.com/bytemare/hash2curve"
 )
 
 // p25519 is the prime 2^255 - 19 for the field.

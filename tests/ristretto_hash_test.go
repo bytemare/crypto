@@ -16,7 +16,7 @@ import (
 
 	"github.com/gtank/ristretto255"
 
-	"github.com/bytemare/crypto/ristretto"
+	"github.com/bytemare/crypto/internal/ristretto"
 )
 
 type h2gTestBytes struct {

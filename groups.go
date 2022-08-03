@@ -17,10 +17,10 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/bytemare/crypto/edwards25519"
 	"github.com/bytemare/crypto/internal"
-	"github.com/bytemare/crypto/nist"
-	"github.com/bytemare/crypto/ristretto"
+	"github.com/bytemare/crypto/internal/edwards25519"
+	"github.com/bytemare/crypto/internal/nist"
+	"github.com/bytemare/crypto/internal/ristretto"
 )
 
 // Group identifies prime-order groups over elliptic curves with hash-to-group operations.

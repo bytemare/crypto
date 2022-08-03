@@ -4,6 +4,8 @@ filippo.io/nistec v0.0.0-20220513155737-c4b6d02e738c h1:x4epP2lA8b5UYoIFjcVpN+Mf
 filippo.io/nistec v0.0.0-20220513155737-c4b6d02e738c/go.mod h1:84fxC9mi+MhC2AERXI4LSa8cmSVOzrFikg6hZ4IfCyw=
 github.com/bytemare/hash v0.1.2 h1:dK5AXWiE+XKjNmGIlWAWc1rGxKC84OMXaFMln6YAvf0=
 github.com/bytemare/hash v0.1.2/go.mod h1:ZHewRkjnw7cV6/e4rLdmtHnPmcs6TLZCTEBXhAAPCbk=
+github.com/bytemare/hash2curve v0.1.1 h1:rCHPp12iViCw2+fhEFNkxin9lXU/9BvKL81nweAjc1c=
+github.com/bytemare/hash2curve v0.1.1/go.mod h1:CiFzFO/VHc/lH8HSPXHAnaSiAn/Uacpap3n5OvnxD04=
 github.com/gtank/ristretto255 v0.1.2 h1:JEqUCPA1NvLq5DwYtuzigd7ss8fwbYay9fi4/5uMzcc=
 github.com/gtank/ristretto255 v0.1.2/go.mod h1:Ph5OpO6c7xKUGROZfWVLiJf9icMDwUeIvY4OmlYW69o=
 golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa h1:zuSxTR4o9y82ebqCUJYNGJbGPo6sKVl54f/TVDObg1c=

@@ -4,7 +4,7 @@ import (
 	"crypto"
 	"math/big"
 
-	"github.com/bytemare/crypto/hash2curve"
+	"github.com/bytemare/hash2curve"
 )
 
 func s2int(s string) *big.Int {

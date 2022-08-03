@@ -12,9 +12,9 @@ package ristretto
 import (
 	"crypto"
 
+	"github.com/bytemare/hash2curve"
 	"github.com/gtank/ristretto255"
 
-	"github.com/bytemare/crypto/hash2curve"
 	"github.com/bytemare/crypto/internal"
 )
 

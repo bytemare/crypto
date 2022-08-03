@@ -15,8 +15,8 @@ import (
 	"sync"
 
 	"filippo.io/nistec"
+	"github.com/bytemare/hash2curve"
 
-	"github.com/bytemare/crypto/hash2curve"
 	"github.com/bytemare/crypto/internal"
 )
 
