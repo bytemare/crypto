@@ -11,7 +11,8 @@ package internal
 
 // Scalar interface abstracts common operations on scalars in a prime-order Group.
 type Scalar interface {
-	// Random sets the current scalar to a new random scalar and returns it.
+	// Random sets the current scalar to a new random scalar and returns it. The random source is crypto/rand, and this
+	// functions is guaranteed to return a non-zero scalar.
 	Random() Scalar
 
 	// Add returns the sum of the scalars, and does not change the receiver.

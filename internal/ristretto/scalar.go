@@ -33,10 +33,14 @@ func assert(scalar internal.Scalar) *Scalar {
 
 // Random sets the current scalar to a new random scalar and returns it.
 func (s *Scalar) Random() internal.Scalar {
-	random := internal.RandomBytes(ristrettoInputLength)
-	s.scalar.FromUniformBytes(random)
+	for {
+		random := internal.RandomBytes(inputLength)
+		s.scalar.FromUniformBytes(random)
 
-	return s
+		if !s.IsZero() {
+			return s
+		}
+	}
 }
 
 // Add returns the sum of the scalars, and does not change the receiver.

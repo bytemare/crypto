@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	ristrettoInputLength = 64
+	inputLength = 64
 
 	// H2C represents the hash-to-curve string identifier.
 	H2C = "ristretto255_XMD:SHA-512_R255MAP_RO_"
@@ -49,7 +49,7 @@ func (r Group) NewElement() internal.Element {
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the group.
 func (r Group) HashToGroup(input, dst []byte) internal.Element {
-	uniform := hash2curve.ExpandXMD(crypto.SHA512, input, dst, ristrettoInputLength)
+	uniform := hash2curve.ExpandXMD(crypto.SHA512, input, dst, inputLength)
 
 	return &Element{ristretto255.NewElement().FromUniformBytes(uniform)}
 }
@@ -61,8 +61,7 @@ func (r Group) EncodeToGroup(input, dst []byte) internal.Element {
 
 // HashToScalar allows arbitrary input to be safely mapped to the field.
 func (r Group) HashToScalar(input, dst []byte) internal.Scalar {
-	uniform := hash2curve.ExpandXMD(crypto.SHA512, input, dst, ristrettoInputLength)
-
+	uniform := hash2curve.ExpandXMD(crypto.SHA512, input, dst, inputLength)
 	return &Scalar{ristretto255.NewScalar().FromUniformBytes(uniform)}
 }
 
