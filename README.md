@@ -3,7 +3,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/bytemare/crypto.svg)](https://pkg.go.dev/github.com/bytemare/crypto)
 [![codecov](https://codecov.io/gh/bytemare/crypto/branch/main/graph/badge.svg?token=5bQfB0OctA)](https://codecov.io/gh/bytemare/crypto)
 
-```
+```Go
   import "github.com/bytemare/crypto"
 ```
 
@@ -34,7 +34,7 @@ you. You don't need to instantiate or implement anything.
 
 ### Group interface
 
-`Go
+```Go
 // Group abstracts operations in a prime-order group.
 type Group interface {
     // NewScalar returns a new, empty, scalar.
@@ -63,11 +63,12 @@ type Group interface {
 
 	// Ciphersuite returns the hash-to-curve ciphersuite identifier.
 	Ciphersuite() string
-}`
+}
+```
 
 ### Scalar interface
 
-`Go
+```Go
 // Scalar interface abstracts common operations on scalars in a prime-order Group.
 type Scalar interface {
     // Random sets the current scalar to a new random scalar and returns it.
@@ -102,9 +103,10 @@ type Scalar interface {
 
 	// Zero sets the scalar to 0, and returns it.
 	Zero() Scalar
-}`
+}
+```
 
-`Go
+```Go
 ### Element interface
 // Element interface abstracts common operations on an Element in a prime-order Group.
 type Element interface {
@@ -144,7 +146,8 @@ type Element interface {
 
 	// Negate returns the negative of the Element, and does not change the receiver.
 	Negate() Element
-}`
+}
+```
 
 ## Documentation [![Go Reference](https://pkg.go.dev/badge/github.com/bytemare/crypto.svg)](https://pkg.go.dev/github.com/bytemare/crypto)
 
@@ -153,7 +156,6 @@ You can find the documentation and usage examples in [the package doc](https://p
 ## Versioning
 
 [SemVer](http://semver.org) is used for versioning. For the versions available, see the [tags on the repository](https://github.com/bytemare/crypto/tags).
-
 
 ## Contributing
 
