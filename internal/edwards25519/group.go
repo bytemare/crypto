@@ -100,10 +100,10 @@ func (g Group) Ciphersuite() string {
 	return H2C
 }
 
-func adjust(in []byte, length int) []byte {
+func adjust(in []byte) []byte {
 	// If necessary, build a buffer of right size, so it gets correctly interpreted.
-	if l := length - len(in); l > 0 {
-		buf := make([]byte, l, length)
+	if l := canonicalEncodingLength - len(in); l > 0 {
+		buf := make([]byte, l, canonicalEncodingLength)
 		buf = append(buf, in...)
 		in = buf
 	}

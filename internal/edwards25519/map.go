@@ -47,7 +47,7 @@ func element(input []byte) *field.Element {
 
 func HashToEdwards25519Field(input, dst []byte) *edwards25519.Scalar {
 	sc := hash2curve.HashToFieldXMD(crypto.SHA512, input, dst, 1, 1, 48, groupOrder)
-	b := adjust(sc[0].Bytes(), canonicalEncodingLength)
+	b := adjust(sc[0].Bytes())
 
 	s, err := edwards25519.NewScalar().SetCanonicalBytes(b)
 	if err != nil {
@@ -60,8 +60,8 @@ func HashToEdwards25519Field(input, dst []byte) *edwards25519.Scalar {
 // HashToEdwards25519 implements hash-to-curve mapping to Edwards25519 of input with dst.
 func HashToEdwards25519(input, dst []byte) *edwards25519.Point {
 	u := hash2curve.HashToFieldXMD(crypto.SHA512, input, dst, 2, 1, 48, fieldPrime)
-	q0 := element(adjust(u[0].Bytes(), canonicalEncodingLength))
-	q1 := element(adjust(u[1].Bytes(), canonicalEncodingLength))
+	q0 := element(adjust(u[0].Bytes()))
+	q1 := element(adjust(u[1].Bytes()))
 	p0 := MapToEdwards(q0)
 	p1 := MapToEdwards(q1)
 	p0.Add(p0, p1)
@@ -73,7 +73,7 @@ func HashToEdwards25519(input, dst []byte) *edwards25519.Point {
 // EncodeToEdwards25519 implements encode-to-curve mapping to Edwards25519 of input with dst.
 func EncodeToEdwards25519(input, dst []byte) *edwards25519.Point {
 	q := hash2curve.HashToFieldXMD(crypto.SHA512, input, dst, 1, 1, 48, fieldPrime)
-	b := adjust(q[0].Bytes(), canonicalEncodingLength)
+	b := adjust(q[0].Bytes())
 	p0 := MapToEdwards(element(b))
 	p0.MultByCofactor(p0)
 
