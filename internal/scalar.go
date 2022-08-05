@@ -9,8 +9,16 @@
 // Package internal defines simple and abstract APIs to group Elements and Scalars.
 package internal
 
+import "encoding"
+
 // Scalar interface abstracts common operations on scalars in a prime-order Group.
 type Scalar interface {
+	// Zero sets the scalar to 0, and returns it.
+	Zero() Scalar
+
+	// One sets the scalar to 1, and returns it.
+	//One() Scalar
+
 	// Random sets the current scalar to a new random scalar and returns it. The random source is crypto/rand, and this
 	// functions is guaranteed to return a non-zero scalar.
 	Random() Scalar
@@ -27,21 +35,28 @@ type Scalar interface {
 	// Invert returns the scalar's modular inverse ( 1 / scalar ), and does not change the receiver.
 	Invert() Scalar
 
+	// Equal returns 1 if the scalars are equal, and 0 otherwise.
+	Equal(scalar Scalar) int
+
 	// IsZero returns whether the scalar is 0.
 	IsZero() bool
+
+	// Set sets the receiver to the argument scalar, and returns the receiver.
+	Set(scalar Scalar) Scalar
 
 	// Copy returns a copy of the Scalar.
 	Copy() Scalar
 
+	// Encode returns the compressed byte encoding of the element.
+	Encode() []byte
+
 	// Decode decodes the input an sets the current scalar to its value, and returns it.
 	Decode(in []byte) (Scalar, error)
 
-	// Bytes returns the byte encoding of the element.
-	Bytes() []byte
+	// BinaryMarshaler returns a byte representation of the element.
+	encoding.BinaryMarshaler
 
-	// Equal returns 1 if the scalars are equal, and 0 otherwise.
-	Equal(scalar Scalar) int
-
-	// Zero sets the scalar to 0, and returns it.
-	Zero() Scalar
+	// BinaryUnmarshaler recovers an element from a byte representation
+	// produced either by encoding.BinaryMarshaler or MarshalBinaryCompress.
+	encoding.BinaryUnmarshaler
 }

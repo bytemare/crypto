@@ -64,11 +64,9 @@ func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := s.assert(scalar)
+	s.s.Add(s.s, sc.s)
 
-	return &Scalar{
-		s:     s.field.Add(s.s, sc.s),
-		field: s.field,
-	}
+	return s
 }
 
 // Subtract returns the difference between the scalars, and does not change the receiver.
@@ -78,11 +76,9 @@ func (s *Scalar) Subtract(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := s.assert(scalar)
+	s.s.Sub(s.s, sc.s)
 
-	return &Scalar{
-		s:     s.field.sub(s.s, sc.s),
-		field: s.field,
-	}
+	return s
 }
 
 // Multiply returns the multiplication of the scalars, and does not change the receiver.
@@ -92,19 +88,15 @@ func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := s.assert(scalar)
+	s.s.Mul(s.s, sc.s)
 
-	return &Scalar{
-		s:     s.field.Mul(s.s, sc.s),
-		field: s.field,
-	}
+	return s
 }
 
 // Invert returns the scalar's modular inverse ( 1 / scalar ), and does not change the receiver.
 func (s *Scalar) Invert() internal.Scalar {
-	return &Scalar{
-		s:     s.field.Inv(s.s),
-		field: s.field,
-	}
+	s.s = s.field.Inv(s.s)
+	return s
 }
 
 func (s *Scalar) Equal(scalar internal.Scalar) int {
@@ -124,6 +116,22 @@ func (s *Scalar) Equal(scalar internal.Scalar) int {
 // IsZero returns whether the scalar is 0.
 func (s *Scalar) IsZero() bool {
 	return s.field.AreEqual(s.s, s.field.Zero())
+}
+
+func (s *Scalar) set(scalar *Scalar) *Scalar {
+	*s = *scalar
+	return s
+}
+
+// Set sets the receiver to the argument scalar, and returns the receiver.
+func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
+	if scalar == nil {
+		return s.set(nil)
+	}
+
+	ec := s.assert(scalar)
+
+	return s.set(ec)
 }
 
 // Copy returns a copy of the Scalar.
@@ -156,7 +164,7 @@ func (s *Scalar) Decode(in []byte) (internal.Scalar, error) {
 }
 
 // Bytes returns the byte encoding of the element.
-func (s *Scalar) Bytes() []byte {
+func (s *Scalar) Encode() []byte {
 	byteLen := (s.field.BitLen() + 7) / 8
 	scalar := make([]byte, byteLen)
 
@@ -166,4 +174,15 @@ func (s *Scalar) Bytes() []byte {
 func (s *Scalar) Zero() internal.Scalar {
 	s.s = s.field.Zero()
 	return s
+}
+
+// MarshalBinary returns the compressed byte encoding of the element.
+func (s *Scalar) MarshalBinary() ([]byte, error) {
+	return s.Encode(), nil
+}
+
+// UnmarshalBinary sets e to the decoding of the byte encoded element.
+func (s *Scalar) UnmarshalBinary(data []byte) error {
+	_, err := s.Decode(data)
+	return err
 }

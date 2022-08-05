@@ -49,7 +49,9 @@ func (e *Element) Identity() internal.Element {
 // Add returns the sum of the Elements, and does not change the receiver.
 func (e *Element) Add(element internal.Element) internal.Element {
 	ec := checkElement(element)
-	return &Element{edwards25519.NewIdentityPoint().Add(e.element, ec.element)}
+	e.element.Add(e.element, ec.element)
+
+	return e
 }
 
 func (e *Element) Double() internal.Element {
@@ -59,22 +61,27 @@ func (e *Element) Double() internal.Element {
 // Subtract returns the difference between the Elements, and does not change the receiver.
 func (e *Element) Subtract(element internal.Element) internal.Element {
 	ec := checkElement(element)
-	return &Element{edwards25519.NewIdentityPoint().Subtract(e.element, ec.element)}
+	e.element.Subtract(e.element, ec.element)
+
+	return e
 }
 
 func (e *Element) Negate() internal.Element {
-	return &Element{edwards25519.NewIdentityPoint().Negate(e.element)}
+	e.element.Negate(e.element)
+	return e
 }
 
 // Multiply returns the scalar multiplication of the receiver element with the given scalar.
 func (e *Element) Multiply(scalar internal.Scalar) internal.Element {
 	if scalar == nil {
-		return &Element{edwards25519.NewIdentityPoint()}
+		e.element = edwards25519.NewIdentityPoint()
+		return e
 	}
 
 	sc := assert(scalar)
+	e.element.ScalarMult(sc.scalar, e.element)
 
-	return &Element{edwards25519.NewIdentityPoint().ScalarMult(sc.scalar, e.element)}
+	return e
 }
 
 func (e *Element) Equal(element internal.Element) int {
@@ -88,6 +95,25 @@ func (e *Element) IsIdentity() bool {
 	return e.element.Equal(id) == 1
 }
 
+func (e *Element) set(element *Element) *Element {
+	*e = *element
+	return e
+}
+
+// Set sets the receiver to the argument, and returns the receiver.
+func (e *Element) Set(element internal.Element) internal.Element {
+	if element == nil {
+		return e.set(nil)
+	}
+
+	ec, ok := element.(*Element)
+	if !ok {
+		panic(internal.ErrCastElement)
+	}
+
+	return e.set(ec)
+}
+
 // Copy returns a copy of the element.
 func (e *Element) Copy() internal.Element {
 	n := edwards25519.NewIdentityPoint()
@@ -98,7 +124,7 @@ func (e *Element) Copy() internal.Element {
 	return &Element{element: n}
 }
 
-// Decode decodes the input an sets the current element to its value, and returns it.
+// Decode decodes the input and sets the current element to its value, and returns it.
 func (e *Element) Decode(in []byte) (internal.Element, error) {
 	if len(in) == 0 {
 		return nil, internal.ErrParamNilPoint
@@ -115,7 +141,18 @@ func (e *Element) Decode(in []byte) (internal.Element, error) {
 	return e, nil
 }
 
-// Bytes returns the compressed byte encoding of the element.
-func (e *Element) Bytes() []byte {
+// Encode returns the compressed byte encoding of the element.
+func (e *Element) Encode() []byte {
 	return e.element.Bytes()
+}
+
+// MarshalBinary returns the compressed byte encoding of the element.
+func (e *Element) MarshalBinary() ([]byte, error) {
+	return e.element.Bytes(), nil
+}
+
+// UnmarshalBinary sets e to the decoding of the byte encoded element.
+func (e *Element) UnmarshalBinary(data []byte) error {
+	_, err := e.Decode(data)
+	return err
 }

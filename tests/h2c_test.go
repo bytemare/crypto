@@ -12,7 +12,7 @@ import (
 	"crypto/elliptic"
 	"encoding/hex"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -160,9 +160,14 @@ func TestHashToGroupVectors(t *testing.T) {
 				t.Fatal(errOpen)
 			}
 
-			defer file.Close()
+			defer func(file *os.File) {
+				err := file.Close()
+				if err != nil {
 
-			val, errRead := ioutil.ReadAll(file)
+				}
+			}(file)
+
+			val, errRead := io.ReadAll(file)
 			if errRead != nil {
 				t.Fatal(errRead)
 			}

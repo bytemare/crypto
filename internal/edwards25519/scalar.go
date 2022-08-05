@@ -56,8 +56,9 @@ func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := assert(scalar)
+	s.scalar.Add(s.scalar, sc.scalar)
 
-	return &Scalar{scalar: edwards25519.NewScalar().Add(s.scalar, sc.scalar)}
+	return s
 }
 
 // Subtract returns the difference between the scalars, and does not change the receiver.
@@ -67,8 +68,9 @@ func (s *Scalar) Subtract(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := assert(scalar)
+	s.scalar.Subtract(s.scalar, sc.scalar)
 
-	return &Scalar{scalar: edwards25519.NewScalar().Subtract(s.scalar, sc.scalar)}
+	return s
 }
 
 // Multiply returns the multiplication of the scalars, and does not change the receiver.
@@ -78,13 +80,15 @@ func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := assert(scalar)
+	s.scalar.Multiply(s.scalar, sc.scalar)
 
-	return &Scalar{scalar: edwards25519.NewScalar().Multiply(s.scalar, sc.scalar)}
+	return s
 }
 
 // Invert returns the scalar's modular inverse ( 1 / scalar ), and does not change the receiver.
 func (s *Scalar) Invert() internal.Scalar {
-	return &Scalar{edwards25519.NewScalar().Invert(s.scalar)}
+	s.scalar.Invert(s.scalar)
+	return s
 }
 
 func (s *Scalar) Equal(scalar internal.Scalar) int {
@@ -100,6 +104,22 @@ func (s *Scalar) Equal(scalar internal.Scalar) int {
 // IsZero returns whether the scalar is 0.
 func (s *Scalar) IsZero() bool {
 	return s.scalar.Equal(edwards25519.NewScalar()) == 1
+}
+
+func (s *Scalar) set(scalar *Scalar) *Scalar {
+	*s = *scalar
+	return s
+}
+
+// Set sets the receiver to the argument scalar, and returns the receiver.
+func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
+	if scalar == nil {
+		return s.set(nil)
+	}
+
+	sc := assert(scalar)
+
+	return s.set(sc)
 }
 
 // Copy returns a copy of the Scalar.
@@ -119,7 +139,7 @@ func decodeScalar(scalar []byte) (*edwards25519.Scalar, error) {
 	return edwards25519.NewScalar().SetCanonicalBytes(scalar)
 }
 
-// Decode decodes the input an sets the current scalar to its value, and returns it.
+// Decode decodes the input and sets the current scalar to its value, and returns it.
 func (s *Scalar) Decode(in []byte) (internal.Scalar, error) {
 	sc, err := decodeScalar(in)
 	if err != nil {
@@ -132,11 +152,22 @@ func (s *Scalar) Decode(in []byte) (internal.Scalar, error) {
 }
 
 // Bytes returns the byte encoding of the element.
-func (s *Scalar) Bytes() []byte {
+func (s *Scalar) Encode() []byte {
 	return s.scalar.Bytes()
 }
 
 func (s *Scalar) Zero() internal.Scalar {
 	s.scalar.Set(edwards25519.NewScalar())
 	return s
+}
+
+// MarshalBinary returns the compressed byte encoding of the element.
+func (s *Scalar) MarshalBinary() ([]byte, error) {
+	return s.Encode(), nil
+}
+
+// UnmarshalBinary sets e to the decoding of the byte encoded element.
+func (s *Scalar) UnmarshalBinary(data []byte) error {
+	_, err := s.Decode(data)
+	return err
 }

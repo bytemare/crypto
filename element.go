@@ -78,7 +78,7 @@ func (p *Element) Decode(in []byte) (*Element, error) {
 
 // Bytes returns the compressed byte encoding of the element.
 func (p *Element) Bytes() []byte {
-	return p.Element.Bytes()
+	return p.Element.Encode()
 }
 
 func (p *Element) Double() *Element {

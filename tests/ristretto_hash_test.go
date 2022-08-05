@@ -74,11 +74,11 @@ func TestRistretto_HashToGroup(t *testing.T) {
 
 			e := ristretto.Group{}.HashToGroup(v.x, v.dst)
 
-			if !bytes.Equal(e.Bytes(), v.p) {
+			if !bytes.Equal(e.Encode(), v.p) {
 				t.Fatalf(
 					"Mappings do not match.\n\tExpected: %v\n\tActual: %v\n",
 					hex.EncodeToString(v.p),
-					hex.EncodeToString(e.Bytes()),
+					hex.EncodeToString(e.Encode()),
 				)
 			}
 		})

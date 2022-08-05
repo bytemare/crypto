@@ -92,6 +92,22 @@ func (s *Scalar) IsZero() bool {
 	return s.scalar.Equal(ristretto255.NewScalar().Zero()) == 1
 }
 
+func (s *Scalar) set(scalar *Scalar) *Scalar {
+	*s = *scalar
+	return s
+}
+
+// Set sets the receiver to the argument scalar, and returns the receiver.
+func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
+	if scalar == nil {
+		return s.set(nil)
+	}
+
+	ec := assert(scalar)
+
+	return s.set(ec)
+}
+
 // Copy returns a copy of the Scalar.
 func (s *Scalar) Copy() internal.Scalar {
 	return &Scalar{ristretto255.NewScalar().Add(ristretto255.NewScalar(), s.scalar)}
@@ -110,7 +126,7 @@ func (s *Scalar) Decode(in []byte) (internal.Scalar, error) {
 }
 
 // Bytes returns the byte encoding of the scalar.
-func (s *Scalar) Bytes() []byte {
+func (s *Scalar) Encode() []byte {
 	return s.scalar.Encode(nil)
 }
 
@@ -134,4 +150,15 @@ func decodeScalar(scalar []byte) (*ristretto255.Scalar, error) {
 func (s *Scalar) Zero() internal.Scalar {
 	s.scalar.Zero()
 	return s
+}
+
+// MarshalBinary returns the compressed byte encoding of the element.
+func (s *Scalar) MarshalBinary() ([]byte, error) {
+	return s.Encode(), nil
+}
+
+// UnmarshalBinary sets e to the decoding of the byte encoded element.
+func (s *Scalar) UnmarshalBinary(data []byte) error {
+	_, err := s.Decode(data)
+	return err
 }

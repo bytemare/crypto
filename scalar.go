@@ -91,7 +91,7 @@ func (s *Scalar) Decode(in []byte) (*Scalar, error) {
 
 // Bytes returns the byte encoding of the element.
 func (s *Scalar) Bytes() []byte {
-	return s.Scalar.Bytes()
+	return s.Scalar.Encode()
 }
 
 func (s *Scalar) Zero() *Scalar {

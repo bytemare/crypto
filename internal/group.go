@@ -9,14 +9,6 @@
 // Package internal defines simple and abstract APIs to group Elements and Scalars.
 package internal
 
-const (
-	// DstMinLength is the minimum acceptable length of input DST.
-	DstMinLength = 0
-
-	// DstRecommendedMinLength is the minimum recommended length of input DST.
-	DstRecommendedMinLength = 16
-)
-
 // Group abstracts operations in a prime-order group.
 type Group interface {
 	// NewScalar returns a new, empty, scalar.

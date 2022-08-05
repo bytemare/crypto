@@ -45,30 +45,56 @@ func (e *Element) Identity() internal.Element {
 	return e
 }
 
+func (e *Element) set(element *Element) *Element {
+	*e = *element
+	return e
+}
+
+// Set sets the receiver to the argument, and returns the receiver.
+func (e *Element) Set(element internal.Element) internal.Element {
+	if element == nil {
+		return e.set(nil)
+	}
+
+	ec, ok := element.(*Element)
+	if !ok {
+		panic(internal.ErrCastElement)
+	}
+
+	return e.set(ec)
+}
+
 // Add returns the sum of the Elements, and does not change the receiver.
 func (e *Element) Add(element internal.Element) internal.Element {
 	ec := checkElement(element)
-	return &Element{ristretto255.NewElement().Add(e.element, ec.element)}
+	e.element.Add(e.element, ec.element)
+
+	return e
 }
 
 func (e *Element) Double() internal.Element {
-	return &Element{ristretto255.NewElement().Add(e.element, e.element)}
+	e.element.Add(e.element, e.element)
+	return e
 }
 
 func (e *Element) Negate() internal.Element {
-	return &Element{ristretto255.NewElement().Negate(e.element)}
+	e.element.Negate(e.element)
+	return e
 }
 
 // Subtract subtracts the argument from the receiver, sets the receiver to the result and returns it.
 func (e *Element) Subtract(element internal.Element) internal.Element {
 	ec := checkElement(element)
-	return &Element{ristretto255.NewElement().Subtract(e.element, ec.element)}
+	e.element.Subtract(e.element, ec.element)
+
+	return e
 }
 
 // Multiply returns the scalar multiplication of the receiver element with the given scalar.
 func (e *Element) Multiply(scalar internal.Scalar) internal.Element {
 	if scalar == nil {
-		panic(internal.ErrParamNilScalar)
+		e.element = ristretto255.NewElement()
+		return e
 	}
 
 	sc, ok := scalar.(*Scalar)
@@ -76,7 +102,9 @@ func (e *Element) Multiply(scalar internal.Scalar) internal.Element {
 		panic(internal.ErrCastElement)
 	}
 
-	return &Element{ristretto255.NewElement().ScalarMult(sc.scalar, e.element)}
+	e.element.ScalarMult(sc.scalar, e.element)
+
+	return e
 }
 
 func (e *Element) Equal(element internal.Element) int {
@@ -117,8 +145,8 @@ func (e *Element) Decode(in []byte) (internal.Element, error) {
 	return e, nil
 }
 
-// Bytes returns the compressed byte encoding of the element.
-func (e *Element) Bytes() []byte {
+// Encode returns the compressed byte encoding of the element.
+func (e *Element) Encode() []byte {
 	return e.element.Encode(nil)
 }
 
@@ -133,4 +161,15 @@ func decodeElement(element []byte) (*ristretto255.Element, error) {
 	}
 
 	return e, nil
+}
+
+// MarshalBinary returns the compressed byte encoding of the element.
+func (e *Element) MarshalBinary() ([]byte, error) {
+	return e.Encode(), nil
+}
+
+// UnmarshalBinary sets e to the decoding of the byte encoded element.
+func (e *Element) UnmarshalBinary(data []byte) error {
+	_, err := e.Decode(data)
+	return err
 }
