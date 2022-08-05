@@ -85,14 +85,14 @@ func testPointArithmetic(t *testing.T, g crypto.Group) {
 
 	scalar.Random()
 	base = g.Base()
-	m = base.Multiply(scalar)
+	m = base.Copy().Multiply(scalar)
 
 	m2, err := g.MultBytes(scalar.Bytes(), base.Bytes())
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if !bytes.Equal(m.Bytes(), m2.Bytes()) {
+	if m.Equal(m2) != 1 {
 		t.Fatal("expected equality")
 	}
 
