@@ -69,9 +69,7 @@ func testPointArithmetic(t *testing.T, g crypto.Group) {
 	}
 
 	scalar := g.NewScalar().Random()
-	for scalar.IsZero() {
-		scalar = g.NewScalar().Random()
-	}
+	base = g.Base()
 
 	m := base.Multiply(scalar)
 	if m.IsIdentity() {
