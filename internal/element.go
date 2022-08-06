@@ -51,16 +51,17 @@ type Element interface {
 	Encode() []byte
 
 	// Decode decodes the input a sets the receiver to its value, and returns it.
-	Decode(in []byte) (Element, error)
+	Decode(in []byte) error
 
-	// BinaryMarshaler returns a byte representation of the element.
+	// BinaryMarshaler implementation.
 	encoding.BinaryMarshaler
 
-	// BinaryUnmarshaler recovers an element from a byte representation
-	// produced either by encoding.BinaryMarshaler or MarshalBinaryCompress.
+	// BinaryUnmarshaler implementation.
 	encoding.BinaryUnmarshaler
-}
 
-type ExtendedElement struct {
-	// Group returns ans instan
+	// TextMarshaler implementation.
+	encoding.TextMarshaler
+
+	// TextUnmarshaler implementation.
+	encoding.TextUnmarshaler
 }

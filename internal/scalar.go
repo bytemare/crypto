@@ -17,7 +17,7 @@ type Scalar interface {
 	Zero() Scalar
 
 	// One sets the scalar to 1, and returns it.
-	//One() Scalar
+	One() Scalar
 
 	// Random sets the current scalar to a new random scalar and returns it. The random source is crypto/rand, and this
 	// functions is guaranteed to return a non-zero scalar.
@@ -51,7 +51,7 @@ type Scalar interface {
 	Encode() []byte
 
 	// Decode decodes the input an sets the current scalar to its value, and returns it.
-	Decode(in []byte) (Scalar, error)
+	Decode(in []byte) error
 
 	// BinaryMarshaler returns a byte representation of the element.
 	encoding.BinaryMarshaler
@@ -59,4 +59,10 @@ type Scalar interface {
 	// BinaryUnmarshaler recovers an element from a byte representation
 	// produced either by encoding.BinaryMarshaler or MarshalBinaryCompress.
 	encoding.BinaryUnmarshaler
+
+	// TextMarshaler returns a base64 standard string encoding of the element.
+	encoding.TextMarshaler
+
+	// TextUnmarshaler sets the base64 standard string encoding of the element.
+	encoding.TextUnmarshaler
 }

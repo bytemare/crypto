@@ -10,6 +10,7 @@ package nist
 
 import (
 	"crypto/subtle"
+	"encoding/base64"
 
 	"github.com/bytemare/crypto/internal"
 )
@@ -136,22 +137,18 @@ func (e *Element[P]) Copy() internal.Element {
 	}
 }
 
-// Decode sets p to the value of the decoded input, and returns p.
-func (e *Element[P]) Decode(in []byte) (internal.Element, error) {
-	p := e.new()
-	if _, err := p.SetBytes(in); err != nil {
-		return nil, err
-	}
-
-	return &Element[P]{
-		p:   p,
-		new: e.new,
-	}, nil
-}
-
 // Encode returns the compressed byte encoding of the element.
 func (e *Element[P]) Encode() []byte {
 	return e.p.BytesCompressed()
+}
+
+// Decode sets p to the value of the decoded input, and returns p.
+func (e *Element[P]) Decode(in []byte) error {
+	if _, err := e.p.SetBytes(in); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // MarshalBinary returns the compressed byte encoding of the element.
@@ -161,6 +158,21 @@ func (e *Element[P]) MarshalBinary() ([]byte, error) {
 
 // UnmarshalBinary sets e to the decoding of the byte encoded element.
 func (e *Element[P]) UnmarshalBinary(data []byte) error {
-	_, err := e.Decode(data)
+	return e.Decode(data)
+}
+
+// MarshalText implements the encoding.MarshalText interface.
+func (e *Element[P]) MarshalText() (text []byte, err error) {
+	b := e.Encode()
+	return []byte(base64.StdEncoding.EncodeToString(b)), nil
+}
+
+// UnmarshalText implements the encoding.UnmarshalText interface.
+func (e *Element[P]) UnmarshalText(text []byte) error {
+	eb, err := base64.StdEncoding.DecodeString(string(text))
+	if err == nil {
+		return e.Decode(eb)
+	}
+
 	return err
 }

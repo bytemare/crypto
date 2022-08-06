@@ -42,57 +42,32 @@ func New() internal.Group {
 
 // NewScalar returns a new, empty, scalar.
 func (g Group) NewScalar() internal.Scalar {
-	return &Scalar{edwards25519.NewScalar()}
-}
-
-// ElementLength returns the byte size of an encoded element.
-func (g Group) ElementLength() uint {
-	return canonicalEncodingLength
+	return &Scalar{*edwards25519.NewScalar()}
 }
 
 // NewElement returns the identity point (point at infinity).
 func (g Group) NewElement() internal.Element {
-	return &Element{edwards25519.NewIdentityPoint()}
-}
-
-// Identity returns the group's identity element.
-func (g Group) Identity() internal.Element {
-	return &Element{edwards25519.NewIdentityPoint()}
-}
-
-// HashToGroup allows arbitrary input to be safely mapped to the curve of the group.
-func (g Group) HashToGroup(input, dst []byte) internal.Element {
-	return &Element{HashToEdwards25519(input, dst)}
-}
-
-// EncodeToGroup allows arbitrary input to be mapped non-uniformly to points in the Group.
-func (g Group) EncodeToGroup(input, dst []byte) internal.Element {
-	return &Element{EncodeToEdwards25519(input, dst)}
-}
-
-// HashToScalar allows arbitrary input to be safely mapped to the field.
-func (g Group) HashToScalar(input, dst []byte) internal.Scalar {
-	return &Scalar{HashToEdwards25519Field(input, dst)}
+	return &Element{*edwards25519.NewIdentityPoint()}
 }
 
 // Base returns group's base point a.k.a. canonical generator.
 func (g Group) Base() internal.Element {
-	return &Element{edwards25519.NewGeneratorPoint()}
+	return &Element{*edwards25519.NewGeneratorPoint()}
 }
 
-// MultBytes allows []byte encodings of a scalar and an element of the group to be multiplied.
-func (g Group) MultBytes(s, e0 []byte) (internal.Element, error) {
-	sc, err := g.NewScalar().Decode(s)
-	if err != nil {
-		return nil, err
-	}
+// HashToScalar allows arbitrary input to be safely mapped to the field.
+func (g Group) HashToScalar(input, dst []byte) internal.Scalar {
+	return &Scalar{*HashToEdwards25519Field(input, dst)}
+}
 
-	e1, err := g.NewElement().Decode(e0)
-	if err != nil {
-		return nil, err
-	}
+// HashToGroup allows arbitrary input to be safely mapped to the curve of the group.
+func (g Group) HashToGroup(input, dst []byte) internal.Element {
+	return &Element{*HashToEdwards25519(input, dst)}
+}
 
-	return e1.Multiply(sc), nil
+// EncodeToGroup allows arbitrary input to be mapped non-uniformly to points in the Group.
+func (g Group) EncodeToGroup(input, dst []byte) internal.Element {
+	return &Element{*EncodeToEdwards25519(input, dst)}
 }
 
 // Ciphersuite returns the hash-to-curve ciphersuite identifier.
@@ -100,23 +75,12 @@ func (g Group) Ciphersuite() string {
 	return H2C
 }
 
-func adjust(in []byte) []byte {
-	// If necessary, build a buffer of right size, so it gets correctly interpreted.
-	if l := canonicalEncodingLength - len(in); l > 0 {
-		buf := make([]byte, l, canonicalEncodingLength)
-		buf = append(buf, in...)
-		in = buf
-	}
-
-	// Reverse, because filippo.io/edwards25519 works in little-endian
-	return reverse(in)
+// ScalarLength returns the byte size of an encoded element.
+func (g Group) ScalarLength() uint {
+	return canonicalEncodingLength
 }
 
-func reverse(b []byte) []byte {
-	l := len(b) - 1
-	for i := 0; i < len(b)/2; i++ {
-		b[i], b[l-i] = b[l-i], b[i]
-	}
-
-	return b
+// ElementLength returns the byte size of an encoded element.
+func (g Group) ElementLength() uint {
+	return canonicalEncodingLength
 }

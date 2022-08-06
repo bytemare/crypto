@@ -61,7 +61,7 @@ var (
 
 // Available reports whether the given Group is linked into the binary.
 func (g Group) Available() bool {
-	return 0 < g && g < maxID
+	return 0 < g && g < maxID && g != decaf448Shake256
 }
 
 func (g Group) get() internal.Group {
@@ -96,6 +96,16 @@ func (g Group) NewElement() *Element {
 	return newPoint(g.get().NewElement())
 }
 
+// Base returns the group's base point a.k.a. canonical generator.
+func (g Group) Base() *Element {
+	return newPoint(g.get().Base())
+}
+
+// ScalarLength returns the byte size of an encoded scalar.
+func (g Group) ScalarLength() uint {
+	return g.get().ScalarLength()
+}
+
 // ElementLength returns the byte size of an encoded element.
 func (g Group) ElementLength() uint {
 	return g.get().ElementLength()
@@ -107,6 +117,13 @@ func checkDST(dst []byte) {
 			panic(errZeroLenDST)
 		}
 	}
+}
+
+// HashToScalar allows arbitrary input to be safely mapped to the field.
+// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
+func (g Group) HashToScalar(input, dst []byte) *Scalar {
+	checkDST(dst)
+	return newScalar(g.get().HashToScalar(input, dst))
 }
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
@@ -123,26 +140,19 @@ func (g Group) EncodeToGroup(input, dst []byte) *Element {
 	return newPoint(g.get().EncodeToGroup(input, dst))
 }
 
-// HashToScalar allows arbitrary input to be safely mapped to the field.
-// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
-func (g Group) HashToScalar(input, dst []byte) *Scalar {
-	checkDST(dst)
-	return newScalar(g.get().HashToScalar(input, dst))
-}
-
-// Base returns the group's base point a.k.a. canonical generator.
-func (g Group) Base() *Element {
-	return newPoint(g.get().Base())
-}
-
 // MultBytes allows []byte encodings of a scalar and an element of the Group to be multiplied.
 func (g Group) MultBytes(scalar, element []byte) (*Element, error) {
-	p, err := g.get().MultBytes(scalar, element)
-	if err != nil {
+	sc := g.NewScalar()
+	if err := sc.Decode(scalar); err != nil {
 		return nil, err
 	}
 
-	return &Element{p}, nil
+	el := g.NewElement()
+	if err := el.Decode(element); err != nil {
+		return nil, err
+	}
+
+	return &Element{el.Element.Multiply(sc.Scalar)}, nil
 }
 
 // Ciphersuite returns the hash-to-curve ciphersuite identifier.

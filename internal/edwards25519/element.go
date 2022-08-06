@@ -10,6 +10,7 @@
 package edwards25519
 
 import (
+	"encoding/base64"
 	"fmt"
 
 	"filippo.io/edwards25519"
@@ -20,7 +21,7 @@ import (
 // Element represents an Edwards25519 point.
 // It wraps an Edwards25519 implementation to leverage its optimized operations.
 type Element struct {
-	element *edwards25519.Point
+	element edwards25519.Point
 }
 
 func checkElement(element internal.Element) *Element {
@@ -49,7 +50,7 @@ func (e *Element) Identity() internal.Element {
 // Add returns the sum of the Elements, and does not change the receiver.
 func (e *Element) Add(element internal.Element) internal.Element {
 	ec := checkElement(element)
-	e.element.Add(e.element, ec.element)
+	e.element.Add(&e.element, &ec.element)
 
 	return e
 }
@@ -58,35 +59,35 @@ func (e *Element) Double() internal.Element {
 	return e.Add(e)
 }
 
-// Subtract returns the difference between the Elements, and does not change the receiver.
-func (e *Element) Subtract(element internal.Element) internal.Element {
-	ec := checkElement(element)
-	e.element.Subtract(e.element, ec.element)
-
+func (e *Element) Negate() internal.Element {
+	e.element.Negate(&e.element)
 	return e
 }
 
-func (e *Element) Negate() internal.Element {
-	e.element.Negate(e.element)
+// Subtract returns the difference between the Elements, and does not change the receiver.
+func (e *Element) Subtract(element internal.Element) internal.Element {
+	ec := checkElement(element)
+	e.element.Subtract(&e.element, &ec.element)
+
 	return e
 }
 
 // Multiply returns the scalar multiplication of the receiver element with the given scalar.
 func (e *Element) Multiply(scalar internal.Scalar) internal.Element {
 	if scalar == nil {
-		e.element = edwards25519.NewIdentityPoint()
+		e.element = *edwards25519.NewIdentityPoint()
 		return e
 	}
 
 	sc := assert(scalar)
-	e.element.ScalarMult(sc.scalar, e.element)
+	e.element.ScalarMult(&sc.scalar, &e.element)
 
 	return e
 }
 
 func (e *Element) Equal(element internal.Element) int {
 	ec := checkElement(element)
-	return e.element.Equal(ec.element)
+	return e.element.Equal(&ec.element)
 }
 
 // IsIdentity returns whether the element is the Group's identity element.
@@ -116,34 +117,34 @@ func (e *Element) Set(element internal.Element) internal.Element {
 
 // Copy returns a copy of the element.
 func (e *Element) Copy() internal.Element {
-	n := edwards25519.NewIdentityPoint()
-	if _, err := n.SetBytes(e.element.Bytes()); err != nil {
+	n, err := edwards25519.NewIdentityPoint().SetBytes(e.element.Bytes())
+	if err != nil {
 		panic(err)
 	}
 
-	return &Element{element: n}
-}
-
-// Decode decodes the input and sets the current element to its value, and returns it.
-func (e *Element) Decode(in []byte) (internal.Element, error) {
-	if len(in) == 0 {
-		return nil, internal.ErrParamNilPoint
-	}
-
-	if _, err := e.element.SetBytes(in); err != nil {
-		return nil, fmt.Errorf("decoding element : %w", err)
-	}
-
-	if e.IsIdentity() {
-		return nil, internal.ErrIdentity
-	}
-
-	return e, nil
+	return &Element{element: *n}
 }
 
 // Encode returns the compressed byte encoding of the element.
 func (e *Element) Encode() []byte {
 	return e.element.Bytes()
+}
+
+// Decode decodes the input and sets the current element to its value, and returns it.
+func (e *Element) Decode(in []byte) error {
+	if len(in) == 0 {
+		return internal.ErrParamNilPoint
+	}
+
+	if _, err := e.element.SetBytes(in); err != nil {
+		return fmt.Errorf("decoding element : %w", err)
+	}
+
+	if e.IsIdentity() {
+		return internal.ErrIdentity
+	}
+
+	return nil
 }
 
 // MarshalBinary returns the compressed byte encoding of the element.
@@ -153,6 +154,21 @@ func (e *Element) MarshalBinary() ([]byte, error) {
 
 // UnmarshalBinary sets e to the decoding of the byte encoded element.
 func (e *Element) UnmarshalBinary(data []byte) error {
-	_, err := e.Decode(data)
+	return e.Decode(data)
+}
+
+// MarshalText implements the encoding.MarshalText interface.
+func (e *Element) MarshalText() (text []byte, err error) {
+	b := e.Encode()
+	return []byte(base64.StdEncoding.EncodeToString(b)), nil
+}
+
+// UnmarshalText implements the encoding.UnmarshalText interface.
+func (e *Element) UnmarshalText(text []byte) error {
+	eb, err := base64.StdEncoding.DecodeString(string(text))
+	if err == nil {
+		return e.Decode(eb)
+	}
+
 	return err
 }

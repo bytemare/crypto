@@ -112,7 +112,8 @@ func TestRistrettoScalar(t *testing.T) {
 				t.Fatalf("#%s: bad hex encoding in test vector: %v", tt.name, err)
 			}
 
-			s, err = ristretto2.Group{}.NewScalar().Decode(encoding)
+			s = ristretto2.Group{}.NewScalar()
+			err = s.Decode(encoding)
 
 			switch tt.scal {
 			case false:
@@ -140,7 +141,7 @@ func TestRistrettoScalar(t *testing.T) {
 					)
 				}
 
-				cpy, _ := ristretto2.Group{}.NewScalar().Decode(s.Encode())
+				cpy := s.Copy()
 				cpy = cpy.Invert()
 				if bytes.Equal(cpy.Encode(), s.Encode()) {
 					t.Fatal("scalar inversion resulted in same scalar")
@@ -173,7 +174,8 @@ func TestRistrettoElement(t *testing.T) {
 			}
 
 			// Test decoding
-			e, err := ristretto2.Group{}.NewElement().Decode(encoding)
+			e := ristretto2.Group{}.NewElement()
+			err = e.Decode(encoding)
 
 			switch tt.elem {
 			case false:

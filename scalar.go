@@ -22,6 +22,16 @@ func newScalar(s internal.Scalar) *Scalar {
 	return &Scalar{s}
 }
 
+func (s *Scalar) Zero() *Scalar {
+	s.Scalar.Zero()
+	return s
+}
+
+func (s *Scalar) One() *Scalar {
+	s.Scalar.One()
+	return s
+}
+
 // Random sets the current scalar to a new random scalar and returns it.
 func (s *Scalar) Random() *Scalar {
 	s.Scalar.Random()
@@ -31,34 +41,40 @@ func (s *Scalar) Random() *Scalar {
 // Add returns the sum of the scalars, and does not change the receiver.
 func (s *Scalar) Add(scalar *Scalar) *Scalar {
 	if scalar == nil {
-		return &Scalar{s.Scalar.Copy()}
+		return s
 	}
 
-	return &Scalar{s.Scalar.Add(scalar.Scalar)}
+	s.Scalar.Add(scalar.Scalar)
+
+	return s
 }
 
-// Sub returns the difference between the scalars, and does not change the receiver.
-func (s *Scalar) Sub(scalar *Scalar) *Scalar {
+// Subtract returns the difference between the scalars, and does not change the receiver.
+func (s *Scalar) Subtract(scalar *Scalar) *Scalar {
 	if scalar == nil {
-		return &Scalar{s.Scalar.Copy()}
+		return s
 	}
 
-	return &Scalar{s.Scalar.Subtract(scalar.Scalar)}
+	s.Scalar.Subtract(scalar.Scalar)
+
+	return s
 }
 
 // Mult returns the multiplication of the scalars, and does not change the receiver.
 func (s *Scalar) Mult(scalar *Scalar) *Scalar {
 	if scalar == nil {
-		s2 := Scalar{}
-		return s2.Zero()
+		return s.Zero()
 	}
 
-	return &Scalar{s.Scalar.Multiply(scalar.Scalar)}
+	s.Scalar.Multiply(scalar.Scalar)
+
+	return s
 }
 
 // Invert returns the scalar's modular inverse ( 1 / scalar ), and does not change the receiver.
 func (s *Scalar) Invert() *Scalar {
-	return &Scalar{s.Scalar.Invert()}
+	s.Scalar.Invert()
+	return s
 }
 
 func (s *Scalar) Equal(scalar *Scalar) int {
@@ -79,22 +95,32 @@ func (s *Scalar) Copy() *Scalar {
 	return &Scalar{s.Scalar.Copy()}
 }
 
-// Decode decodes the input an sets the current scalar to its value, and returns it.
-func (s *Scalar) Decode(in []byte) (*Scalar, error) {
-	q, err := s.Scalar.Decode(in)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Scalar{q}, nil
-}
-
-// Bytes returns the byte encoding of the element.
-func (s *Scalar) Bytes() []byte {
+// Encode returns the byte encoding of the element.
+func (s *Scalar) Encode() []byte {
 	return s.Scalar.Encode()
 }
 
-func (s *Scalar) Zero() *Scalar {
-	s.Scalar.Zero()
-	return s
+// Decode decodes the input and sets the current scalar to its value, and returns it.
+func (s *Scalar) Decode(in []byte) error {
+	return s.Scalar.Decode(in)
+}
+
+// MarshalBinary implements the encoding.BinaryMarshaler interface.
+func (s *Scalar) MarshalBinary() ([]byte, error) {
+	return s.Scalar.MarshalBinary()
+}
+
+// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+func (s *Scalar) UnmarshalBinary(data []byte) error {
+	return s.Scalar.UnmarshalBinary(data)
+}
+
+// MarshalText implements the encoding.TextMarshaler interface.
+func (s *Scalar) MarshalText() (text []byte, err error) {
+	return s.Scalar.MarshalText()
+}
+
+// UnmarshalText implements the encoding.TextUnmarshaler interface.
+func (s *Scalar) UnmarshalText(text []byte) error {
+	return s.Scalar.UnmarshalText(text)
 }

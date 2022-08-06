@@ -17,8 +17,11 @@ type Group interface {
 	// NewElement returns the identity point (point at infinity).
 	NewElement() Element
 
-	// ElementLength returns the byte size of an encoded element.
-	ElementLength() uint
+	// Base returns the group's base point a.k.a. canonical generator.
+	Base() Element
+
+	// HashToScalar allows arbitrary input to be safely mapped to the field.
+	HashToScalar(input, dst []byte) Scalar
 
 	// HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
 	HashToGroup(input, dst []byte) Element
@@ -26,18 +29,12 @@ type Group interface {
 	// EncodeToGroup allows arbitrary input to be mapped non-uniformly to points in the Group.
 	EncodeToGroup(input, dst []byte) Element
 
-	// HashToScalar allows arbitrary input to be safely mapped to the field.
-	HashToScalar(input, dst []byte) Scalar
-
-	// Base returns the group's base point a.k.a. canonical generator.
-	Base() Element
-
-	// MultBytes allows []byte encodings of a scalar and an element of the Group to be multiplied.
-	MultBytes(scalar, element []byte) (Element, error)
-
-	// Order returns the order of the group (or the canonical sub-group).
-	// Order() uint64
-
 	// Ciphersuite returns the hash-to-curve ciphersuite identifier.
 	Ciphersuite() string
+
+	// ScalarLength returns the byte size of an encoded scalar.
+	ScalarLength() uint
+
+	// ElementLength returns the byte size of an encoded element.
+	ElementLength() uint
 }

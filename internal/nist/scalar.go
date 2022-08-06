@@ -9,6 +9,7 @@
 package nist
 
 import (
+	"encoding/base64"
 	"errors"
 	"math/big"
 
@@ -44,6 +45,16 @@ func (s *Scalar) assert(scalar internal.Scalar) *Scalar {
 	}
 
 	return sc
+}
+
+func (s *Scalar) Zero() internal.Scalar {
+	s.s = s.field.Zero()
+	return s
+}
+
+func (s *Scalar) One() internal.Scalar {
+	s.s = s.field.One()
+	return s
 }
 
 // Random sets the current scalar to a new random scalar and returns it.
@@ -142,28 +153,7 @@ func (s *Scalar) Copy() internal.Scalar {
 	}
 }
 
-// Decode decodes the input an sets the current scalar to its value, and returns it.
-func (s *Scalar) Decode(in []byte) (internal.Scalar, error) {
-	if len(in) == 0 {
-		return nil, internal.ErrParamNilScalar
-	}
-
-	// warning - SetBytes interprets the input as a non-signed integer, so this will always be negative
-	e := new(big.Int).SetBytes(in)
-	if e.Sign() < 0 {
-		return nil, errParamNegScalar
-	}
-
-	if s.field.Order().Cmp(e) <= 0 {
-		return nil, errParamScalarTooBig
-	}
-
-	s.s = s.field.Element(e)
-
-	return s, nil
-}
-
-// Bytes returns the byte encoding of the element.
+// Encode returns the compressed byte encoding of the element.
 func (s *Scalar) Encode() []byte {
 	byteLen := (s.field.BitLen() + 7) / 8
 	scalar := make([]byte, byteLen)
@@ -171,9 +161,25 @@ func (s *Scalar) Encode() []byte {
 	return s.s.FillBytes(scalar)
 }
 
-func (s *Scalar) Zero() internal.Scalar {
-	s.s = s.field.Zero()
-	return s
+// Decode decodes the input an sets the current scalar to its value, and returns it.
+func (s *Scalar) Decode(in []byte) error {
+	if len(in) == 0 {
+		return internal.ErrParamNilScalar
+	}
+
+	// warning - SetBytes interprets the input as a non-signed integer, so this will always be negative
+	e := new(big.Int).SetBytes(in)
+	if e.Sign() < 0 {
+		return errParamNegScalar
+	}
+
+	if s.field.Order().Cmp(e) <= 0 {
+		return errParamScalarTooBig
+	}
+
+	s.s = s.field.Element(e)
+
+	return nil
 }
 
 // MarshalBinary returns the compressed byte encoding of the element.
@@ -183,6 +189,21 @@ func (s *Scalar) MarshalBinary() ([]byte, error) {
 
 // UnmarshalBinary sets e to the decoding of the byte encoded element.
 func (s *Scalar) UnmarshalBinary(data []byte) error {
-	_, err := s.Decode(data)
+	return s.Decode(data)
+}
+
+// MarshalText implements the encoding.MarshalText interface.
+func (s *Scalar) MarshalText() (text []byte, err error) {
+	b := s.Encode()
+	return []byte(base64.StdEncoding.EncodeToString(b)), nil
+}
+
+// UnmarshalText implements the encoding.UnmarshalText interface.
+func (s *Scalar) UnmarshalText(text []byte) error {
+	sb, err := base64.StdEncoding.DecodeString(string(text))
+	if err == nil {
+		return s.Decode(sb)
+	}
+
 	return err
 }

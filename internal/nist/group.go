@@ -76,9 +76,12 @@ func (g Group[P]) NewElement() internal.Element {
 	}
 }
 
-// ElementLength returns the byte size of an encoded element.
-func (g Group[P]) ElementLength() uint {
-	return pointLen(g.curve.field.BitLen())
+// Base returns the group's base point a.k.a. canonical generator.
+func (g Group[P]) Base() internal.Element {
+	b := g.curve.NewPoint()
+	b.SetGenerator()
+
+	return g.newPoint(b)
 }
 
 func (g Group[P]) newPoint(p P) *Element[P] {
@@ -88,21 +91,6 @@ func (g Group[P]) newPoint(p P) *Element[P] {
 	}
 }
 
-// Identity returns the group's identity element.
-func (g Group[P]) Identity() internal.Element {
-	return g.NewElement()
-}
-
-// HashToGroup allows arbitrary input to be safely mapped to the curve of the group.
-func (g Group[P]) HashToGroup(input, dst []byte) internal.Element {
-	return g.newPoint(g.curve.hashXMD(input, dst))
-}
-
-// EncodeToGroup allows arbitrary input to be mapped non-uniformly to points in the Group.
-func (g Group[P]) EncodeToGroup(input, dst []byte) internal.Element {
-	return g.newPoint(g.curve.encodeXMD(input, dst))
-}
-
 // HashToScalar allows arbitrary input to be safely mapped to the field.
 func (g Group[P]) HashToScalar(input, dst []byte) internal.Scalar {
 	s := hash2curve.HashToFieldXMD(g.curve.hash, input, dst, 1, 1, g.curve.secLength, g.scalarField.prime)[0]
@@ -110,7 +98,7 @@ func (g Group[P]) HashToScalar(input, dst []byte) internal.Scalar {
 	// If necessary, build a buffer of right size, so it gets correctly interpreted.
 	b := s.Bytes()
 
-	length := (g.scalarField.BitLen() + 7) / 8
+	length := int(g.ScalarLength())
 	if l := length - len(b); l > 0 {
 		buf := make([]byte, l, length)
 		buf = append(buf, b...)
@@ -123,32 +111,14 @@ func (g Group[P]) HashToScalar(input, dst []byte) internal.Scalar {
 	}
 }
 
-// Base returns the group's base point a.k.a. canonical generator.
-func (g Group[P]) Base() internal.Element {
-	b := g.curve.NewPoint()
-	b.SetGenerator()
-
-	return g.newPoint(b)
+// HashToGroup allows arbitrary input to be safely mapped to the curve of the group.
+func (g Group[P]) HashToGroup(input, dst []byte) internal.Element {
+	return g.newPoint(g.curve.hashXMD(input, dst))
 }
 
-// MultBytes allows []byte encodings of a scalar and an element of the group to be multiplied.
-func (g Group[P]) MultBytes(s, e []byte) (internal.Element, error) {
-	ec := g.curve.NewPoint()
-	if _, err := ec.SetBytes(e); err != nil {
-		return nil, err
-	}
-
-	var err error
-
-	ec, err = ec.ScalarMult(ec, s)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Element[P]{
-		p:   ec,
-		new: g.curve.NewPoint,
-	}, nil
+// EncodeToGroup allows arbitrary input to be mapped non-uniformly to points in the Group.
+func (g Group[P]) EncodeToGroup(input, dst []byte) internal.Element {
+	return g.newPoint(g.curve.encodeXMD(input, dst))
 }
 
 // Ciphersuite returns the hash-to-curve ciphersuite identifier.
@@ -156,8 +126,15 @@ func (g Group[P]) Ciphersuite() string {
 	return g.h2c
 }
 
-func pointLen(bitLen int) uint {
-	byteLen := (bitLen + 7) / 8
+// ScalarLength returns the byte size of an encoded element.
+func (g Group[P]) ScalarLength() uint {
+	byteLen := (g.scalarField.BitLen() + 7) / 8
+	return uint(byteLen)
+}
+
+// ElementLength returns the byte size of an encoded element.
+func (g Group[P]) ElementLength() uint {
+	byteLen := (g.curve.field.BitLen() + 7) / 8
 	return uint(1 + byteLen)
 }
 

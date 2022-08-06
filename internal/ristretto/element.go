@@ -19,7 +19,7 @@ import (
 
 // Element implements the Element interface for the Ristretto255 group element.
 type Element struct {
-	element *ristretto255.Element
+	element ristretto255.Element
 }
 
 func checkElement(element internal.Element) *Element {
@@ -45,6 +45,60 @@ func (e *Element) Identity() internal.Element {
 	return e
 }
 
+// Add returns the sum of the Elements, and does not change the receiver.
+func (e *Element) Add(element internal.Element) internal.Element {
+	ec := checkElement(element)
+	e.element.Add(&e.element, &ec.element)
+
+	return e
+}
+
+func (e *Element) Double() internal.Element {
+	e.element.Add(&e.element, &e.element)
+	return e
+}
+
+func (e *Element) Negate() internal.Element {
+	e.element.Negate(&e.element)
+	return e
+}
+
+// Subtract subtracts the argument from the receiver, sets the receiver to the result and returns it.
+func (e *Element) Subtract(element internal.Element) internal.Element {
+	ec := checkElement(element)
+	e.element.Subtract(&e.element, &ec.element)
+
+	return e
+}
+
+// Multiply returns the scalar multiplication of the receiver element with the given scalar.
+func (e *Element) Multiply(scalar internal.Scalar) internal.Element {
+	if scalar == nil {
+		e.element = *ristretto255.NewElement()
+		return e
+	}
+
+	sc, ok := scalar.(*Scalar)
+	if !ok {
+		panic(internal.ErrCastElement)
+	}
+
+	e.element.ScalarMult(&sc.scalar, &e.element)
+
+	return e
+}
+
+func (e *Element) Equal(element internal.Element) int {
+	ec := checkElement(element)
+	return e.element.Equal(&ec.element)
+}
+
+// IsIdentity returns whether the element is the group's identity element.
+func (e *Element) IsIdentity() bool {
+	id := ristretto255.NewElement().Zero()
+	return e.element.Equal(id) == 1
+}
+
 func (e *Element) set(element *Element) *Element {
 	*e = *element
 	return e
@@ -64,60 +118,6 @@ func (e *Element) Set(element internal.Element) internal.Element {
 	return e.set(ec)
 }
 
-// Add returns the sum of the Elements, and does not change the receiver.
-func (e *Element) Add(element internal.Element) internal.Element {
-	ec := checkElement(element)
-	e.element.Add(e.element, ec.element)
-
-	return e
-}
-
-func (e *Element) Double() internal.Element {
-	e.element.Add(e.element, e.element)
-	return e
-}
-
-func (e *Element) Negate() internal.Element {
-	e.element.Negate(e.element)
-	return e
-}
-
-// Subtract subtracts the argument from the receiver, sets the receiver to the result and returns it.
-func (e *Element) Subtract(element internal.Element) internal.Element {
-	ec := checkElement(element)
-	e.element.Subtract(e.element, ec.element)
-
-	return e
-}
-
-// Multiply returns the scalar multiplication of the receiver element with the given scalar.
-func (e *Element) Multiply(scalar internal.Scalar) internal.Element {
-	if scalar == nil {
-		e.element = ristretto255.NewElement()
-		return e
-	}
-
-	sc, ok := scalar.(*Scalar)
-	if !ok {
-		panic(internal.ErrCastElement)
-	}
-
-	e.element.ScalarMult(sc.scalar, e.element)
-
-	return e
-}
-
-func (e *Element) Equal(element internal.Element) int {
-	ec := checkElement(element)
-	return e.element.Equal(ec.element)
-}
-
-// IsIdentity returns whether the element is the group's identity element.
-func (e *Element) IsIdentity() bool {
-	id := ristretto255.NewElement().Zero()
-	return e.element.Equal(id) == 1
-}
-
 // Copy returns a copy of the element.
 func (e *Element) Copy() internal.Element {
 	n := ristretto255.NewElement()
@@ -125,24 +125,24 @@ func (e *Element) Copy() internal.Element {
 		panic(err)
 	}
 
-	return &Element{element: n}
+	return &Element{element: *n}
 }
 
 // Decode decodes the input an sets the current element to its value, and returns it.
-func (e *Element) Decode(in []byte) (internal.Element, error) {
+func (e *Element) Decode(in []byte) error {
 	el, err := decodeElement(in)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// superfluous identity check
 	if el.Equal(ristretto255.NewElement().Zero()) == 1 {
-		return nil, internal.ErrIdentity
+		return internal.ErrIdentity
 	}
 
-	e.element = el
+	e.element = *el
 
-	return e, nil
+	return nil
 }
 
 // Encode returns the compressed byte encoding of the element.
@@ -170,6 +170,15 @@ func (e *Element) MarshalBinary() ([]byte, error) {
 
 // UnmarshalBinary sets e to the decoding of the byte encoded element.
 func (e *Element) UnmarshalBinary(data []byte) error {
-	_, err := e.Decode(data)
-	return err
+	return e.Decode(data)
+}
+
+// MarshalText implements the encoding.MarshalText interface.
+func (e *Element) MarshalText() (text []byte, err error) {
+	return e.element.MarshalText()
+}
+
+// UnmarshalText implements the encoding.UnmarshalText interface.
+func (e *Element) UnmarshalText(text []byte) error {
+	return e.element.UnmarshalText(text)
 }

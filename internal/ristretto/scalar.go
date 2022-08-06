@@ -10,6 +10,8 @@
 package ristretto
 
 import (
+	"encoding/base64"
+
 	"github.com/gtank/ristretto255"
 
 	"github.com/bytemare/crypto/internal"
@@ -17,9 +19,21 @@ import (
 
 const canonicalEncodingLength = 32
 
+var scOne Scalar
+
+func init() {
+	scOne = Scalar{*ristretto255.NewScalar()}
+	if err := scOne.Decode([]byte{
+		1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	}); err != nil {
+		panic(err)
+	}
+}
+
 // Scalar implements the Scalar interface for Ristretto255 group scalars.
 type Scalar struct {
-	scalar *ristretto255.Scalar
+	scalar ristretto255.Scalar
 }
 
 func assert(scalar internal.Scalar) *Scalar {
@@ -29,6 +43,16 @@ func assert(scalar internal.Scalar) *Scalar {
 	}
 
 	return sc
+}
+
+func (s *Scalar) Zero() internal.Scalar {
+	s.scalar.Zero()
+	return s
+}
+
+func (s *Scalar) One() internal.Scalar {
+	s.set(&scOne)
+	return s
 }
 
 // Random sets the current scalar to a new random scalar and returns it.
@@ -50,8 +74,9 @@ func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := assert(scalar)
+	s.scalar.Add(&s.scalar, &sc.scalar)
 
-	return &Scalar{scalar: ristretto255.NewScalar().Add(s.scalar, sc.scalar)}
+	return s
 }
 
 // Subtract returns the difference between the scalars, and does not change the receiver.
@@ -61,8 +86,9 @@ func (s *Scalar) Subtract(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := assert(scalar)
+	s.scalar.Subtract(&s.scalar, &sc.scalar)
 
-	return &Scalar{scalar: ristretto255.NewScalar().Subtract(s.scalar, sc.scalar)}
+	return s
 }
 
 // Multiply returns the multiplication of the scalars, and does not change the receiver.
@@ -72,19 +98,21 @@ func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := assert(scalar)
+	s.scalar.Multiply(&s.scalar, &sc.scalar)
 
-	return &Scalar{scalar: ristretto255.NewScalar().Multiply(s.scalar, sc.scalar)}
+	return s
 }
 
 // Invert returns the scalar's modular inverse ( 1 / scalar ).
 func (s *Scalar) Invert() internal.Scalar {
-	return &Scalar{ristretto255.NewScalar().Invert(s.scalar)}
+	s.scalar.Invert(&s.scalar)
+	return s
 }
 
 func (s *Scalar) Equal(scalar internal.Scalar) int {
 	sc := assert(scalar)
 
-	return s.scalar.Equal(sc.scalar)
+	return s.scalar.Equal(&sc.scalar)
 }
 
 // IsZero returns whether the scalar is 0.
@@ -110,24 +138,24 @@ func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 
 // Copy returns a copy of the Scalar.
 func (s *Scalar) Copy() internal.Scalar {
-	return &Scalar{ristretto255.NewScalar().Add(ristretto255.NewScalar(), s.scalar)}
+	return &Scalar{*ristretto255.NewScalar().Add(ristretto255.NewScalar(), &s.scalar)}
+}
+
+// Encode returns the byte encoding of the scalar.
+func (s *Scalar) Encode() []byte {
+	return s.scalar.Encode(nil)
 }
 
 // Decode decodes the input an sets the current scalar to its value, and returns it.
-func (s *Scalar) Decode(in []byte) (internal.Scalar, error) {
+func (s *Scalar) Decode(in []byte) error {
 	sc, err := decodeScalar(in)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	s.scalar = sc
+	s.scalar = *sc
 
-	return s, nil
-}
-
-// Bytes returns the byte encoding of the scalar.
-func (s *Scalar) Encode() []byte {
-	return s.scalar.Encode(nil)
+	return nil
 }
 
 func decodeScalar(scalar []byte) (*ristretto255.Scalar, error) {
@@ -147,11 +175,6 @@ func decodeScalar(scalar []byte) (*ristretto255.Scalar, error) {
 	return s, nil
 }
 
-func (s *Scalar) Zero() internal.Scalar {
-	s.scalar.Zero()
-	return s
-}
-
 // MarshalBinary returns the compressed byte encoding of the element.
 func (s *Scalar) MarshalBinary() ([]byte, error) {
 	return s.Encode(), nil
@@ -159,6 +182,21 @@ func (s *Scalar) MarshalBinary() ([]byte, error) {
 
 // UnmarshalBinary sets e to the decoding of the byte encoded element.
 func (s *Scalar) UnmarshalBinary(data []byte) error {
-	_, err := s.Decode(data)
+	return s.Decode(data)
+}
+
+// MarshalText implements the encoding.MarshalText interface.
+func (s *Scalar) MarshalText() (text []byte, err error) {
+	b := s.Encode()
+	return []byte(base64.StdEncoding.EncodeToString(b)), nil
+}
+
+// UnmarshalText implements the encoding.UnmarshalText interface.
+func (s *Scalar) UnmarshalText(text []byte) error {
+	sb, err := base64.StdEncoding.DecodeString(string(text))
+	if err == nil {
+		return s.Decode(sb)
+	}
+
 	return err
 }

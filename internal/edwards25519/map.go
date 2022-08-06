@@ -45,6 +45,27 @@ func element(input []byte) *field.Element {
 	return e
 }
 
+func adjust(in []byte) []byte {
+	// If necessary, build a buffer of right size, so it gets correctly interpreted.
+	if l := canonicalEncodingLength - len(in); l > 0 {
+		buf := make([]byte, l, canonicalEncodingLength)
+		buf = append(buf, in...)
+		in = buf
+	}
+
+	// Reverse, because filippo.io/edwards25519 works in little-endian
+	return reverse(in)
+}
+
+func reverse(b []byte) []byte {
+	l := len(b) - 1
+	for i := 0; i < len(b)/2; i++ {
+		b[i], b[l-i] = b[l-i], b[i]
+	}
+
+	return b
+}
+
 func HashToEdwards25519Field(input, dst []byte) *edwards25519.Scalar {
 	sc := hash2curve.HashToFieldXMD(crypto.SHA512, input, dst, 1, 1, 48, groupOrder)
 	b := adjust(sc[0].Bytes())

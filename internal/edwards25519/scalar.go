@@ -10,6 +10,8 @@
 package edwards25519
 
 import (
+	"encoding/base64"
+
 	"filippo.io/edwards25519"
 
 	"github.com/bytemare/crypto/internal"
@@ -20,10 +22,15 @@ const (
 	canonicalEncodingLength = 32
 )
 
+var scOne, _ = edwards25519.NewScalar().SetCanonicalBytes([]byte{
+	1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+})
+
 // Scalar represents an Edwards25519 scalar.
 // It wraps an Edwards25519 implementation to leverage its optimized operations.
 type Scalar struct {
-	scalar *edwards25519.Scalar
+	scalar edwards25519.Scalar
 }
 
 func assert(scalar internal.Scalar) *Scalar {
@@ -33,6 +40,16 @@ func assert(scalar internal.Scalar) *Scalar {
 	}
 
 	return sc
+}
+
+func (s *Scalar) Zero() internal.Scalar {
+	s.scalar.Set(edwards25519.NewScalar())
+	return s
+}
+
+func (s *Scalar) One() internal.Scalar {
+	s.scalar.Set(scOne)
+	return s
 }
 
 // Random sets the current scalar to a new random scalar and returns it.
@@ -56,7 +73,7 @@ func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := assert(scalar)
-	s.scalar.Add(s.scalar, sc.scalar)
+	s.scalar.Add(&s.scalar, &sc.scalar)
 
 	return s
 }
@@ -68,7 +85,7 @@ func (s *Scalar) Subtract(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := assert(scalar)
-	s.scalar.Subtract(s.scalar, sc.scalar)
+	s.scalar.Subtract(&s.scalar, &sc.scalar)
 
 	return s
 }
@@ -80,14 +97,14 @@ func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := assert(scalar)
-	s.scalar.Multiply(s.scalar, sc.scalar)
+	s.scalar.Multiply(&s.scalar, &sc.scalar)
 
 	return s
 }
 
 // Invert returns the scalar's modular inverse ( 1 / scalar ), and does not change the receiver.
 func (s *Scalar) Invert() internal.Scalar {
-	s.scalar.Invert(s.scalar)
+	s.scalar.Invert(&s.scalar)
 	return s
 }
 
@@ -98,7 +115,7 @@ func (s *Scalar) Equal(scalar internal.Scalar) int {
 
 	sc := assert(scalar)
 
-	return s.scalar.Equal(sc.scalar)
+	return s.scalar.Equal(&sc.scalar)
 }
 
 // IsZero returns whether the scalar is 0.
@@ -124,7 +141,7 @@ func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 
 // Copy returns a copy of the Scalar.
 func (s *Scalar) Copy() internal.Scalar {
-	return &Scalar{edwards25519.NewScalar().Set(s.scalar)}
+	return &Scalar{*edwards25519.NewScalar().Set(&s.scalar)}
 }
 
 func decodeScalar(scalar []byte) (*edwards25519.Scalar, error) {
@@ -139,26 +156,20 @@ func decodeScalar(scalar []byte) (*edwards25519.Scalar, error) {
 	return edwards25519.NewScalar().SetCanonicalBytes(scalar)
 }
 
-// Decode decodes the input and sets the current scalar to its value, and returns it.
-func (s *Scalar) Decode(in []byte) (internal.Scalar, error) {
-	sc, err := decodeScalar(in)
-	if err != nil {
-		return nil, err
-	}
-
-	s.scalar = sc
-
-	return s, nil
-}
-
-// Bytes returns the byte encoding of the element.
 func (s *Scalar) Encode() []byte {
 	return s.scalar.Bytes()
 }
 
-func (s *Scalar) Zero() internal.Scalar {
-	s.scalar.Set(edwards25519.NewScalar())
-	return s
+// Decode decodes the input and sets the current scalar to its value, and returns it.
+func (s *Scalar) Decode(in []byte) error {
+	sc, err := decodeScalar(in)
+	if err != nil {
+		return err
+	}
+
+	s.scalar = *sc
+
+	return nil
 }
 
 // MarshalBinary returns the compressed byte encoding of the element.
@@ -168,6 +179,21 @@ func (s *Scalar) MarshalBinary() ([]byte, error) {
 
 // UnmarshalBinary sets e to the decoding of the byte encoded element.
 func (s *Scalar) UnmarshalBinary(data []byte) error {
-	_, err := s.Decode(data)
+	return s.Decode(data)
+}
+
+// MarshalText implements the encoding.MarshalText interface.
+func (s *Scalar) MarshalText() (text []byte, err error) {
+	b := s.Encode()
+	return []byte(base64.StdEncoding.EncodeToString(b)), nil
+}
+
+// UnmarshalText implements the encoding.UnmarshalText interface.
+func (s *Scalar) UnmarshalText(text []byte) error {
+	sb, err := base64.StdEncoding.DecodeString(string(text))
+	if err == nil {
+		return s.Decode(sb)
+	}
+
 	return err
 }
