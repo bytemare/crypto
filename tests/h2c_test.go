@@ -63,53 +63,12 @@ func vectorToNistBig(x, y string) (*big.Int, *big.Int) {
 	return xb, yb
 }
 
-func decodeEd25519(x, y string) []byte {
-	xb, err := hex.DecodeString(x)
-	if err != nil {
-		panic(err)
-	}
-
-	yb, err := hex.DecodeString(y)
-	if err != nil {
-		panic(err)
-	}
-
-	yb = reverse(yb)
-	isXNeg := int(xb[31] & 1)
-	yb[31] |= byte(isXNeg << 7)
-
-	q := crypto.Edwards25519Sha512.NewElement()
-
-	if err := q.Decode(yb); err != nil {
-		panic(err)
-	}
-
-	return q.Encode()
-}
-
-func reverse(b []byte) []byte {
-	l := len(b) - 1
-	for i := 0; i < len(b)/2; i++ {
-		b[i], b[l-i] = b[l-i], b[i]
-	}
-
-	return b
-}
-
 func (v *vector) run(t *testing.T) {
 	var expected string
-	switch {
-	case v.group == crypto.P256Sha256 || v.group == crypto.P384Sha384 || v.group == crypto.P521Sha512:
+	if v.group == crypto.P256Sha256 || v.group == crypto.P384Sha384 || v.group == crypto.P521Sha512 {
 		e := ecFromGroup(v.group)
 		x, y := vectorToNistBig(v.P.X, v.P.Y)
 		expected = hex.EncodeToString(elliptic.MarshalCompressed(e, x, y))
-	// case v.group == Curve25519Sha512:
-	//	exp, _ := hex.DecodeString(v.P.X[2:])
-	//	expected = hex.EncodeToString(reverse(exp))
-	case v.group == crypto.Edwards25519Sha512:
-		expected = hex.EncodeToString(decodeEd25519(v.P.X[2:], v.P.Y[2:]))
-	default:
-		return
 	}
 
 	switch v.Ciphersuite[len(v.Ciphersuite)-3:] {

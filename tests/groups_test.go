@@ -13,7 +13,6 @@ import (
 	"testing"
 
 	"github.com/bytemare/crypto"
-	"github.com/bytemare/crypto/internal/edwards25519"
 	"github.com/bytemare/crypto/internal/nist"
 	"github.com/bytemare/crypto/internal/ristretto"
 )
@@ -33,7 +32,6 @@ func testGroups() []*testGroup {
 		{"P256", nist.H2CP256, nist.E2CP256, crypto.P256Sha256, 33, 32},
 		{"P384", nist.H2CP384, nist.E2CP384, crypto.P384Sha384, 49, 48},
 		{"P521", nist.H2CP521, nist.E2CP521, crypto.P521Sha512, 67, 66},
-		{"Edwards25519", edwards25519.H2C, edwards25519.E2C, crypto.Edwards25519Sha512, 32, 32},
 	}
 }
 
@@ -64,7 +62,7 @@ func TestNonAvailability(t *testing.T) {
 		t.Errorf("%v is considered available when it must not", d)
 	}
 
-	oob = crypto.Edwards25519Sha512 + 1
+	oob = crypto.P521Sha512 + 1
 	if oob.Available() {
 		t.Errorf("%v is considered available when it must not", oob)
 	}
@@ -76,9 +74,6 @@ func TestGroup_Base(t *testing.T) {
 		crypto.P256Sha256:         "036b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296",
 		crypto.P384Sha384:         "03aa87ca22be8b05378eb1c71ef320ad746e1d3b628ba79b9859f741e082542a385502f25dbf55296c3a545e3872760ab7",
 		crypto.P521Sha512:         "0200c6858e06b70404e9cd9e3ecb662395b4429c648139053fb521f828af606b4d3dbaa14b5e77efe75928fe1dc127a2ffa8de3348b3c1856a429bf97e7e31c2e5bd66",
-		crypto.Edwards25519Sha512: "5866666666666666666666666666666666666666666666666666666666666666",
-		// Curve448Shake256:   "1a5b7b453d22d76ff77a6750b1c41213210d4346237e02b8edf6f38dc25df760d04555f5345daecbce6f32586eab986cf6b1f595125d237d80",
-		// Edwards448Shake256: "14fa30f25b790898adc8d74e2c13bdfdc4397ce61cffd33ad7c2a0051e9c78874098a36c7373ea4b62c7c9563720768824bcb66e71463f6900",
 	}
 
 	testAllGroups(t, func(t2 *testing.T, group *testGroup) {
@@ -96,7 +91,6 @@ func TestDST(t *testing.T) {
 		crypto.P256Sha256:         "app-V01-CS03-P256_XMD:SHA-256_SSWU_RO_",
 		crypto.P384Sha384:         "app-V01-CS04-P384_XMD:SHA-384_SSWU_RO_",
 		crypto.P521Sha512:         "app-V01-CS05-P521_XMD:SHA-512_SSWU_RO_",
-		crypto.Edwards25519Sha512: "app-V01-CS06-edwards25519_XMD:SHA-512_ELL2_RO_",
 	}
 
 	testAllGroups(t, func(t2 *testing.T, group *testGroup) {
@@ -114,7 +108,6 @@ func TestGroup_String(t *testing.T) {
 		crypto.P256Sha256:         "P256_XMD:SHA-256_SSWU_RO_",
 		crypto.P384Sha384:         "P384_XMD:SHA-384_SSWU_RO_",
 		crypto.P521Sha512:         "P521_XMD:SHA-512_SSWU_RO_",
-		crypto.Edwards25519Sha512: "edwards25519_XMD:SHA-512_ELL2_RO_",
 	}
 
 	testAllGroups(t, func(t2 *testing.T, group *testGroup) {
@@ -143,9 +136,6 @@ func TestGroup_NewElement(t *testing.T) {
 		crypto.P256Sha256:         "00",
 		crypto.P384Sha384:         "00",
 		crypto.P521Sha512:         "00",
-		crypto.Edwards25519Sha512: "0100000000000000000000000000000000000000000000000000000000000000",
-		// Curve448Shake256:   "010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-		// Edwards448Shake256: "010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
 	}
 
 	testAllGroups(t, func(t2 *testing.T, group *testGroup) {

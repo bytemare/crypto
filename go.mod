@@ -3,7 +3,6 @@ module github.com/bytemare/crypto
 go 1.18
 
 require (
-	filippo.io/edwards25519 v1.0.0-rc.1
 	filippo.io/nistec v0.0.0-20220513155737-c4b6d02e738c
 	github.com/bytemare/hash2curve v0.1.2
 	github.com/gtank/ristretto255 v0.1.2
