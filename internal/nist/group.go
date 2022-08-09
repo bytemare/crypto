@@ -105,10 +105,10 @@ func (g Group[P]) HashToScalar(input, dst []byte) internal.Scalar {
 		b = buf
 	}
 
-	return &Scalar{
-		s:     new(big.Int).SetBytes(b),
-		field: g.curve.field,
-	}
+	res := &Scalar{field: &g.scalarField}
+	res.s.SetBytes(b)
+
+	return res
 }
 
 // HashToGroup allows arbitrary input to be safely mapped to the curve of the group.

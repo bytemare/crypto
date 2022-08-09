@@ -23,15 +23,15 @@ var (
 
 // Scalar implements the Scalar interface for group scalars.
 type Scalar struct {
-	s     *big.Int
+	s     big.Int
 	field *field
 }
 
 func newScalar(field *field) *Scalar {
-	return &Scalar{
-		s:     field.Zero(),
-		field: field,
-	}
+	s := &Scalar{field: field}
+	s.s.Set(zero)
+
+	return s
 }
 
 func (s *Scalar) assert(scalar internal.Scalar) *Scalar {
@@ -48,19 +48,19 @@ func (s *Scalar) assert(scalar internal.Scalar) *Scalar {
 }
 
 func (s *Scalar) Zero() internal.Scalar {
-	s.s = s.field.Zero()
+	s.s.Set(zero)
 	return s
 }
 
 func (s *Scalar) One() internal.Scalar {
-	s.s = s.field.One()
+	s.s.Set(one)
 	return s
 }
 
 // Random sets the current scalar to a new random scalar and returns it.
 func (s *Scalar) Random() internal.Scalar {
 	for {
-		s.s = s.field.Random()
+		s.field.Random(&s.s)
 
 		if !s.IsZero() {
 			return s
@@ -75,7 +75,7 @@ func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := s.assert(scalar)
-	s.s.Add(s.s, sc.s)
+	s.field.Add(&s.s, &s.s, &sc.s)
 
 	return s
 }
@@ -87,7 +87,7 @@ func (s *Scalar) Subtract(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := s.assert(scalar)
-	s.s.Sub(s.s, sc.s)
+	s.field.sub(&s.s, &s.s, &sc.s)
 
 	return s
 }
@@ -99,14 +99,14 @@ func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := s.assert(scalar)
-	s.s.Mul(s.s, sc.s)
+	s.field.Mul(&s.s, &s.s, &sc.s)
 
 	return s
 }
 
 // Invert returns the scalar's modular inverse ( 1 / scalar ), and does not change the receiver.
 func (s *Scalar) Invert() internal.Scalar {
-	s.s = s.field.Inv(s.s)
+	s.field.Inv(&s.s, &s.s)
 	return s
 }
 
@@ -116,7 +116,8 @@ func (s *Scalar) Equal(scalar internal.Scalar) int {
 	}
 
 	sc := s.assert(scalar)
-	switch sc.s.Cmp(sc.s) {
+
+	switch s.s.Cmp(&sc.s) {
 	case 0:
 		return 1
 	default:
@@ -126,7 +127,7 @@ func (s *Scalar) Equal(scalar internal.Scalar) int {
 
 // IsZero returns whether the scalar is 0.
 func (s *Scalar) IsZero() bool {
-	return s.field.AreEqual(s.s, s.field.Zero())
+	return s.field.AreEqual(&s.s, zero)
 }
 
 func (s *Scalar) set(scalar *Scalar) *Scalar {
@@ -147,10 +148,10 @@ func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 
 // Copy returns a copy of the Scalar.
 func (s *Scalar) Copy() internal.Scalar {
-	return &Scalar{
-		s:     new(big.Int).Set(s.s),
-		field: s.field,
-	}
+	cpy := &Scalar{field: s.field}
+	cpy.s.Set(&s.s)
+
+	return s
 }
 
 // Encode returns the compressed byte encoding of the element.
@@ -167,7 +168,7 @@ func (s *Scalar) Decode(in []byte) error {
 		return internal.ErrParamNilScalar
 	}
 
-	// warning - SetBytes interprets the input as a non-signed integer, so this will always be negative
+	// warning - SetBytes interprets the input as a non-signed integer, so this will always be false
 	e := new(big.Int).SetBytes(in)
 	if e.Sign() < 0 {
 		return errParamNegScalar
@@ -177,7 +178,7 @@ func (s *Scalar) Decode(in []byte) error {
 		return errParamScalarTooBig
 	}
 
-	s.s = s.field.Element(e)
+	s.s.Set(e)
 
 	return nil
 }

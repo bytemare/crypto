@@ -41,35 +41,32 @@ func NewField(prime *big.Int) *field {
 	}
 }
 
-// Zero returns the Zero big.Int of the finite field.
-func (f field) Zero() *big.Int {
-	return new(big.Int).Set(zero)
+// Zero sets res to the Zero big.Int of the finite field.
+func (f field) Zero(res *big.Int) *big.Int {
+	return res.Set(zero)
 }
 
-// One returns the One big.Int of the finite field.
-func (f field) One() *big.Int {
-	return new(big.Int).Set(one)
+// One sets res to the One big.Int of the finite field.
+func (f field) One(res *big.Int) *big.Int {
+	return res.Set(one)
 }
 
-// Element returns an big.Int of the field based on the input integer.
-func (f field) Element(i *big.Int) *big.Int {
-	return new(big.Int).Set(i)
-}
-
-// Random returns a random field big.Int.
-func (f field) Random() *big.Int {
+// Random sets res to a random field big.Int.
+func (f field) Random(res *big.Int) *big.Int {
 	e, err := rand.Int(rand.Reader, f.prime)
 	if err != nil {
 		// We can as well not panic and try again in a loop
 		panic(fmt.Errorf("unexpected error in generating random bytes : %w", err))
 	}
 
-	return e
+	res.Set(e)
+
+	return res
 }
 
 // Order returns the size of the field.
 func (f field) Order() *big.Int {
-	return new(big.Int).Set(f.prime)
+	return f.prime
 }
 
 func (f field) Ext() uint {
@@ -83,7 +80,7 @@ func (f field) BitLen() int {
 
 // AreEqual returns whether both elements are equal.
 func (f field) AreEqual(f1, f2 *big.Int) bool {
-	return f.IsZero(f.sub(f1, f2))
+	return f.IsZero(f.sub(&big.Int{}, f1, f2))
 }
 
 // IsZero returns whether the big.Int is equivalent to Zero.
@@ -93,7 +90,7 @@ func (f field) IsZero(e *big.Int) bool {
 
 // IsSquare returns whether the big.Int is a quadratic square.
 func (f field) IsSquare(e *big.Int) bool {
-	return f.AreEqual(f.Exp(e, f.pMinus1div2), f.One())
+	return f.AreEqual(f.Exp(&big.Int{}, e, f.pMinus1div2), f.One(&big.Int{}))
 }
 
 func (f field) IsEqual(f2 *field) bool {
@@ -104,57 +101,56 @@ func (f field) mod(x *big.Int) *big.Int {
 	return x.Mod(x, f.prime)
 }
 
-func (f field) neg(x *big.Int) *big.Int {
-	return f.mod(new(big.Int).Neg(x))
+func (f field) neg(res, x *big.Int) *big.Int {
+	return f.mod(res.Neg(x))
 }
 
-func (f field) Add(x, y *big.Int) *big.Int {
-	return f.mod(new(big.Int).Add(x, y))
+func (f field) Add(res, x, y *big.Int) *big.Int {
+	return f.mod(res.Add(x, y))
 }
 
-func (f field) sub(x, y *big.Int) *big.Int {
-	return f.mod(new(big.Int).Sub(x, y))
+func (f field) sub(res, x, y *big.Int) *big.Int {
+	return f.mod(res.Sub(x, y))
 }
 
 // Returns x*y.
-func (f field) Mul(x, y *big.Int) *big.Int {
-	return f.mod(new(big.Int).Mul(x, y))
+func (f field) Mul(res, x, y *big.Int) *big.Int {
+	return f.mod(res.Mul(x, y))
 }
 
 // Returns x^2.
-func (f field) Square(x *big.Int) *big.Int {
-	return f.mod(new(big.Int).Mul(x, x))
+func (f field) Square(res, x *big.Int) *big.Int {
+	return f.mod(res.Mul(x, x))
 }
 
 // Returns 1/x.
-func (f field) Inv(x *big.Int) *big.Int {
-	return f.Exp(x, f.pMinus2)
+func (f field) Inv(res, x *big.Int) *big.Int {
+	return f.Exp(res, x, f.pMinus2)
 }
 
 // Returns x^n.
-func (f field) Exp(x, n *big.Int) *big.Int {
-	return new(big.Int).Exp(x, n, f.prime)
+func (f field) Exp(res, x, n *big.Int) *big.Int {
+	return res.Exp(x, n, f.prime)
 }
 
-func (f field) CMov(x, y *big.Int, b bool) *big.Int {
-	z := new(big.Int)
+func (f field) CMov(res, x, y *big.Int, b bool) *big.Int {
 	if b {
-		z.Set(y)
+		res.Set(y)
 	} else {
-		z.Set(x)
+		res.Set(x)
 	}
 
-	return z
+	return res
 }
 
 func (f field) Sgn0(x *big.Int) int {
 	return int(x.Bit(0))
 }
 
-func sqrt3mod4(f *field, e *big.Int) *big.Int {
-	return f.Exp(e, f.exp)
+func (f field) sqrt3mod4(res, e *big.Int) *big.Int {
+	return f.Exp(res, e, f.exp)
 }
 
-func (f field) Sqrt(e *big.Int) *big.Int {
-	return sqrt3mod4(&f, e)
+func (f field) Sqrt(res, e *big.Int) *big.Int {
+	return f.sqrt3mod4(res, e)
 }

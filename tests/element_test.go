@@ -41,6 +41,7 @@ func TestPoint_Decode(t *testing.T) {
 
 func TestPoint_Arithmetic(t *testing.T) {
 	testAllGroups(t, func(t2 *testing.T, group *testGroup) {
+		elementTestEqual(t, group.id)
 		elementTestAdd(t, group.id)
 		elementTestDouble(t, group.id)
 		elementTestSubstract(t, group.id)
@@ -49,6 +50,21 @@ func TestPoint_Arithmetic(t *testing.T) {
 		elementTestInversion(t, group.id)
 		elementTestIdentity(t, group.id)
 	})
+}
+
+func elementTestEqual(t *testing.T, g crypto.Group) {
+	base := g.Base()
+	base2 := g.Base()
+
+	if base.Equal(base2) != 1 {
+		t.Fatal("expected equality")
+	}
+
+	random := g.NewElement().Multiply(g.NewScalar().Random())
+	cpy := random.Copy()
+	if random.Equal(cpy) != 1 {
+		t.Fatal("expected equality")
+	}
 }
 
 func elementTestAdd(t *testing.T, g crypto.Group) {
@@ -148,6 +164,12 @@ func elementTestIdentity(t *testing.T, g crypto.Group) {
 		t.Fatal("expected identity")
 	}
 
+	sub1 := g.Base().Double().Negate().Add(g.Base().Double())
+	sub2 := g.Base().Subtract(g.Base())
+	if sub1.Equal(sub2) != 1 {
+		t.Fatal("expected equality")
+	}
+
 	if id.Equal(base.Multiply(nil)) != 1 {
 		t.Fatal("expected identity")
 	}
@@ -157,7 +179,8 @@ func elementTestIdentity(t *testing.T, g crypto.Group) {
 	}
 
 	base = g.Base()
-	base.Add(base.Negate())
+	neg := base.Copy().Negate()
+	base.Add(neg)
 	if id.Equal(base) != 1 {
 		t.Fatal("expected identity")
 	}

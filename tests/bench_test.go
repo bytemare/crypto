@@ -11,6 +11,9 @@ package group_test
 import (
 	"bytes"
 	"testing"
+
+	"github.com/bytemare/crypto"
+	"github.com/bytemare/crypto/internal/nist"
 )
 
 func benchAll(t *testing.B, f func(*testing.B, *testGroup)) {
@@ -31,6 +34,16 @@ func BenchmarkHashToGroup(b *testing.B) {
 			group.id.HashToGroup(msg, dst)
 		}
 	})
+}
+
+func BenchmarkSubtraction(b *testing.B) {
+	group := testGroup{"P256", nist.H2CP256, nist.E2CP256, crypto.P256Sha256, 33, 32}
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		base := group.id.Base()
+		base.Subtract(base)
+	}
 }
 
 func BenchmarkScalarBaseMult(b *testing.B) {

@@ -9,21 +9,29 @@ import (
 	"github.com/bytemare/hash2curve"
 )
 
-// p25519 is the prime 2^255 - 19 for the field.
-// = 0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffed.
-const p25519 = "57896044618658097711785492504343953926634992332820282019728792003956564819949"
+const (
+	// p25519 is the prime 2^255 - 19 for the field.
+	// = 0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffed.
+	p25519 = "57896044618658097711785492504343953926634992332820282019728792003956564819949"
+
+	// orderPrime represents curve25519's subgroup (prime) order
+	// = 2^252 + 27742317777372353535851937790883648493
+	// = 0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed
+	// cofactor h = 8.
+	orderPrime = "7237005577332262213973186563042994240857116359379907606001950938285454250989"
+)
+
+var groupOrder, _ = new(big.Int).SetString(orderPrime, 10)
 
 var (
 	a, _ = fe().SetBytes([]byte{
 		6, 109, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	})
-	minA   = fe().Negate(a)
-	zero   = fe().Zero()
-	one    = fe().One()
-	minOne = fe().Negate(one)
-	two    = fe().Add(one, one)
-	// one, _ = fe().SetBytes([]byte{
-	//	9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
+	minA        = fe().Negate(a)
+	zero        = fe().Zero()
+	one         = fe().One()
+	minOne      = fe().Negate(one)
+	two         = fe().Add(one, one)
 	invsqrtD, _ = fe().SetBytes([]byte{
 		6, 126, 69, 255, 170, 4, 110, 204, 130, 26, 125, 75, 209, 211, 161, 197,
 		126, 79, 252, 3, 220, 8, 123, 210, 187, 6, 160, 96, 244, 237, 38, 15,

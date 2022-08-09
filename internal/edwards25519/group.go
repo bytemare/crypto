@@ -10,8 +10,6 @@
 package edwards25519
 
 import (
-	"math/big"
-
 	"filippo.io/edwards25519"
 
 	"github.com/bytemare/crypto/internal"
@@ -23,15 +21,7 @@ const (
 
 	// E2C represents the encode-to-curve string identifier.
 	E2C = "edwards25519_XMD:SHA-512_ELL2_NU_"
-
-	// orderPrime represents curve25519's subgroup (prime) order
-	// = 2^252 + 27742317777372353535851937790883648493
-	// = 0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed
-	// cofactor h = 8.
-	orderPrime = "7237005577332262213973186563042994240857116359379907606001950938285454250989"
 )
-
-var groupOrder, _ = new(big.Int).SetString(orderPrime, 10)
 
 // Group represents the Edwards25519 group. It exposes a prime-order group API with hash-to-curve operations.
 type Group struct{}

@@ -60,8 +60,8 @@ func (s *Scalar) Subtract(scalar *Scalar) *Scalar {
 	return s
 }
 
-// Mult returns the multiplication of the scalars, and does not change the receiver.
-func (s *Scalar) Mult(scalar *Scalar) *Scalar {
+// Multiply returns the multiplication of the scalars, and does not change the receiver.
+func (s *Scalar) Multiply(scalar *Scalar) *Scalar {
 	if scalar == nil {
 		return s.Zero()
 	}

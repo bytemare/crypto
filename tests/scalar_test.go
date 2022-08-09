@@ -19,6 +19,7 @@ func TestScalar_Arithmetic(t *testing.T) {
 	testAllGroups(t, func(t2 *testing.T, group *testGroup) {
 		scalarTestZero(t, group.id)
 		scalarTestOne(t, group.id)
+		scalarTestEqual(t, group.id)
 		scalarTestRandom(t, group.id)
 		scalarTestAdd(t, group.id)
 		scalarTestSubtract(t, group.id)
@@ -52,7 +53,7 @@ func scalarTestZero(t *testing.T, g crypto.Group) {
 func scalarTestOne(t *testing.T, g crypto.Group) {
 	one := g.NewScalar().One()
 	m := one.Copy()
-	if one.Equal(m.Mult(m)) != 1 {
+	if one.Equal(m.Multiply(m)) != 1 {
 		t.Fatal("expected equality")
 	}
 }
@@ -61,6 +62,26 @@ func scalarTestRandom(t *testing.T, g crypto.Group) {
 	r := g.NewScalar().Random()
 	if r.Equal(g.NewScalar().Zero()) == 1 {
 		t.Fatalf("random scalar is zero: %v", hex.EncodeToString(r.Encode()))
+	}
+}
+
+func scalarTestEqual(t *testing.T, g crypto.Group) {
+	zero := g.NewScalar().Zero()
+	zero2 := g.NewScalar().Zero()
+
+	if zero.Equal(zero2) != 1 {
+		t.Fatal("expected equality")
+	}
+
+	random := g.NewScalar().Random()
+	cpy := random.Copy()
+	if random.Equal(cpy) != 1 {
+		t.Fatal("expected equality")
+	}
+
+	random2 := g.NewScalar().Random()
+	if random.Equal(random2) == 1 {
+		t.Fatal("unexpected equality")
 	}
 }
 
@@ -89,15 +110,17 @@ func scalarTestMultiply(t *testing.T, g crypto.Group) {
 
 func scalarTestInvert(t *testing.T, g crypto.Group) {
 	s := g.NewScalar().Random()
-	sqr := s.Copy().Mult(s)
+	sqr := s.Copy().Multiply(s)
 
-	i := s.Invert().Mult(sqr)
+	i := s.Copy().Invert().Multiply(sqr)
 	if i.Equal(s) != 1 {
 		t.Fatal("expected equality")
 	}
 
-	cpy := sqr.Copy()
-	if s.One().Equal(cpy.Mult(sqr.Invert())) != 1 {
+	s = g.NewScalar().Random()
+	square := s.Copy().Multiply(s)
+	inv := square.Copy().Invert()
+	if s.One().Equal(square.Multiply(inv)) != 1 {
 		t.Fatal("expected equality")
 	}
 }
