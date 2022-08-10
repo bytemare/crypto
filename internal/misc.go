@@ -36,11 +36,11 @@ var (
 
 // RandomBytes returns random bytes of length len (wrapper for crypto/rand).
 func RandomBytes(length int) []byte {
-	r := make([]byte, length)
-	if _, err := cryptorand.Read(r); err != nil {
+	random := make([]byte, length)
+	if _, err := cryptorand.Read(random); err != nil {
 		// We can as well not panic and try again in a loop
 		panic(fmt.Errorf("unexpected error in generating random bytes : %w", err))
 	}
 
-	return r
+	return random
 }

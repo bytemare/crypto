@@ -35,32 +35,35 @@ func newScalar(field *field) *Scalar {
 }
 
 func (s *Scalar) assert(scalar internal.Scalar) *Scalar {
-	sc, ok := scalar.(*Scalar)
+	_sc, ok := scalar.(*Scalar)
 	if !ok {
 		panic("could not cast to same group scalar : wrong group ?")
 	}
 
-	if !s.field.IsEqual(sc.field) {
+	if !s.field.isEqual(_sc.field) {
 		panic("incompatible fields")
 	}
 
-	return sc
+	return _sc
 }
 
+// Zero sets the scalar to 0, and returns it.
 func (s *Scalar) Zero() internal.Scalar {
 	s.s.Set(zero)
 	return s
 }
 
+// One sets the scalar to 1, and returns it.
 func (s *Scalar) One() internal.Scalar {
 	s.s.Set(one)
 	return s
 }
 
 // Random sets the current scalar to a new random scalar and returns it.
+// The random source is crypto/rand, and this functions is guaranteed to return a non-zero scalar.
 func (s *Scalar) Random() internal.Scalar {
 	for {
-		s.field.Random(&s.s)
+		s.field.random(&s.s)
 
 		if !s.IsZero() {
 			return s
@@ -75,7 +78,7 @@ func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := s.assert(scalar)
-	s.field.Add(&s.s, &s.s, &sc.s)
+	s.field.add(&s.s, &s.s, &sc.s)
 
 	return s
 }
@@ -99,17 +102,18 @@ func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := s.assert(scalar)
-	s.field.Mul(&s.s, &s.s, &sc.s)
+	s.field.mul(&s.s, &s.s, &sc.s)
 
 	return s
 }
 
 // Invert returns the scalar's modular inverse ( 1 / scalar ), and does not change the receiver.
 func (s *Scalar) Invert() internal.Scalar {
-	s.field.Inv(&s.s, &s.s)
+	s.field.inv(&s.s, &s.s)
 	return s
 }
 
+// Equal returns 1 if the scalars are equal, and 0 otherwise.
 func (s *Scalar) Equal(scalar internal.Scalar) int {
 	if scalar == nil {
 		return 0
@@ -127,7 +131,7 @@ func (s *Scalar) Equal(scalar internal.Scalar) int {
 
 // IsZero returns whether the scalar is 0.
 func (s *Scalar) IsZero() bool {
-	return s.field.AreEqual(&s.s, zero)
+	return s.field.areEqual(&s.s, zero)
 }
 
 func (s *Scalar) set(scalar *Scalar) *Scalar {
@@ -154,41 +158,41 @@ func (s *Scalar) Copy() internal.Scalar {
 	return s
 }
 
-// Encode returns the compressed byte encoding of the element.
+// Encode returns the compressed byte encoding of the scalar.
 func (s *Scalar) Encode() []byte {
-	byteLen := (s.field.BitLen() + 7) / 8
+	byteLen := (s.field.bitLen() + 7) / 8
 	scalar := make([]byte, byteLen)
 
 	return s.s.FillBytes(scalar)
 }
 
-// Decode decodes the input an sets the current scalar to its value, and returns it.
-func (s *Scalar) Decode(in []byte) error {
-	if len(in) == 0 {
+// Decode sets the receiver to a decoding of the input data, and returns an error on failure.
+func (s *Scalar) Decode(data []byte) error {
+	if len(data) == 0 {
 		return internal.ErrParamNilScalar
 	}
 
 	// warning - SetBytes interprets the input as a non-signed integer, so this will always be false
-	e := new(big.Int).SetBytes(in)
-	if e.Sign() < 0 {
+	tmp := new(big.Int).SetBytes(data)
+	if tmp.Sign() < 0 {
 		return errParamNegScalar
 	}
 
-	if s.field.Order().Cmp(e) <= 0 {
+	if s.field.order().Cmp(tmp) <= 0 {
 		return errParamScalarTooBig
 	}
 
-	s.s.Set(e)
+	s.s.Set(tmp)
 
 	return nil
 }
 
-// MarshalBinary returns the compressed byte encoding of the element.
+// MarshalBinary returns the compressed byte encoding of the scalar.
 func (s *Scalar) MarshalBinary() ([]byte, error) {
 	return s.Encode(), nil
 }
 
-// UnmarshalBinary sets e to the decoding of the byte encoded element.
+// UnmarshalBinary sets e to the decoding of the byte encoded scalar.
 func (s *Scalar) UnmarshalBinary(data []byte) error {
 	return s.Decode(data)
 }

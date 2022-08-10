@@ -19,20 +19,19 @@ type Element interface {
 	// Identity sets the element to the point at infinity of the Group's underlying curve.
 	Identity() Element
 
-	// Add returns the sum of the Elements, and does not change the receiver.
+	// Add set the receiver to the sum of the input to the receiver, and returns the receiver.
 	Add(Element) Element
 
-	// Double returns the double of the element, and does not change the receiver.
+	// Double set the receiver to its double, and returns it.
 	Double() Element
 
-	// Negate returns the negative of the Element, and does not change the receiver.
+	// Negate set the receiver to its negation, and returns it.
 	Negate() Element
 
-	// Subtract returns the difference between the Elements, and does not change the receiver.
+	// Subtract subtracts the input from the receiver, and returns the receiver.
 	Subtract(Element) Element
 
-	// Multiply returns the scalar multiplication of the receiver with the given Scalar,
-	// and does not change the receiver.
+	// Multiply set the receiver to the scalar multiplication of the receiver with the given Scalar, and returns it.
 	Multiply(Scalar) Element
 
 	// Equal returns 1 if the elements are equivalent, and 0 otherwise.
@@ -44,14 +43,14 @@ type Element interface {
 	// Set sets the receiver to the argument, and returns the receiver.
 	Set(Element) Element
 
-	// Copy returns a copy of the Element.
+	// Copy returns a copy of the receiver.
 	Copy() Element
 
-	// Encode returns the compressed byte encoding of the point.
+	// Encode returns the compressed byte encoding of the element.
 	Encode() []byte
 
-	// Decode decodes the input a sets the receiver to its value, and returns it.
-	Decode(in []byte) error
+	// Decode sets the receiver to a decoding of the input data, and returns an error on failure.
+	Decode(data []byte) error
 
 	// BinaryMarshaler implementation.
 	encoding.BinaryMarshaler

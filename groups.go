@@ -87,7 +87,7 @@ func (g Group) NewScalar() *Scalar {
 	return newScalar(g.get().NewScalar())
 }
 
-// NewElement returns the identity point (point at infinity).
+// NewElement returns the identity element (point at infinity).
 func (g Group) NewElement() *Element {
 	return newPoint(g.get().NewElement())
 }
@@ -95,16 +95,6 @@ func (g Group) NewElement() *Element {
 // Base returns the group's base point a.k.a. canonical generator.
 func (g Group) Base() *Element {
 	return newPoint(g.get().Base())
-}
-
-// ScalarLength returns the byte size of an encoded scalar.
-func (g Group) ScalarLength() uint {
-	return g.get().ScalarLength()
-}
-
-// ElementLength returns the byte size of an encoded element.
-func (g Group) ElementLength() uint {
-	return g.get().ElementLength()
 }
 
 func checkDST(dst []byte) {
@@ -115,45 +105,40 @@ func checkDST(dst []byte) {
 	}
 }
 
-// HashToScalar allows arbitrary input to be safely mapped to the field.
+// HashToScalar returns a safe mapping of the arbitrary input to a Scalar.
 // The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) HashToScalar(input, dst []byte) *Scalar {
 	checkDST(dst)
 	return newScalar(g.get().HashToScalar(input, dst))
 }
 
-// HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
+// HashToGroup returns a safe mapping of the arbitrary input to an Element in the Group.
 // The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) HashToGroup(input, dst []byte) *Element {
 	checkDST(dst)
 	return newPoint(g.get().HashToGroup(input, dst))
 }
 
-// EncodeToGroup allows arbitrary input to be safely mapped to the curve of the Group.
+// EncodeToGroup returns a non-uniform mapping of the arbitrary input to an Element in the Group.
 // The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) EncodeToGroup(input, dst []byte) *Element {
 	checkDST(dst)
 	return newPoint(g.get().EncodeToGroup(input, dst))
 }
 
-// MultBytes allows []byte encodings of a scalar and an element of the Group to be multiplied.
-func (g Group) MultBytes(scalar, element []byte) (*Element, error) {
-	sc := g.NewScalar()
-	if err := sc.Decode(scalar); err != nil {
-		return nil, err
-	}
-
-	el := g.NewElement()
-	if err := el.Decode(element); err != nil {
-		return nil, err
-	}
-
-	return &Element{el.Element.Multiply(sc.Scalar)}, nil
-}
-
 // Ciphersuite returns the hash-to-curve ciphersuite identifier.
 func (g Group) Ciphersuite() string {
 	return g.get().Ciphersuite()
+}
+
+// ScalarLength returns the byte size of an encoded scalar.
+func (g Group) ScalarLength() uint {
+	return g.get().ScalarLength()
+}
+
+// ElementLength returns the byte size of an encoded element.
+func (g Group) ElementLength() uint {
+	return g.get().ElementLength()
 }
 
 func (g Group) initGroup(get func() internal.Group) {

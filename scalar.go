@@ -22,23 +22,26 @@ func newScalar(s internal.Scalar) *Scalar {
 	return &Scalar{s}
 }
 
+// Zero sets the scalar to 0, and returns it.
 func (s *Scalar) Zero() *Scalar {
 	s.Scalar.Zero()
 	return s
 }
 
+// One sets the scalar to 1, and returns it.
 func (s *Scalar) One() *Scalar {
 	s.Scalar.One()
 	return s
 }
 
 // Random sets the current scalar to a new random scalar and returns it.
+// The random source is crypto/rand, and this functions is guaranteed to return a non-zero scalar.
 func (s *Scalar) Random() *Scalar {
 	s.Scalar.Random()
 	return s
 }
 
-// Add returns the sum of the scalars, and does not change the receiver.
+// Add set the receiver to the sum of the input to the receiver, and returns the receiver.
 func (s *Scalar) Add(scalar *Scalar) *Scalar {
 	if scalar == nil {
 		return s
@@ -49,7 +52,7 @@ func (s *Scalar) Add(scalar *Scalar) *Scalar {
 	return s
 }
 
-// Subtract returns the difference between the scalars, and does not change the receiver.
+// Subtract subtracts the input from the receiver, and returns the receiver.
 func (s *Scalar) Subtract(scalar *Scalar) *Scalar {
 	if scalar == nil {
 		return s
@@ -60,7 +63,7 @@ func (s *Scalar) Subtract(scalar *Scalar) *Scalar {
 	return s
 }
 
-// Multiply returns the multiplication of the scalars, and does not change the receiver.
+// Multiply multiplies the receiver with the input, and returns the receiver.
 func (s *Scalar) Multiply(scalar *Scalar) *Scalar {
 	if scalar == nil {
 		return s.Zero()
@@ -71,12 +74,13 @@ func (s *Scalar) Multiply(scalar *Scalar) *Scalar {
 	return s
 }
 
-// Invert returns the scalar's modular inverse ( 1 / scalar ), and does not change the receiver.
+// Invert set the receiver to the scalar's modular inverse ( 1 / scalar ), and returns it.
 func (s *Scalar) Invert() *Scalar {
 	s.Scalar.Invert()
 	return s
 }
 
+// Equal returns 1 if the scalars are equal, and 0 otherwise.
 func (s *Scalar) Equal(scalar *Scalar) int {
 	if scalar == nil {
 		return 0
@@ -90,17 +94,17 @@ func (s *Scalar) IsZero() bool {
 	return s.Scalar.IsZero()
 }
 
-// Copy returns a copy of the Scalar.
+// Copy returns a copy of the receiver.
 func (s *Scalar) Copy() *Scalar {
 	return &Scalar{s.Scalar.Copy()}
 }
 
-// Encode returns the byte encoding of the element.
+// Encode returns the compressed byte encoding of the scalar.
 func (s *Scalar) Encode() []byte {
 	return s.Scalar.Encode()
 }
 
-// Decode decodes the input and sets the current scalar to its value, and returns it.
+// Decode sets the receiver to a decoding of the input data, and returns an error on failure.
 func (s *Scalar) Decode(in []byte) error {
 	return s.Scalar.Decode(in)
 }

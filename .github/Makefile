@@ -19,17 +19,17 @@ fmt:
 	@go fmt ../...
 	#@golines -m 120 -t 4 -w ../
 	#@gofumpt -w -extra ../
-	@gci write --Section Standard --Section Default --Section "Prefix($(shell go list -m))" ../
-
-.PHONY: lint
-lint:
-	@echo "Linting ..."
-	@if golangci-lint run --config=.golangci.yml ../...; then echo "Linting OK"; else return 1; fi;
+	@gci write -s standard -s default -s "prefix($(shell go list -m))" ../
 
 .PHONY: license
 license:
 	@echo "Checking License headers ..."
-	@if addlicense -check -v -f .github/licence-header.tmpl ../*; then echo "License headers OK"; else return 1; fi;
+	@if addlicense -check -v -f licence-header.tmpl ../*; then echo "License headers OK"; else return 1; fi;
+
+.PHONY: lint
+lint: fmt license
+	@echo "Linting ..."
+	@if golangci-lint run --config=.golangci.yml ../...; then echo "Linting OK"; else return 1; fi;
 
 .PHONY: test
 test:

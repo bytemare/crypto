@@ -28,6 +28,7 @@ const (
 // Group represents the Ristretto255 group. It exposes a prime-order group API with hash-to-curve operations.
 type Group struct{}
 
+// New returns a new instantiation of the Ristretto255 Group.
 func New() internal.Group {
 	return Group{}
 }
@@ -47,20 +48,23 @@ func (g Group) Base() internal.Element {
 	return &Element{*ristretto255.NewElement().Base()}
 }
 
-// HashToScalar allows arbitrary input to be safely mapped to the field.
+// HashToScalar returns a safe mapping of the arbitrary input to a Scalar.
+// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) HashToScalar(input, dst []byte) internal.Scalar {
 	uniform := hash2curve.ExpandXMD(crypto.SHA512, input, dst, inputLength)
 	return &Scalar{*ristretto255.NewScalar().FromUniformBytes(uniform)}
 }
 
-// HashToGroup allows arbitrary input to be safely mapped to the curve of the group.
+// HashToGroup returns a safe mapping of the arbitrary input to an Element in the Group.
+// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) HashToGroup(input, dst []byte) internal.Element {
 	uniform := hash2curve.ExpandXMD(crypto.SHA512, input, dst, inputLength)
 
 	return &Element{*ristretto255.NewElement().FromUniformBytes(uniform)}
 }
 
-// EncodeToGroup allows arbitrary input to be mapped non-uniformly to points in the Group.
+// EncodeToGroup returns a non-uniform mapping of the arbitrary input to an Element in the Group.
+// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) EncodeToGroup(input, dst []byte) internal.Element {
 	return g.HashToGroup(input, dst)
 }

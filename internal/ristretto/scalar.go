@@ -45,17 +45,20 @@ func assert(scalar internal.Scalar) *Scalar {
 	return sc
 }
 
+// Zero sets the scalar to 0, and returns it.
 func (s *Scalar) Zero() internal.Scalar {
 	s.scalar.Zero()
 	return s
 }
 
+// One sets the scalar to 1, and returns it.
 func (s *Scalar) One() internal.Scalar {
 	s.set(&scOne)
 	return s
 }
 
 // Random sets the current scalar to a new random scalar and returns it.
+// The random source is crypto/rand, and this functions is guaranteed to return a non-zero scalar.
 func (s *Scalar) Random() internal.Scalar {
 	for {
 		random := internal.RandomBytes(inputLength)
@@ -67,7 +70,7 @@ func (s *Scalar) Random() internal.Scalar {
 	}
 }
 
-// Add returns the sum of the scalars, and does not change the receiver.
+// Add set the receiver to the sum of the input to the receiver, and returns the receiver.
 func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s
@@ -79,7 +82,7 @@ func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	return s
 }
 
-// Subtract returns the difference between the scalars, and does not change the receiver.
+// Subtract subtracts the input from the receiver, and returns the receiver.
 func (s *Scalar) Subtract(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s
@@ -91,7 +94,7 @@ func (s *Scalar) Subtract(scalar internal.Scalar) internal.Scalar {
 	return s
 }
 
-// Multiply returns the multiplication of the scalars, and does not change the receiver.
+// Multiply multiplies the receiver with the input, and returns the receiver.
 func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s.Zero()
@@ -103,12 +106,13 @@ func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
 	return s
 }
 
-// Invert returns the scalar's modular inverse ( 1 / scalar ).
+// Invert set the receiver to the scalar's modular inverse ( 1 / scalar ), and returns it.
 func (s *Scalar) Invert() internal.Scalar {
 	s.scalar.Invert(&s.scalar)
 	return s
 }
 
+// Equal returns 1 if the scalars are equal, and 0 otherwise.
 func (s *Scalar) Equal(scalar internal.Scalar) int {
 	sc := assert(scalar)
 
@@ -125,7 +129,7 @@ func (s *Scalar) set(scalar *Scalar) *Scalar {
 	return s
 }
 
-// Set sets the receiver to the argument scalar, and returns the receiver.
+// Set sets the receiver to the argument, and returns the receiver.
 func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s.set(nil)
@@ -136,19 +140,19 @@ func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 	return s.set(ec)
 }
 
-// Copy returns a copy of the Scalar.
+// Copy returns a copy of the receiver.
 func (s *Scalar) Copy() internal.Scalar {
 	return &Scalar{*ristretto255.NewScalar().Add(ristretto255.NewScalar(), &s.scalar)}
 }
 
-// Encode returns the byte encoding of the scalar.
+// Encode returns the compressed byte encoding of the scalar.
 func (s *Scalar) Encode() []byte {
 	return s.scalar.Encode(nil)
 }
 
-// Decode decodes the input an sets the current scalar to its value, and returns it.
-func (s *Scalar) Decode(in []byte) error {
-	sc, err := decodeScalar(in)
+// Decode sets the receiver to a decoding of the input data, and returns an error on failure.
+func (s *Scalar) Decode(data []byte) error {
+	sc, err := decodeScalar(data)
 	if err != nil {
 		return err
 	}
@@ -175,12 +179,12 @@ func decodeScalar(scalar []byte) (*ristretto255.Scalar, error) {
 	return s, nil
 }
 
-// MarshalBinary returns the compressed byte encoding of the element.
+// MarshalBinary returns the compressed byte encoding of the scalar.
 func (s *Scalar) MarshalBinary() ([]byte, error) {
 	return s.Encode(), nil
 }
 
-// UnmarshalBinary sets e to the decoding of the byte encoded element.
+// UnmarshalBinary sets e to the decoding of the byte encoded scalar.
 func (s *Scalar) UnmarshalBinary(data []byte) error {
 	return s.Decode(data)
 }

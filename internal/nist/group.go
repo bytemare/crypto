@@ -40,16 +40,19 @@ const (
 	E2CP521 = "P521_XMD:SHA-512_SSWU_NU_"
 )
 
+// P256 returns the single instantiation of the P256 Group.
 func P256() internal.Group {
 	initOnceP256.Do(initP256)
 	return &p256
 }
 
+// P384 returns the single instantiation of the P384 Group.
 func P384() internal.Group {
 	initOnceP384.Do(initP384)
 	return &p384
 }
 
+// P521 returns the single instantiation of the P521 Group.
 func P521() internal.Group {
 	initOnceP521.Do(initP521)
 	return &p521
@@ -68,7 +71,7 @@ func (g Group[P]) NewScalar() internal.Scalar {
 	return newScalar(&g.scalarField)
 }
 
-// NewElement returns the identity point (point at infinity).
+// NewElement returns the identity element (point at infinity).
 func (g Group[P]) NewElement() internal.Element {
 	return &Element[P]{
 		p:   g.curve.NewPoint(),
@@ -91,32 +94,35 @@ func (g Group[P]) newPoint(p P) *Element[P] {
 	}
 }
 
-// HashToScalar allows arbitrary input to be safely mapped to the field.
+// HashToScalar returns a safe mapping of the arbitrary input to a Scalar.
+// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group[P]) HashToScalar(input, dst []byte) internal.Scalar {
 	s := hash2curve.HashToFieldXMD(g.curve.hash, input, dst, 1, 1, g.curve.secLength, g.scalarField.prime)[0]
 
 	// If necessary, build a buffer of right size, so it gets correctly interpreted.
-	b := s.Bytes()
+	bytes := s.Bytes()
 
 	length := int(g.ScalarLength())
-	if l := length - len(b); l > 0 {
+	if l := length - len(bytes); l > 0 {
 		buf := make([]byte, l, length)
-		buf = append(buf, b...)
-		b = buf
+		buf = append(buf, bytes...)
+		bytes = buf
 	}
 
 	res := &Scalar{field: &g.scalarField}
-	res.s.SetBytes(b)
+	res.s.SetBytes(bytes)
 
 	return res
 }
 
-// HashToGroup allows arbitrary input to be safely mapped to the curve of the group.
+// HashToGroup returns a safe mapping of the arbitrary input to an Element in the Group.
+// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group[P]) HashToGroup(input, dst []byte) internal.Element {
 	return g.newPoint(g.curve.hashXMD(input, dst))
 }
 
-// EncodeToGroup allows arbitrary input to be mapped non-uniformly to points in the Group.
+// EncodeToGroup returns a non-uniform mapping of the arbitrary input to an Element in the Group.
+// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group[P]) EncodeToGroup(input, dst []byte) internal.Element {
 	return g.newPoint(g.curve.encodeXMD(input, dst))
 }
@@ -128,13 +134,13 @@ func (g Group[P]) Ciphersuite() string {
 
 // ScalarLength returns the byte size of an encoded element.
 func (g Group[P]) ScalarLength() uint {
-	byteLen := (g.scalarField.BitLen() + 7) / 8
+	byteLen := (g.scalarField.bitLen() + 7) / 8
 	return uint(byteLen)
 }
 
 // ElementLength returns the byte size of an encoded element.
 func (g Group[P]) ElementLength() uint {
-	byteLen := (g.curve.field.BitLen() + 7) / 8
+	byteLen := (g.curve.field.bitLen() + 7) / 8
 	return uint(1 + byteLen)
 }
 
@@ -195,5 +201,5 @@ func initP521() {
 }
 
 func (g *Group[Point]) setScalarField(order string) {
-	g.scalarField = *NewField(s2int(order))
+	g.scalarField = *newField(s2int(order))
 }

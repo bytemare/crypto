@@ -14,19 +14,22 @@ type Group interface {
 	// NewScalar returns a new, empty, scalar.
 	NewScalar() Scalar
 
-	// NewElement returns the identity point (point at infinity).
+	// NewElement returns the identity element (point at infinity).
 	NewElement() Element
 
 	// Base returns the group's base point a.k.a. canonical generator.
 	Base() Element
 
-	// HashToScalar allows arbitrary input to be safely mapped to the field.
+	// HashToScalar returns a safe mapping of the arbitrary input to a Scalar.
+	// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 	HashToScalar(input, dst []byte) Scalar
 
-	// HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
+	// HashToGroup returns a safe mapping of the arbitrary input to an Element in the Group.
+	// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 	HashToGroup(input, dst []byte) Element
 
-	// EncodeToGroup allows arbitrary input to be mapped non-uniformly to points in the Group.
+	// EncodeToGroup returns a non-uniform mapping of the arbitrary input to an Element in the Group.
+	// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 	EncodeToGroup(input, dst []byte) Element
 
 	// Ciphersuite returns the hash-to-curve ciphersuite identifier.

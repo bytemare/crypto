@@ -22,15 +22,17 @@ func newPoint(p internal.Element) *Element {
 	return &Element{p}
 }
 
+// Base sets the element to the group's base point a.k.a. canonical generator.
 func (e *Element) Base() *Element {
 	return &Element{e.Element.Base()}
 }
 
+// Identity sets the element to the point at infinity of the Group's underlying curve.
 func (e *Element) Identity() *Element {
 	return &Element{e.Element.Identity()}
 }
 
-// Add returns the sum of the Points, and does not change the receiver.
+// Add set the receiver to the sum of the input to the receiver, and returns the receiver.
 func (e *Element) Add(element *Element) *Element {
 	if element == nil {
 		return e
@@ -41,15 +43,17 @@ func (e *Element) Add(element *Element) *Element {
 	return e
 }
 
+// Double set the receiver to its double, and returns it.
 func (e *Element) Double() *Element {
 	return &Element{e.Element.Double()}
 }
 
+// Negate set the receiver to its negation, and returns it.
 func (e *Element) Negate() *Element {
 	return &Element{e.Element.Negate()}
 }
 
-// Subtract returns the difference between the Points, and does not change the receiver.
+// Subtract subtracts the input from the receiver, and returns the receiver.
 func (e *Element) Subtract(element *Element) *Element {
 	if element == nil {
 		return &Element{e.Element.Copy()}
@@ -60,7 +64,7 @@ func (e *Element) Subtract(element *Element) *Element {
 	return e
 }
 
-// Multiply returns the scalar multiplication of the receiver element with the given scalar.
+// Multiply set the receiver to the scalar multiplication of the receiver with the given Scalar, and returns it.
 func (e *Element) Multiply(scalar *Scalar) *Element {
 	if scalar == nil {
 		return &Element{e.Element.Identity()}
@@ -80,12 +84,18 @@ func (e *Element) Equal(element *Element) int {
 	return e.Element.Equal(element.Element)
 }
 
-// IsIdentity returns whether the element is the Group's identity element.
+// IsIdentity returns whether the Element is the point at infinity of the Group's underlying curve.
 func (e *Element) IsIdentity() bool {
 	return e.Element.IsIdentity()
 }
 
-// Copy returns a copy of the element.
+// Set sets the receiver to the argument, and returns the receiver.
+func (e *Element) Set(element *Element) *Element {
+	e.Element.Set(element.Element)
+	return e
+}
+
+// Copy returns a copy of the receiver.
 func (e *Element) Copy() *Element {
 	return &Element{e.Element.Copy()}
 }
@@ -95,9 +105,9 @@ func (e *Element) Encode() []byte {
 	return e.Element.Encode()
 }
 
-// Decode decodes the input and sets the current element to its value, and returns it.
-func (e *Element) Decode(in []byte) error {
-	return e.Element.Decode(in)
+// Decode sets the receiver to a decoding of the input data, and returns an error on failure.
+func (e *Element) Decode(data []byte) error {
+	return e.Element.Decode(data)
 }
 
 // MarshalBinary returns the compressed byte encoding of the element.

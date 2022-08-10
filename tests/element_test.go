@@ -46,7 +46,6 @@ func TestPoint_Arithmetic(t *testing.T) {
 		elementTestDouble(t, group.id)
 		elementTestSubstract(t, group.id)
 		elementTestMultiply(t, group.id)
-		elementTestMultbytes(t, group.id)
 		elementTestInversion(t, group.id)
 		elementTestIdentity(t, group.id)
 	})
@@ -124,21 +123,6 @@ func elementTestMultiply(t *testing.T, g crypto.Group) {
 	// base * nil = id
 	if !g.Base().Multiply(nil).IsIdentity() {
 		t.Fatal("expected identity")
-	}
-}
-
-func elementTestMultbytes(t *testing.T, g crypto.Group) {
-	scalar := g.NewScalar().Random()
-	base := g.Base()
-	m := g.Base().Multiply(scalar)
-
-	m2, err := g.MultBytes(scalar.Encode(), base.Encode())
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if m.Equal(m2) != 1 {
-		t.Fatal("expected equality")
 	}
 }
 

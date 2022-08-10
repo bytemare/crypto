@@ -34,17 +34,19 @@ func checkElement[Point nistECPoint[Point]](element internal.Element) *Element[P
 	return ec
 }
 
+// Base sets the element to the group's base point a.k.a. canonical generator.
 func (e *Element[Point]) Base() internal.Element {
 	e.p.SetGenerator()
 	return e
 }
 
+// Identity sets the element to the point at infinity of the Group's underlying curve.
 func (e *Element[Point]) Identity() internal.Element {
 	e.p = e.new()
 	return e
 }
 
-// Add returns the sum of the Elements, and does not change the receiver.
+// Add set the receiver to the sum of the input to the receiver, and returns the receiver.
 func (e *Element[Point]) Add(element internal.Element) internal.Element {
 	ec := checkElement[Point](element)
 	e.p.Add(e.p, ec.p)
@@ -52,6 +54,7 @@ func (e *Element[Point]) Add(element internal.Element) internal.Element {
 	return e
 }
 
+// Double set the receiver to its double, and returns it.
 func (e *Element[Point]) Double() internal.Element {
 	e.p.Double(e.p)
 	return e
@@ -72,7 +75,7 @@ func (e *Element[Point]) negateSmall() []byte {
 	return enc
 }
 
-// Negate returns the negative of the Element, and does not change the receiver.
+// Negate set the receiver to its negation, and returns it.
 func (e *Element[P]) Negate() internal.Element {
 	_, err := e.p.SetBytes(e.negateSmall())
 	if err != nil {
@@ -82,7 +85,7 @@ func (e *Element[P]) Negate() internal.Element {
 	return e
 }
 
-// Subtract returns the difference between the Elements, and does not change the receiver.
+// Subtract subtracts the input from the receiver, and returns the receiver.
 func (e *Element[P]) Subtract(element internal.Element) internal.Element {
 	ec := checkElement[P](element).negateSmall()
 
@@ -96,8 +99,7 @@ func (e *Element[P]) Subtract(element internal.Element) internal.Element {
 	return e
 }
 
-// Multiply returns the scalar multiplication of the receiver element with the given scalar,
-// and does not change the receiver.
+// Multiply set the receiver to the scalar multiplication of the receiver with the given Scalar, and returns it.
 func (e *Element[P]) Multiply(scalar internal.Scalar) internal.Element {
 	if _, err := e.p.ScalarMult(e.p, scalar.Encode()); err != nil {
 		panic(err)
@@ -106,13 +108,14 @@ func (e *Element[P]) Multiply(scalar internal.Scalar) internal.Element {
 	return e
 }
 
+// Equal returns 1 if the elements are equivalent, and 0 otherwise.
 func (e *Element[Point]) Equal(element internal.Element) int {
 	ec := checkElement[Point](element)
 
 	return subtle.ConstantTimeCompare(e.p.Bytes(), ec.p.Bytes())
 }
 
-// IsIdentity returns whether the element is the Group's identity element.
+// IsIdentity returns whether the Element is the point at infinity of the Group's underlying curve.
 func (e *Element[P]) IsIdentity() bool {
 	b := e.p.BytesCompressed()
 	i := e.new().BytesCompressed()
@@ -139,7 +142,7 @@ func (e *Element[P]) Set(element internal.Element) internal.Element {
 	return e.set(ec)
 }
 
-// Copy returns a copy of the element.
+// Copy returns a copy of the receiver.
 func (e *Element[P]) Copy() internal.Element {
 	return &Element[P]{
 		p:   e.new().Set(e.p),
@@ -152,9 +155,9 @@ func (e *Element[P]) Encode() []byte {
 	return e.p.BytesCompressed()
 }
 
-// Decode sets p to the value of the decoded input, and returns p.
-func (e *Element[P]) Decode(in []byte) error {
-	if _, err := e.p.SetBytes(in); err != nil {
+// Decode sets the receiver to a decoding of the input data, and returns an error on failure.
+func (e *Element[P]) Decode(data []byte) error {
+	if _, err := e.p.SetBytes(data); err != nil {
 		return err
 	}
 
