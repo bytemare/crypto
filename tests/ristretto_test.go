@@ -14,7 +14,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	ristretto2 "github.com/bytemare/crypto/internal/ristretto"
+	"github.com/bytemare/crypto/internal/ristretto"
 )
 
 const (
@@ -101,27 +101,19 @@ var tests = []testGroup{
 func TestRistrettoScalar(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := ristretto2.Group{}.NewScalar().Random()
-			if len(s.Bytes()) != 32 {
-				t.Fatalf("invalid random scalar length. Expected %d, got %d", 32, len(s.Bytes()))
-			}
-
 			// Grab the bytes of the encoding
 			encoding, err := hex.DecodeString(tt.scalar)
 			if err != nil {
 				t.Fatalf("#%s: bad hex encoding in test vector: %v", tt.name, err)
 			}
 
-			s, err = ristretto2.Group{}.NewScalar().Decode(encoding)
+			s := ristretto.Group{}.NewScalar()
+			err = s.Decode(encoding)
 
 			switch tt.scal {
 			case false:
 				if err == nil {
 					t.Fatalf("expected error for %s", tt.name)
-				}
-
-				if s != nil {
-					t.Fatalf("unexpected nil scalar for %s", tt.name)
 				}
 			case true:
 				if err != nil {
@@ -132,17 +124,17 @@ func TestRistrettoScalar(t *testing.T) {
 					t.Fatal("scalar is nil, should not happen")
 				}
 
-				if len(s.Bytes()) != 32 {
+				if len(s.Encode()) != 32 {
 					t.Fatalf(
 						"invalid random scalar length. Expected %d, got %d",
 						32,
-						len(s.Bytes()),
+						len(s.Encode()),
 					)
 				}
 
-				cpy, _ := ristretto2.Group{}.NewScalar().Decode(s.Bytes())
+				cpy := s.Copy()
 				cpy = cpy.Invert()
-				if bytes.Equal(cpy.Bytes(), s.Bytes()) {
+				if bytes.Equal(cpy.Encode(), s.Encode()) {
 					t.Fatal("scalar inversion resulted in same scalar")
 				}
 			}
@@ -152,7 +144,7 @@ func TestRistrettoScalar(t *testing.T) {
 
 func TestRistrettoElement(t *testing.T) {
 	// Test if the element in the test is the base point
-	bp := ristretto2.Group{}.NewElement().(*ristretto2.Element).Base()
+	bp := ristretto.Group{}.NewElement().(*ristretto.Element).Base()
 
 	// Grab the bytes of the encoding
 	encoding, err := hex.DecodeString(tests[0].element)
@@ -160,7 +152,7 @@ func TestRistrettoElement(t *testing.T) {
 		t.Fatalf("%s: bad hex encoding in test vector: %v", tests[0].name, err)
 	}
 
-	if !bytes.Equal(bp.Bytes(), encoding) {
+	if !bytes.Equal(bp.Encode(), encoding) {
 		t.Fatalf("%s: element doesn't decode to basepoint", tests[0].name)
 	}
 
@@ -173,16 +165,13 @@ func TestRistrettoElement(t *testing.T) {
 			}
 
 			// Test decoding
-			e, err := ristretto2.Group{}.NewElement().Decode(encoding)
+			e := ristretto.Group{}.NewElement()
+			err = e.Decode(encoding)
 
 			switch tt.elem {
 			case false:
 				if err == nil {
 					t.Fatalf("expected error for %s", tt.name)
-				}
-
-				if e != nil {
-					t.Fatalf("%s : element is not nil but should have failed on decoding", tt.name)
 				}
 
 			case true:
@@ -195,7 +184,7 @@ func TestRistrettoElement(t *testing.T) {
 				}
 
 				// Test encoding
-				if !bytes.Equal(encoding, e.Bytes()) {
+				if !bytes.Equal(encoding, e.Encode()) {
 					t.Fatalf("%s : Decoding and encoding doesn't return the same bytes", tt.name)
 				}
 			}

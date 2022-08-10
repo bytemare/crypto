@@ -12,7 +12,7 @@ linters:
     - dogsled
     - dupl
     - durationcheck
-    #- errcheck
+    - errcheck
     - errname
     - errorlint
     - exportloopref
@@ -36,12 +36,11 @@ linters:
     - gosec
     - gosimple
     - govet
-    - ifshort
     - importas
     - ineffassign
     - lll
     - makezero
-    #- maligned
+    - maligned
     - megacheck
     - misspell
     - nakedret
@@ -53,13 +52,13 @@ linters:
     - paralleltest
     - prealloc
     - predeclared
-    #- revive
+    - revive
     - rowserrcheck
     - sqlclosecheck
     - staticcheck
     - structcheck
-    #- stylecheck
-    #- tagliatelle
+    - stylecheck
+    - tagliatelle
     - tenv
     - testpackage
     - thelper
@@ -69,12 +68,12 @@ linters:
     - unparam
     - unused
     - varcheck
-    #- varnamelen
+    - varnamelen
     - wastedassign
     - whitespace
     #- wrapcheck
     - wsl
-    #- exhaustive
+    - exhaustive
     #- exhaustivestruct
     #- gci
     #- gochecknoglobals
@@ -210,5 +209,5 @@ issues:
 run:
   tests: false
 
-output:
-  format: github-actions
+#output:
+#  format: github-actions

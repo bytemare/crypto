@@ -16,12 +16,12 @@ import (
 )
 
 func TestPoint_Decode(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *group) {
+	testAllGroups(t, func(t2 *testing.T, group *testGroup) {
 		element := group.id.Base().Multiply(group.id.NewScalar().Random())
-		encoded := element.Bytes()
+		encoded := element.Encode()
 
-		decoded, err := group.id.NewElement().Decode(encoded)
-		if err != nil {
+		decoded := group.id.NewElement()
+		if err := decoded.Decode(encoded); err != nil {
 			t.Fatal(err)
 		}
 
@@ -29,103 +29,143 @@ func TestPoint_Decode(t *testing.T) {
 			t.Fatal("expected equality")
 		}
 
-		if !bytes.Equal(encoded, decoded.Bytes()) {
+		if !bytes.Equal(encoded, decoded.Encode()) {
 			t.Fatal("expected equality when en/decoding element")
 		}
 
-		_, err = group.id.NewElement().Decode(nil)
-		if err == nil {
+		if err := group.id.NewElement().Decode(nil); err == nil {
 			t.Fatal("expected error on nil input")
 		}
 	})
 }
 
 func TestPoint_Arithmetic(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *group) {
-		testPointArithmetic(t, group.id)
+	testAllGroups(t, func(t2 *testing.T, group *testGroup) {
+		elementTestEqual(t, group.id)
+		elementTestAdd(t, group.id)
+		elementTestDouble(t, group.id)
+		elementTestSubstract(t, group.id)
+		elementTestMultiply(t, group.id)
+		elementTestInversion(t, group.id)
+		elementTestIdentity(t, group.id)
 	})
 }
 
-func testPointArithmetic(t *testing.T, g crypto.Group) {
-	// Test Addition and Subtraction
+func elementTestEqual(t *testing.T, g crypto.Group) {
 	base := g.Base()
+	base2 := g.Base()
 
-	double := base.Add(base)
-	if double.Equal(base.Double()) != 1 {
-		t.Fatal("expected equality")
-	}
-
-	if base.Add(nil).Equal(base) != 1 {
-		t.Fatal("expected equality")
-	}
-
-	if base.Subtract(nil).Equal(base) != 1 {
-		t.Fatal("expected equality")
-	}
-
-	base2 := base.Add(base).Subtract(base)
 	if base.Equal(base2) != 1 {
 		t.Fatal("expected equality")
 	}
 
-	scalar := g.NewScalar().Random()
-	for scalar.IsZero() {
-		scalar = g.NewScalar().Random()
+	random := g.NewElement().Multiply(g.NewScalar().Random())
+	cpy := random.Copy()
+	if random.Equal(cpy) != 1 {
+		t.Fatal("expected equality")
+	}
+}
+
+func elementTestAdd(t *testing.T, g crypto.Group) {
+	// Verify whether add yields the same element when given nil
+	base := g.Base()
+	cpy := base.Copy()
+	if cpy.Add(nil).Equal(base) != 1 {
+		t.Fatal("expected equality")
+	}
+}
+
+func elementTestDouble(t *testing.T, g crypto.Group) {
+	// Verify whether double works like adding
+	base := g.Base()
+
+	double := g.Base().Add(base)
+	if double.Equal(base.Double()) != 1 {
+		t.Fatal("expected equality")
+	}
+}
+
+func elementTestSubstract(t *testing.T, g crypto.Group) {
+	base := g.Base()
+
+	// Verify whether subtrating yields the same element when given nil.
+	if base.Subtract(nil).Equal(base) != 1 {
+		t.Fatal("expected equality")
 	}
 
-	m := base.Multiply(scalar)
+	// Verify whether subtracting and then adding yields the same element.
+	base2 := base.Add(base).Subtract(base)
+	if base.Equal(base2) != 1 {
+		t.Fatal("expected equality")
+	}
+}
+
+func elementTestMultiply(t *testing.T, g crypto.Group) {
+	scalar := g.NewScalar().Random()
+
+	// Random scalar mult must not yield identity
+	m := g.Base().Multiply(scalar)
 	if m.IsIdentity() {
 		t.Fatal("random scalar multiplication is identity")
 	}
 
-	scalar.Zero()
-
-	m = base.Multiply(scalar)
-	if !m.IsIdentity() {
-		t.Fatal("expected identity")
-	}
-
-	scalar.Random()
-	base = g.Base()
-	m = base.Multiply(scalar)
-
-	m2, err := g.MultBytes(scalar.Bytes(), base.Bytes())
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !bytes.Equal(m.Bytes(), m2.Bytes()) {
+	// base = base * 1
+	base := g.Base()
+	if base.Equal(g.Base().Multiply(scalar.One())) != 1 {
 		t.Fatal("expected equality")
 	}
 
-	base = g.Base()
+	// base * 0 = id
+	if !g.Base().Multiply(scalar.Zero()).IsIdentity() {
+		t.Fatal("expected identity")
+	}
+
+	// base * nil = id
+	if !g.Base().Multiply(nil).IsIdentity() {
+		t.Fatal("expected identity")
+	}
+}
+
+func elementTestInversion(t *testing.T, g crypto.Group) {
+	scalar := g.NewScalar().Random()
+	base := g.Base()
+	m := g.Base().Multiply(scalar)
 	inv := m.Multiply(scalar.Invert())
 
 	if inv.Equal(base) != 1 {
 		t.Fatal("expected equality")
 	}
+}
 
-	// Test identity
+func elementTestIdentity(t *testing.T, g crypto.Group) {
 	id := g.NewElement()
 	if !id.IsIdentity() {
 		t.Fatal("expected identity")
 	}
 
-	base = g.NewElement().Base()
+	base := g.Base()
 	if id.Equal(base.Subtract(base)) != 1 {
 		t.Fatal("expected identity")
+	}
+
+	sub1 := g.Base().Double().Negate().Add(g.Base().Double())
+	sub2 := g.Base().Subtract(g.Base())
+	if sub1.Equal(sub2) != 1 {
+		t.Fatal("expected equality")
 	}
 
 	if id.Equal(base.Multiply(nil)) != 1 {
 		t.Fatal("expected identity")
 	}
 
-	if id.Equal(base.Multiply(scalar.Zero())) != 1 {
+	if id.Equal(base.Multiply(g.NewScalar().Zero())) != 1 {
 		t.Fatal("expected identity")
 	}
 
-	base2 = base.Add(base.Negate())
-	if id.Equal(base2) != 1 {
+	base = g.Base()
+	neg := base.Copy().Negate()
+	base.Add(neg)
+	if id.Equal(base) != 1 {
 		t.Fatal("expected identity")
 	}
 }

@@ -9,38 +9,60 @@
 // Package internal defines simple and abstract APIs to group Elements and Scalars.
 package internal
 
+import "encoding"
+
 // Scalar interface abstracts common operations on scalars in a prime-order Group.
 type Scalar interface {
+	// Zero sets the scalar to 0, and returns it.
+	Zero() Scalar
+
+	// One sets the scalar to 1, and returns it.
+	One() Scalar
+
 	// Random sets the current scalar to a new random scalar and returns it.
+	// The random source is crypto/rand, and this functions is guaranteed to return a non-zero scalar.
 	Random() Scalar
 
-	// Add returns the sum of the scalars, and does not change the receiver.
-	Add(scalar Scalar) Scalar
+	// Add set the receiver to the sum of the input to the receiver, and returns the receiver.
+	Add(Scalar) Scalar
 
-	// Subtract returns the difference between the scalars, and does not change the receiver.
-	Subtract(scalar Scalar) Scalar
+	// Subtract subtracts the input from the receiver, and returns the receiver.
+	Subtract(Scalar) Scalar
 
-	// Multiply returns the multiplication of the scalars, and does not change the receiver.
-	Multiply(scalar Scalar) Scalar
+	// Multiply multiplies the receiver with the input, and returns the receiver.
+	Multiply(Scalar) Scalar
 
-	// Invert returns the scalar's modular inverse ( 1 / scalar ), and does not change the receiver.
+	// Invert set the receiver to the scalar's modular inverse ( 1 / scalar ), and returns it.
 	Invert() Scalar
+
+	// Equal returns 1 if the scalars are equal, and 0 otherwise.
+	Equal(Scalar) int
 
 	// IsZero returns whether the scalar is 0.
 	IsZero() bool
 
-	// Copy returns a copy of the Scalar.
+	// Set sets the receiver to the argument, and returns the receiver.
+	Set(Scalar) Scalar
+
+	// Copy returns a copy of the receiver.
 	Copy() Scalar
 
-	// Decode decodes the input an sets the current scalar to its value, and returns it.
-	Decode(in []byte) (Scalar, error)
+	// Encode returns the compressed byte encoding of the scalar.
+	Encode() []byte
 
-	// Bytes returns the byte encoding of the element.
-	Bytes() []byte
+	// Decode sets the receiver to a decoding of the input data, and returns an error on failure.
+	Decode(in []byte) error
 
-	// Equal returns 1 if the scalars are equal, and 0 otherwise.
-	Equal(scalar Scalar) int
+	// BinaryMarshaler returns a byte representation of the element.
+	encoding.BinaryMarshaler
 
-	// Zero sets the scalar to 0, and returns it.
-	Zero() Scalar
+	// BinaryUnmarshaler recovers an element from a byte representation
+	// produced either by encoding.BinaryMarshaler or MarshalBinaryCompress.
+	encoding.BinaryUnmarshaler
+
+	// TextMarshaler returns a base64 standard string encoding of the element.
+	encoding.TextMarshaler
+
+	// TextUnmarshaler sets the base64 standard string encoding of the element.
+	encoding.TextUnmarshaler
 }

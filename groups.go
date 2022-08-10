@@ -18,7 +18,6 @@ import (
 	"sync"
 
 	"github.com/bytemare/crypto/internal"
-	"github.com/bytemare/crypto/internal/edwards25519"
 	"github.com/bytemare/crypto/internal/nist"
 	"github.com/bytemare/crypto/internal/ristretto"
 )
@@ -42,9 +41,6 @@ const (
 	// P521Sha512 identifies a group over P521 with SHA2-512 hash-to-group hashing.
 	P521Sha512
 
-	// Edwards25519Sha512 identifies a group over Edwards25519 with SHA2-512 hash-to-group hashing.
-	Edwards25519Sha512
-
 	maxID
 
 	dstfmt               = "%s-V%02d-CS%02d-%s"
@@ -61,7 +57,7 @@ var (
 
 // Available reports whether the given Group is linked into the binary.
 func (g Group) Available() bool {
-	return 0 < g && g < maxID
+	return 0 < g && g < maxID && g != decaf448Shake256
 }
 
 func (g Group) get() internal.Group {
@@ -91,14 +87,14 @@ func (g Group) NewScalar() *Scalar {
 	return newScalar(g.get().NewScalar())
 }
 
-// NewElement returns the identity point (point at infinity).
+// NewElement returns the identity element (point at infinity).
 func (g Group) NewElement() *Element {
 	return newPoint(g.get().NewElement())
 }
 
-// ElementLength returns the byte size of an encoded element.
-func (g Group) ElementLength() uint {
-	return g.get().ElementLength()
+// Base returns the group's base point a.k.a. canonical generator.
+func (g Group) Base() *Element {
+	return newPoint(g.get().Base())
 }
 
 func checkDST(dst []byte) {
@@ -109,45 +105,40 @@ func checkDST(dst []byte) {
 	}
 }
 
-// HashToGroup allows arbitrary input to be safely mapped to the curve of the Group.
-// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
-func (g Group) HashToGroup(input, dst []byte) *Element {
-	checkDST(dst)
-	return newPoint(g.get().HashToGroup(input, dst))
-}
-
-// EncodeToGroup allows arbitrary input to be safely mapped to the curve of the Group.
-// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
-func (g Group) EncodeToGroup(input, dst []byte) *Element {
-	checkDST(dst)
-	return newPoint(g.get().EncodeToGroup(input, dst))
-}
-
-// HashToScalar allows arbitrary input to be safely mapped to the field.
+// HashToScalar returns a safe mapping of the arbitrary input to a Scalar.
 // The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) HashToScalar(input, dst []byte) *Scalar {
 	checkDST(dst)
 	return newScalar(g.get().HashToScalar(input, dst))
 }
 
-// Base returns the group's base point a.k.a. canonical generator.
-func (g Group) Base() *Element {
-	return newPoint(g.get().Base())
+// HashToGroup returns a safe mapping of the arbitrary input to an Element in the Group.
+// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
+func (g Group) HashToGroup(input, dst []byte) *Element {
+	checkDST(dst)
+	return newPoint(g.get().HashToGroup(input, dst))
 }
 
-// MultBytes allows []byte encodings of a scalar and an element of the Group to be multiplied.
-func (g Group) MultBytes(scalar, element []byte) (*Element, error) {
-	p, err := g.get().MultBytes(scalar, element)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Element{p}, nil
+// EncodeToGroup returns a non-uniform mapping of the arbitrary input to an Element in the Group.
+// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
+func (g Group) EncodeToGroup(input, dst []byte) *Element {
+	checkDST(dst)
+	return newPoint(g.get().EncodeToGroup(input, dst))
 }
 
 // Ciphersuite returns the hash-to-curve ciphersuite identifier.
 func (g Group) Ciphersuite() string {
 	return g.get().Ciphersuite()
+}
+
+// ScalarLength returns the byte size of an encoded scalar.
+func (g Group) ScalarLength() uint {
+	return g.get().ScalarLength()
+}
+
+// ElementLength returns the byte size of an encoded element.
+func (g Group) ElementLength() uint {
+	return g.get().ElementLength()
 }
 
 func (g Group) initGroup(get func() internal.Group) {
@@ -166,8 +157,6 @@ func (g Group) init() {
 		g.initGroup(nist.P384)
 	case P521Sha512:
 		g.initGroup(nist.P521)
-	case Edwards25519Sha512:
-		g.initGroup(edwards25519.New)
 	default:
 		panic("group not recognized")
 	}
