@@ -13,10 +13,60 @@ import (
 	"testing"
 
 	"github.com/bytemare/crypto"
+	"github.com/bytemare/crypto/internal"
 )
 
+func TestScalar_WrongInput(t *testing.T) {
+	exec := func(f func(*crypto.Scalar) *crypto.Scalar, arg *crypto.Scalar) func() {
+		return func() {
+			f(arg)
+		}
+	}
+
+	equal := func(f func(*crypto.Scalar) int, arg *crypto.Scalar) func() {
+		return func() {
+			f(arg)
+		}
+	}
+
+	testAll(t, func(t2 *testing.T, group *testGroup) {
+		scalar := group.id.NewScalar()
+		methods := []func(arg *crypto.Scalar) *crypto.Scalar{
+			scalar.Add, scalar.Subtract, scalar.Multiply, scalar.Set,
+		}
+
+		var wrongGroup crypto.Group
+
+		switch group.id {
+		case crypto.Ristretto255Sha512:
+			wrongGroup = crypto.P256Sha256
+		case crypto.P256Sha256, crypto.P384Sha384, crypto.P521Sha512:
+			wrongGroup = crypto.Ristretto255Sha512
+
+			// Add a special test for nist groups, using a different field
+			wrongfield := ((group.id + 1) % 3) + 3
+			if err := testPanic("wrong field", internal.ErrWrongField, exec(scalar.Add, wrongfield.NewScalar())); err != nil {
+				t.Fatal(err)
+			}
+		default:
+			t.Fatalf("Invalid group id %d", group.id)
+		}
+
+		for _, f := range methods {
+			if err := testPanic("wrong group", internal.ErrCastScalar, exec(f, wrongGroup.NewScalar())); err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		if err := testPanic("wrong group", internal.ErrCastScalar, equal(scalar.Equal, wrongGroup.NewScalar())); err != nil {
+			t.Fatal(err)
+		}
+
+	})
+}
+
 func TestScalar_Arithmetic(t *testing.T) {
-	testAllGroups(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(t2 *testing.T, group *testGroup) {
 		scalarTestZero(t, group.id)
 		scalarTestOne(t, group.id)
 		scalarTestEqual(t, group.id)
@@ -122,29 +172,5 @@ func scalarTestInvert(t *testing.T, g crypto.Group) {
 	inv := square.Copy().Invert()
 	if s.One().Equal(square.Multiply(inv)) != 1 {
 		t.Fatal("expected equality")
-	}
-}
-
-func TestScalar_Decode(t *testing.T) {
-	testAllGroups(t, func(t2 *testing.T, group *testGroup) {
-		testScalarDecoding(t, group.id)
-	})
-}
-
-func testScalarDecoding(t *testing.T, g crypto.Group) {
-	s := g.NewScalar().Random()
-	enc := s.Encode()
-
-	dec := g.NewScalar()
-	if err := dec.Decode(enc); err != nil {
-		t.Fatalf("unexpected error %v", err)
-	}
-
-	if !dec.Subtract(s).IsZero() {
-		t.Fatal("expected assertion to be true")
-	}
-
-	if g.NewScalar().Decode(nil) == nil {
-		t.Fatal("expected error on nil input")
 	}
 }

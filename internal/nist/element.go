@@ -11,6 +11,7 @@ package nist
 import (
 	"crypto/subtle"
 	"encoding/base64"
+	"fmt"
 
 	"github.com/bytemare/crypto/internal"
 )
@@ -46,7 +47,7 @@ func (e *Element[Point]) Identity() internal.Element {
 	return e
 }
 
-// Add set the receiver to the sum of the input to the receiver, and returns the receiver.
+// Add sets the receiver to the sum of the input and the receiver, and returns the receiver.
 func (e *Element[Point]) Add(element internal.Element) internal.Element {
 	ec := checkElement[Point](element)
 	e.p.Add(e.p, ec.p)
@@ -54,7 +55,7 @@ func (e *Element[Point]) Add(element internal.Element) internal.Element {
 	return e
 }
 
-// Double set the receiver to its double, and returns it.
+// Double sets the receiver to its double, and returns it.
 func (e *Element[Point]) Double() internal.Element {
 	e.p.Double(e.p)
 	return e
@@ -75,7 +76,7 @@ func (e *Element[Point]) negateSmall() []byte {
 	return enc
 }
 
-// Negate set the receiver to its negation, and returns it.
+// Negate sets the receiver to its negation, and returns it.
 func (e *Element[P]) Negate() internal.Element {
 	_, err := e.p.SetBytes(e.negateSmall())
 	if err != nil {
@@ -99,7 +100,7 @@ func (e *Element[P]) Subtract(element internal.Element) internal.Element {
 	return e
 }
 
-// Multiply set the receiver to the scalar multiplication of the receiver with the given Scalar, and returns it.
+// Multiply sets the receiver to the scalar multiplication of the receiver with the given Scalar, and returns it.
 func (e *Element[P]) Multiply(scalar internal.Scalar) internal.Element {
 	if _, err := e.p.ScalarMult(e.p, scalar.Encode()); err != nil {
 		panic(err)
@@ -158,7 +159,7 @@ func (e *Element[P]) Encode() []byte {
 // Decode sets the receiver to a decoding of the input data, and returns an error on failure.
 func (e *Element[P]) Decode(data []byte) error {
 	if _, err := e.p.SetBytes(data); err != nil {
-		return err
+		return fmt.Errorf("nist element Decode: %w", err)
 	}
 
 	return nil
@@ -187,5 +188,5 @@ func (e *Element[P]) UnmarshalText(text []byte) error {
 		return e.Decode(eb)
 	}
 
-	return err
+	return fmt.Errorf("nist element UnmarshalText: %w", err)
 }

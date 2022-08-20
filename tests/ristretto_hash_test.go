@@ -14,8 +14,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/gtank/ristretto255"
-
 	"github.com/bytemare/crypto/internal/ristretto"
 )
 
@@ -82,43 +80,5 @@ func TestRistretto_HashToGroup(t *testing.T) {
 				)
 			}
 		})
-	}
-}
-
-const (
-	input           = "00"
-	dstTest         = "564f50524630362d48617368546f47726f75702d000001"
-	element         = "b6d2b6fecaede1c421c35bc7de21f92c000b11f4dd8377fd3aae3e748e51fb7b"
-	blind           = "5ed895206bfc53316d307b23e46ecc6623afb3086da74189a416012be037e50b"
-	expectedBlinded = "5cccd309ec729aebe398c53e19c0ab09c24a29f01036960bdad109852e7bdb44"
-)
-
-func decodeHex(in string) []byte {
-	d, err := hex.DecodeString(in)
-	if err != nil {
-		panic(fmt.Sprintf("error decoding : %v", err))
-	}
-	return d
-}
-
-func TestMult(t *testing.T) {
-	e := decodeHex(element)
-	b := decodeHex(blind)
-	exp := decodeHex(expectedBlinded)
-
-	p := ristretto255.NewElement()
-	if err := p.Decode(e); err != nil {
-		panic(err)
-	}
-
-	s := ristretto255.NewScalar()
-	if err := s.Decode(b); err != nil {
-		panic(err)
-	}
-
-	mult := ristretto255.NewElement().ScalarMult(s, p)
-
-	if !bytes.Equal(exp, mult.Encode(nil)) {
-		t.Fatalf("Blinding does not match.\n\tExpected: %v\n\tActual: %v\n", exp, mult.Encode(nil))
 	}
 }

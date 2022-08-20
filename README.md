@@ -42,7 +42,6 @@ type Group interface {
     HashToScalar(input, dst []byte) Scalar
     HashToGroup(input, dst []byte) Element
     EncodeToGroup(input, dst []byte) Element
-    Ciphersuite() string
     ScalarLength() uint
     ElementLength() uint
 }

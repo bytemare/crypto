@@ -9,38 +9,86 @@
 package group_test
 
 import (
-	"bytes"
 	"testing"
 
 	"github.com/bytemare/crypto"
+	"github.com/bytemare/crypto/internal"
 )
 
-func TestPoint_Decode(t *testing.T) {
-	testAllGroups(t, func(t2 *testing.T, group *testGroup) {
-		element := group.id.Base().Multiply(group.id.NewScalar().Random())
-		encoded := element.Encode()
+func TestElement_SetCopy(t *testing.T) {
+	testAll(t, func(t2 *testing.T, group *testGroup) {
+		g := group.id
+		base := g.Base()
 
-		decoded := group.id.NewElement()
-		if err := decoded.Decode(encoded); err != nil {
-			t.Fatal(err)
-		}
-
-		if element.Equal(decoded) != 1 {
+		set := g.NewElement().Set(base)
+		if set.Equal(base) != 1 {
 			t.Fatal("expected equality")
 		}
 
-		if !bytes.Equal(encoded, decoded.Encode()) {
-			t.Fatal("expected equality when en/decoding element")
-		}
-
-		if err := group.id.NewElement().Decode(nil); err == nil {
-			t.Fatal("expected error on nil input")
+		cpy := base.Copy()
+		if cpy.Equal(base) != 1 {
+			t.Fatal("expected equality")
 		}
 	})
 }
 
-func TestPoint_Arithmetic(t *testing.T) {
-	testAllGroups(t, func(t2 *testing.T, group *testGroup) {
+func TestElement_WrongInput(t *testing.T) {
+	exec := func(f func(*crypto.Element) *crypto.Element, arg *crypto.Element) func() {
+		return func() {
+			_ = f(arg)
+		}
+	}
+
+	equal := func(f func(*crypto.Element) int, arg *crypto.Element) func() {
+		return func() {
+			f(arg)
+		}
+	}
+
+	mult := func(f func(*crypto.Scalar) *crypto.Element, arg *crypto.Scalar) func() {
+		return func() {
+			f(arg)
+		}
+	}
+
+	testAll(t, func(t2 *testing.T, group *testGroup) {
+		element := group.id.NewElement()
+		var wrongGroup crypto.Group
+
+		switch group.id {
+		case crypto.Ristretto255Sha512:
+			wrongGroup = crypto.P256Sha256
+		case crypto.P256Sha256, crypto.P384Sha384, crypto.P521Sha512:
+			wrongGroup = crypto.Ristretto255Sha512
+		default:
+			t.Fatalf("Invalid group id %d", group.id)
+		}
+
+		if err := testPanic("wrong group", internal.ErrCastElement, exec(element.Add, wrongGroup.NewElement())); err != nil {
+			t.Fatal(err)
+		}
+
+		if err := testPanic("wrong group", internal.ErrCastElement, exec(element.Subtract, wrongGroup.NewElement())); err != nil {
+			t.Fatal(err)
+		}
+
+		if err := testPanic("wrong group", internal.ErrCastElement, exec(element.Set, wrongGroup.NewElement())); err != nil {
+			t.Fatal(err)
+		}
+
+		if err := testPanic("wrong group", internal.ErrCastElement, equal(element.Equal, wrongGroup.NewElement())); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	// Specifically test Ristretto
+	if err := testPanic("wrong group", internal.ErrCastScalar, mult(crypto.Ristretto255Sha512.NewElement().Multiply, crypto.P384Sha384.NewScalar())); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestElement_Arithmetic(t *testing.T) {
+	testAll(t, func(t2 *testing.T, group *testGroup) {
 		elementTestEqual(t, group.id)
 		elementTestAdd(t, group.id)
 		elementTestDouble(t, group.id)

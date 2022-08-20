@@ -11,6 +11,7 @@ package nist
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/bytemare/crypto/internal"
@@ -37,11 +38,11 @@ func newScalar(field *field) *Scalar {
 func (s *Scalar) assert(scalar internal.Scalar) *Scalar {
 	_sc, ok := scalar.(*Scalar)
 	if !ok {
-		panic("could not cast to same group scalar : wrong group ?")
+		panic(internal.ErrCastScalar)
 	}
 
 	if !s.field.isEqual(_sc.field) {
-		panic("incompatible fields")
+		panic(internal.ErrWrongField)
 	}
 
 	return _sc
@@ -210,5 +211,5 @@ func (s *Scalar) UnmarshalText(text []byte) error {
 		return s.Decode(sb)
 	}
 
-	return err
+	return fmt.Errorf("nist scalar UnmarshalText: %w", err)
 }

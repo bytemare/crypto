@@ -47,7 +47,7 @@ func (e *Element) Identity() internal.Element {
 	return e
 }
 
-// Add set the receiver to the sum of the input to the receiver, and returns the receiver.
+// Add sets the receiver to the sum of the input and the receiver, and returns the receiver.
 func (e *Element) Add(element internal.Element) internal.Element {
 	ec := checkElement(element)
 	e.element.Add(&e.element, &ec.element)
@@ -55,13 +55,13 @@ func (e *Element) Add(element internal.Element) internal.Element {
 	return e
 }
 
-// Double set the receiver to its double, and returns it.
+// Double sets the receiver to its double, and returns it.
 func (e *Element) Double() internal.Element {
 	e.element.Add(&e.element, &e.element)
 	return e
 }
 
-// Negate set the receiver to its negation, and returns it.
+// Negate sets the receiver to its negation, and returns it.
 func (e *Element) Negate() internal.Element {
 	e.element.Negate(&e.element)
 	return e
@@ -75,18 +75,14 @@ func (e *Element) Subtract(element internal.Element) internal.Element {
 	return e
 }
 
-// Multiply set the receiver to the scalar multiplication of the receiver with the given Scalar, and returns it.
+// Multiply sets the receiver to the scalar multiplication of the receiver with the given Scalar, and returns it.
 func (e *Element) Multiply(scalar internal.Scalar) internal.Element {
 	if scalar == nil {
-		e.element = *ristretto255.NewElement()
+		e.element.Zero()
 		return e
 	}
 
-	sc, ok := scalar.(*Scalar)
-	if !ok {
-		panic(internal.ErrCastElement)
-	}
-
+	sc := assert(scalar)
 	e.element.ScalarMult(&sc.scalar, &e.element)
 
 	return e
@@ -162,7 +158,7 @@ func decodeElement(element []byte) (*ristretto255.Element, error) {
 
 	e := ristretto255.NewElement()
 	if err := e.Decode(element); err != nil {
-		return nil, fmt.Errorf("decoding element : %w", err)
+		return nil, fmt.Errorf("ristretto element Decode: %w", err)
 	}
 
 	return e, nil

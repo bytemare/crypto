@@ -32,7 +32,7 @@ func (e *Element) Identity() *Element {
 	return &Element{e.Element.Identity()}
 }
 
-// Add set the receiver to the sum of the input to the receiver, and returns the receiver.
+// Add sets the receiver to the sum of the input and the receiver, and returns the receiver.
 func (e *Element) Add(element *Element) *Element {
 	if element == nil {
 		return e
@@ -43,20 +43,22 @@ func (e *Element) Add(element *Element) *Element {
 	return e
 }
 
-// Double set the receiver to its double, and returns it.
+// Double sets the receiver to its double, and returns it.
 func (e *Element) Double() *Element {
-	return &Element{e.Element.Double()}
+	e.Element.Double()
+	return e
 }
 
-// Negate set the receiver to its negation, and returns it.
+// Negate sets the receiver to its negation, and returns it.
 func (e *Element) Negate() *Element {
-	return &Element{e.Element.Negate()}
+	e.Element.Negate()
+	return e
 }
 
 // Subtract subtracts the input from the receiver, and returns the receiver.
 func (e *Element) Subtract(element *Element) *Element {
 	if element == nil {
-		return &Element{e.Element.Copy()}
+		return e
 	}
 
 	e.Element.Subtract(element.Element)
@@ -64,10 +66,11 @@ func (e *Element) Subtract(element *Element) *Element {
 	return e
 }
 
-// Multiply set the receiver to the scalar multiplication of the receiver with the given Scalar, and returns it.
+// Multiply sets the receiver to the scalar multiplication of the receiver with the given Scalar, and returns it.
 func (e *Element) Multiply(scalar *Scalar) *Element {
 	if scalar == nil {
-		return &Element{e.Element.Identity()}
+		e.Element.Identity()
+		return e
 	}
 
 	e.Element.Multiply(scalar.Scalar)

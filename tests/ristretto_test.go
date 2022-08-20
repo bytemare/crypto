@@ -34,7 +34,6 @@ type testGroup struct {
 	scal, elem      bool   // says whether the scalar or element is supposed to be valid
 }
 
-// todo: adapt to different hashing algorithms
 var tests = []testGroup{
 	{
 		name:    "Valid element (base point), valid scalar",
