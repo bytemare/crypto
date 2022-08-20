@@ -15,6 +15,8 @@ import (
 	"github.com/bytemare/crypto"
 )
 
+const consideredAvailableFmt = "%v is considered available when it must not"
+
 func TestAvailability(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
 		if !group.id.Available() {
@@ -26,17 +28,17 @@ func TestAvailability(t *testing.T) {
 func TestNonAvailability(t *testing.T) {
 	oob := crypto.Group(0)
 	if oob.Available() {
-		t.Errorf("%v is considered available when it must not", oob)
+		t.Errorf(consideredAvailableFmt, oob)
 	}
 
 	d := crypto.Group(2) // decaf448
 	if d.Available() {
-		t.Errorf("%v is considered available when it must not", d)
+		t.Errorf(consideredAvailableFmt, d)
 	}
 
 	oob = crypto.P521Sha512 + 1
 	if oob.Available() {
-		t.Errorf("%v is considered available when it must not", oob)
+		t.Errorf(consideredAvailableFmt, oob)
 	}
 }
 

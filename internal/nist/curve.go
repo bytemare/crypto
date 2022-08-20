@@ -123,7 +123,7 @@ var (
 	decompressed521 = [133]byte{0x04}
 )
 
-func (c *curve[point]) affineToPoint(_px, _py *big.Int) point {
+func (c *curve[point]) affineToPoint(pxc, pyc *big.Int) point {
 	var decompressed []byte
 
 	byteLen := (c.field.bitLen() + 7) / 8
@@ -134,11 +134,13 @@ func (c *curve[point]) affineToPoint(_px, _py *big.Int) point {
 		decompressed = decompressed384[:]
 	case 66:
 		decompressed = decompressed521[:]
+	default:
+		panic("invalid byte length")
 	}
 
 	decompressed[0] = 0x04
-	_px.FillBytes(decompressed[1 : 1+byteLen])
-	_py.FillBytes(decompressed[1+byteLen:])
+	pxc.FillBytes(decompressed[1 : 1+byteLen])
+	pyc.FillBytes(decompressed[1+byteLen:])
 
 	p, err := c.NewPoint().SetBytes(decompressed)
 	if err != nil {
