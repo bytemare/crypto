@@ -104,7 +104,7 @@ func scalarTestOne(t *testing.T, g crypto.Group) {
 	one := g.NewScalar().One()
 	m := one.Copy()
 	if one.Equal(m.Multiply(m)) != 1 {
-		t.Fatal("expected equality")
+		t.Fatal(expectedEquality)
 	}
 }
 
@@ -120,13 +120,13 @@ func scalarTestEqual(t *testing.T, g crypto.Group) {
 	zero2 := g.NewScalar().Zero()
 
 	if zero.Equal(zero2) != 1 {
-		t.Fatal("expected equality")
+		t.Fatal(expectedEquality)
 	}
 
 	random := g.NewScalar().Random()
 	cpy := random.Copy()
 	if random.Equal(cpy) != 1 {
-		t.Fatal("expected equality")
+		t.Fatal(expectedEquality)
 	}
 
 	random2 := g.NewScalar().Random()
@@ -139,7 +139,7 @@ func scalarTestAdd(t *testing.T, g crypto.Group) {
 	r := g.NewScalar().Random()
 	cpy := r.Copy()
 	if r.Add(nil).Equal(cpy) != 1 {
-		t.Fatal("expected equality")
+		t.Fatal(expectedEquality)
 	}
 }
 
@@ -147,7 +147,7 @@ func scalarTestSubtract(t *testing.T, g crypto.Group) {
 	r := g.NewScalar().Random()
 	cpy := r.Copy()
 	if r.Subtract(nil).Equal(cpy) != 1 {
-		t.Fatal("expected equality")
+		t.Fatal(expectedEquality)
 	}
 }
 
@@ -164,13 +164,13 @@ func scalarTestInvert(t *testing.T, g crypto.Group) {
 
 	i := s.Copy().Invert().Multiply(sqr)
 	if i.Equal(s) != 1 {
-		t.Fatal("expected equality")
+		t.Fatal(expectedEquality)
 	}
 
 	s = g.NewScalar().Random()
 	square := s.Copy().Multiply(s)
 	inv := square.Copy().Invert()
 	if s.One().Equal(square.Multiply(inv)) != 1 {
-		t.Fatal("expected equality")
+		t.Fatal(expectedEquality)
 	}
 }

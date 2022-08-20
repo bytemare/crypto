@@ -115,6 +115,8 @@ func testInvalidCoordinates(t *testing.T, curveName string, curve elliptic.Curve
 		solver = solveP384
 	case "P521":
 		solver = solveP521
+	default:
+		panic("invalid nist group")
 	}
 
 	p := curve.Params().P

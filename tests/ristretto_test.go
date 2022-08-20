@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-package group
+package group_test
 
 import (
 	"bytes"
@@ -25,7 +25,7 @@ const (
 	testVersion = "0.0"
 )
 
-type testGroup struct {
+type ristrettoTest struct {
 	name            string
 	hashID          crypto.Hash
 	app             string
@@ -34,7 +34,7 @@ type testGroup struct {
 	scal, elem      bool   // says whether the scalar or element is supposed to be valid
 }
 
-var tests = []testGroup{
+var tests = []ristrettoTest{
 	{
 		name:    "Valid element (base point), valid scalar",
 		hashID:  crypto.SHA512,
@@ -109,33 +109,34 @@ func TestRistrettoScalar(t *testing.T) {
 			s := ristretto.Group{}.NewScalar()
 			err = s.Decode(encoding)
 
-			switch tt.scal {
-			case false:
+			if tt.scal == false {
 				if err == nil {
 					t.Fatalf("expected error for %s", tt.name)
 				}
-			case true:
-				if err != nil {
-					t.Fatalf("%s : unexpected error, got %v", tt.name, err)
-				}
 
-				if s == nil {
-					t.Fatal("scalar is nil, should not happen")
-				}
+				return
+			}
 
-				if len(s.Encode()) != 32 {
-					t.Fatalf(
-						"invalid random scalar length. Expected %d, got %d",
-						32,
-						len(s.Encode()),
-					)
-				}
+			if err != nil {
+				t.Fatalf("%s : unexpected error, got %v", tt.name, err)
+			}
 
-				cpy := s.Copy()
-				cpy = cpy.Invert()
-				if bytes.Equal(cpy.Encode(), s.Encode()) {
-					t.Fatal("scalar inversion resulted in same scalar")
-				}
+			if s == nil {
+				t.Fatal("scalar is nil, should not happen")
+			}
+
+			if len(s.Encode()) != 32 {
+				t.Fatalf(
+					"invalid random scalar length. Expected %d, got %d",
+					32,
+					len(s.Encode()),
+				)
+			}
+
+			cpy := s.Copy()
+			cpy = cpy.Invert()
+			if bytes.Equal(cpy.Encode(), s.Encode()) {
+				t.Fatal("scalar inversion resulted in same scalar")
 			}
 		})
 	}
@@ -167,25 +168,25 @@ func TestRistrettoElement(t *testing.T) {
 			e := ristretto.Group{}.NewElement()
 			err = e.Decode(encoding)
 
-			switch tt.elem {
-			case false:
+			if tt.elem == false {
 				if err == nil {
 					t.Fatalf("expected error for %s", tt.name)
 				}
 
-			case true:
-				if err != nil {
-					t.Fatalf("%s : unexpected error, got %v", tt.name, err)
-				}
+				return
+			}
 
-				if e == nil {
-					t.Fatalf("%s : element is nil but should not have failed on decoding", tt.name)
-				}
+			if err != nil {
+				t.Fatalf("%s : unexpected error, got %v", tt.name, err)
+			}
 
-				// Test encoding
-				if !bytes.Equal(encoding, e.Encode()) {
-					t.Fatalf("%s : Decoding and encoding doesn't return the same bytes", tt.name)
-				}
+			if e == nil {
+				t.Fatalf("%s : element is nil but should not have failed on decoding", tt.name)
+			}
+
+			// Test encoding
+			if !bytes.Equal(encoding, e.Encode()) {
+				t.Fatalf("%s : Decoding and encoding doesn't return the same bytes", tt.name)
 			}
 		})
 	}

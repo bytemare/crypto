@@ -45,8 +45,9 @@ func ecFromGroup(g crypto.Group) elliptic.Curve {
 		return elliptic.P384()
 	case crypto.P521Sha512:
 		return elliptic.P521()
+	default:
+		panic("invalid nist group")
 	}
-	panic(nil)
 }
 
 func vectorToNistBig(x, y string) (*big.Int, *big.Int) {
@@ -123,6 +124,7 @@ func TestHashToGroupVectors(t *testing.T) {
 			defer func(file *os.File) {
 				err := file.Close()
 				if err != nil {
+					t.Logf("error closing file: %v", err)
 				}
 			}(file)
 

@@ -65,12 +65,12 @@ func (e *Element[Point]) Double() internal.Element {
 func (e *Element[Point]) negateSmall() []byte {
 	enc := e.p.BytesCompressed()
 	switch enc[0] {
-	case 0:
-		panic(nil)
 	case 2:
 		enc[0] = 0x03
 	case 3:
 		enc[0] = 0x02
+	default:
+		panic("invalid encoding header")
 	}
 
 	return enc
