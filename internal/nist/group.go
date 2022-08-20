@@ -40,16 +40,19 @@ const (
 	E2CP521 = "P521_XMD:SHA-512_SSWU_NU_"
 )
 
+// P256 returns the single instantiation of the P256 Group.
 func P256() internal.Group {
 	initOnceP256.Do(initP256)
 	return &p256
 }
 
+// P384 returns the single instantiation of the P384 Group.
 func P384() internal.Group {
 	initOnceP384.Do(initP384)
 	return &p384
 }
 
+// P521 returns the single instantiation of the P521 Group.
 func P521() internal.Group {
 	initOnceP521.Do(initP521)
 	return &p521
@@ -59,96 +62,69 @@ func P521() internal.Group {
 // It exposes a prime-order group API with hash-to-curve operations.
 type Group[Point nistECPoint[Point]] struct {
 	h2c         string
-	Curve       curve[Point]
-	ScalarField field
+	curve       curve[Point]
+	scalarField field
 }
 
 // NewScalar returns a new, empty, scalar.
 func (g Group[P]) NewScalar() internal.Scalar {
-	return newScalar(&g.ScalarField)
+	return newScalar(&g.scalarField)
 }
 
-// NewElement returns the identity point (point at infinity).
+// NewElement returns the identity element (point at infinity).
 func (g Group[P]) NewElement() internal.Element {
 	return &Element[P]{
-		p:   g.Curve.NewPoint(),
-		new: g.Curve.NewPoint,
-	}
-}
-
-// ElementLength returns the byte size of an encoded element.
-func (g Group[P]) ElementLength() uint {
-	return pointLen(g.Curve.field.BitLen())
-}
-
-func (g Group[P]) newPoint(p P) *Element[P] {
-	return &Element[P]{
-		p:   p,
-		new: g.Curve.NewPoint,
-	}
-}
-
-// Identity returns the group's identity element.
-func (g Group[P]) Identity() internal.Element {
-	return g.NewElement()
-}
-
-// HashToGroup allows arbitrary input to be safely mapped to the curve of the group.
-func (g Group[P]) HashToGroup(input, dst []byte) internal.Element {
-	return g.newPoint(g.Curve.hashXMD(input, dst))
-}
-
-// EncodeToGroup allows arbitrary input to be mapped non-uniformly to points in the Group.
-func (g Group[P]) EncodeToGroup(input, dst []byte) internal.Element {
-	return g.newPoint(g.Curve.encodeXMD(input, dst))
-}
-
-// HashToScalar allows arbitrary input to be safely mapped to the field.
-func (g Group[P]) HashToScalar(input, dst []byte) internal.Scalar {
-	s := hash2curve.HashToFieldXMD(g.Curve.hash, input, dst, 1, 1, g.Curve.secLength, g.ScalarField.prime)[0]
-
-	// If necessary, build a buffer of right size, so it gets correctly interpreted.
-	b := s.Bytes()
-
-	length := (g.ScalarField.BitLen() + 7) / 8
-	if l := length - len(b); l > 0 {
-		buf := make([]byte, l, length)
-		buf = append(buf, b...)
-		b = buf
-	}
-
-	return &Scalar{
-		s:     new(big.Int).SetBytes(b),
-		field: g.Curve.field,
+		p:   g.curve.NewPoint(),
+		new: g.curve.NewPoint,
 	}
 }
 
 // Base returns the group's base point a.k.a. canonical generator.
 func (g Group[P]) Base() internal.Element {
-	b := g.Curve.NewPoint()
+	b := g.curve.NewPoint()
 	b.SetGenerator()
 
 	return g.newPoint(b)
 }
 
-// MultBytes allows []byte encodings of a scalar and an element of the group to be multiplied.
-func (g Group[P]) MultBytes(s, e []byte) (internal.Element, error) {
-	ec := g.Curve.NewPoint()
-	if _, err := ec.SetBytes(e); err != nil {
-		return nil, err
-	}
-
-	var err error
-
-	ec, err = ec.ScalarMult(ec, s)
-	if err != nil {
-		return nil, err
-	}
-
+func (g Group[P]) newPoint(p P) *Element[P] {
 	return &Element[P]{
-		p:   ec,
-		new: g.Curve.NewPoint,
-	}, nil
+		p:   p,
+		new: g.curve.NewPoint,
+	}
+}
+
+// HashToScalar returns a safe mapping of the arbitrary input to a Scalar.
+// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
+func (g Group[P]) HashToScalar(input, dst []byte) internal.Scalar {
+	s := hash2curve.HashToFieldXMD(g.curve.hash, input, dst, 1, 1, g.curve.secLength, g.scalarField.prime)[0]
+
+	// If necessary, build a buffer of right size, so it gets correctly interpreted.
+	bytes := s.Bytes()
+
+	length := int(g.ScalarLength())
+	if l := length - len(bytes); l > 0 {
+		buf := make([]byte, l, length)
+		buf = append(buf, bytes...)
+		bytes = buf
+	}
+
+	res := &Scalar{field: &g.scalarField}
+	res.s.SetBytes(bytes)
+
+	return res
+}
+
+// HashToGroup returns a safe mapping of the arbitrary input to an Element in the Group.
+// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
+func (g Group[P]) HashToGroup(input, dst []byte) internal.Element {
+	return g.newPoint(g.curve.hashXMD(input, dst))
+}
+
+// EncodeToGroup returns a non-uniform mapping of the arbitrary input to an Element in the Group.
+// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
+func (g Group[P]) EncodeToGroup(input, dst []byte) internal.Element {
+	return g.newPoint(g.curve.encodeXMD(input, dst))
 }
 
 // Ciphersuite returns the hash-to-curve ciphersuite identifier.
@@ -156,8 +132,15 @@ func (g Group[P]) Ciphersuite() string {
 	return g.h2c
 }
 
-func pointLen(bitLen int) uint {
-	byteLen := (bitLen + 7) / 8
+// ScalarLength returns the byte size of an encoded element.
+func (g Group[P]) ScalarLength() uint {
+	byteLen := (g.scalarField.bitLen() + 7) / 8
+	return uint(byteLen)
+}
+
+// ElementLength returns the byte size of an encoded element.
+func (g Group[P]) ElementLength() uint {
+	byteLen := (g.curve.field.bitLen() + 7) / 8
 	return uint(1 + byteLen)
 }
 
@@ -175,12 +158,12 @@ func initP256() {
 	primeP256, _ := new(big.Int).SetString("115792089210356248762697446949407573530"+
 		"086143415290314195533631308867097853951", 10)
 	p256.h2c = H2CP256
-	p256.Curve.setCurveParams(
+	p256.curve.setCurveParams(
 		primeP256,
 		"0x5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b",
 		nistec.NewP256Point,
 	)
-	p256.Curve.setMapping(crypto.SHA256, "-10", 48)
+	p256.curve.setMapping(crypto.SHA256, "-10", 48)
 	p256.setScalarField("0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551")
 }
 
@@ -188,12 +171,12 @@ func initP384() {
 	primeP384, _ := new(big.Int).SetString("3940200619639447921227904010014361380507973927046544666794"+
 		"8293404245721771496870329047266088258938001861606973112319", 10)
 	p384.h2c = H2CP384
-	p384.Curve.setCurveParams(
+	p384.curve.setCurveParams(
 		primeP384,
 		"0xb3312fa7e23ee7e4988e056be3f82d19181d9c6efe8141120314088f5013875ac656398d8a2ed19d2a85c8edd3ec2aef",
 		nistec.NewP384Point,
 	)
-	p384.Curve.setMapping(crypto.SHA384, "-12", 72)
+	p384.curve.setMapping(crypto.SHA384, "-12", 72)
 	p384.setScalarField(
 		"0xffffffffffffffffffffffffffffffffffffffffffffffffc7634d81f4372ddf581a0db248b0a77aecec196accc52973",
 	)
@@ -204,13 +187,13 @@ func initP521() {
 		"4093944634591855431833976560521225596406614545549772"+
 		"96311391480858037121987999716643812574028291115057151", 10)
 	p521.h2c = H2CP521
-	p521.Curve.setCurveParams(
+	p521.curve.setCurveParams(
 		primeP521,
 		"0x051953eb9618e1c9a1f929a21a0b68540eea2da725b99b315f3b8b489918ef10"+
 			"9e156193951ec7e937b1652c0bd3bb1bf073573df883d2c34f1ef451fd46b503f00",
 		nistec.NewP521Point,
 	)
-	p521.Curve.setMapping(crypto.SHA512, "-4", 98)
+	p521.curve.setMapping(crypto.SHA512, "-4", 98)
 	p521.setScalarField(
 		"0x1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" +
 			"a51868783bf2f966b7fcc0148f709a5d03bb5c9b8899c47aebb6fb71e91386409",
@@ -218,5 +201,5 @@ func initP521() {
 }
 
 func (g *Group[Point]) setScalarField(order string) {
-	g.ScalarField = *NewField(s2int(order))
+	g.scalarField = *newField(s2int(order))
 }

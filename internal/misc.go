@@ -30,17 +30,20 @@ var (
 	// ErrCastScalar indicates a failed attempt to cast to a scalar.
 	ErrCastScalar = errors.New("could not cast to same group scalar (wrong group ?)")
 
+	// ErrWrongField indicates an incompatible field has been encountered.
+	ErrWrongField = errors.New("incompatible fields")
+
 	// ErrIdentity indicates that the identity point (or point at infinity) has been encountered.
 	ErrIdentity = errors.New("infinity/identity point")
 )
 
 // RandomBytes returns random bytes of length len (wrapper for crypto/rand).
 func RandomBytes(length int) []byte {
-	r := make([]byte, length)
-	if _, err := cryptorand.Read(r); err != nil {
+	random := make([]byte, length)
+	if _, err := cryptorand.Read(random); err != nil {
 		// We can as well not panic and try again in a loop
 		panic(fmt.Errorf("unexpected error in generating random bytes : %w", err))
 	}
 
-	return r
+	return random
 }

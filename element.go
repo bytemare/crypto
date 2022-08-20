@@ -9,7 +9,9 @@
 // Package crypto exposes a prime-order elliptic curve groups with additional hash-to-curve operations.
 package crypto
 
-import "github.com/bytemare/crypto/internal"
+import (
+	"github.com/bytemare/crypto/internal"
+)
 
 // Element represents an element on the curve of the prime-order group.
 type Element struct {
@@ -20,79 +22,113 @@ func newPoint(p internal.Element) *Element {
 	return &Element{p}
 }
 
-// Add returns the sum of the Points, and does not change the receiver.
-func (p *Element) Add(element *Element) *Element {
-	if element == nil {
-		return &Element{p.Element.Copy()}
-	}
-
-	return &Element{p.Element.Add(element.Element)}
+// Base sets the element to the group's base point a.k.a. canonical generator.
+func (e *Element) Base() *Element {
+	return &Element{e.Element.Base()}
 }
 
-// Subtract returns the difference between the Points, and does not change the receiver.
-func (p *Element) Subtract(element *Element) *Element {
-	if element == nil {
-		return &Element{p.Element.Copy()}
-	}
-
-	return &Element{p.Element.Subtract(element.Element)}
+// Identity sets the element to the point at infinity of the Group's underlying curve.
+func (e *Element) Identity() *Element {
+	return &Element{e.Element.Identity()}
 }
 
-// Multiply returns the scalar multiplication of the receiver element with the given scalar.
-func (p *Element) Multiply(scalar *Scalar) *Element {
+// Add sets the receiver to the sum of the input and the receiver, and returns the receiver.
+func (e *Element) Add(element *Element) *Element {
+	if element == nil {
+		return e
+	}
+
+	e.Element.Add(element.Element)
+
+	return e
+}
+
+// Double sets the receiver to its double, and returns it.
+func (e *Element) Double() *Element {
+	e.Element.Double()
+	return e
+}
+
+// Negate sets the receiver to its negation, and returns it.
+func (e *Element) Negate() *Element {
+	e.Element.Negate()
+	return e
+}
+
+// Subtract subtracts the input from the receiver, and returns the receiver.
+func (e *Element) Subtract(element *Element) *Element {
+	if element == nil {
+		return e
+	}
+
+	e.Element.Subtract(element.Element)
+
+	return e
+}
+
+// Multiply sets the receiver to the scalar multiplication of the receiver with the given Scalar, and returns it.
+func (e *Element) Multiply(scalar *Scalar) *Element {
 	if scalar == nil {
-		return &Element{p.Element.Identity()}
+		e.Element.Identity()
+		return e
 	}
 
-	return &Element{p.Element.Multiply(scalar.Scalar)}
+	e.Element.Multiply(scalar.Scalar)
+
+	return e
 }
 
 // Equal returns 1 if the elements are equivalent, and 0 otherwise.
-func (p *Element) Equal(element *Element) int {
+func (e *Element) Equal(element *Element) int {
 	if element == nil {
 		return 0
 	}
 
-	return p.Element.Equal(element.Element)
+	return e.Element.Equal(element.Element)
 }
 
-// IsIdentity returns whether the element is the Group's identity element.
-func (p *Element) IsIdentity() bool {
-	return p.Element.IsIdentity()
+// IsIdentity returns whether the Element is the point at infinity of the Group's underlying curve.
+func (e *Element) IsIdentity() bool {
+	return e.Element.IsIdentity()
 }
 
-// Copy returns a copy of the element.
-func (p *Element) Copy() *Element {
-	return &Element{p.Element.Copy()}
+// Set sets the receiver to the argument, and returns the receiver.
+func (e *Element) Set(element *Element) *Element {
+	e.Element.Set(element.Element)
+	return e
 }
 
-// Decode decodes the input and sets the current element to its value, and returns it.
-func (p *Element) Decode(in []byte) (*Element, error) {
-	q, err := p.Element.Decode(in)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Element{q}, nil
+// Copy returns a copy of the receiver.
+func (e *Element) Copy() *Element {
+	return &Element{e.Element.Copy()}
 }
 
-// Bytes returns the compressed byte encoding of the element.
-func (p *Element) Bytes() []byte {
-	return p.Element.Bytes()
+// Encode returns the compressed byte encoding of the element.
+func (e *Element) Encode() []byte {
+	return e.Element.Encode()
 }
 
-func (p *Element) Double() *Element {
-	return &Element{p.Element.Double()}
+// Decode sets the receiver to a decoding of the input data, and returns an error on failure.
+func (e *Element) Decode(data []byte) error {
+	return e.Element.Decode(data)
 }
 
-func (p *Element) Base() *Element {
-	return &Element{p.Element.Base()}
+// MarshalBinary returns the compressed byte encoding of the element.
+func (e *Element) MarshalBinary() ([]byte, error) {
+	return e.Element.MarshalBinary()
 }
 
-func (p *Element) Identity() *Element {
-	return &Element{p.Element.Identity()}
+// UnmarshalBinary sets e to the decoding of the byte encoded element.
+func (e *Element) UnmarshalBinary(data []byte) error {
+	return e.Element.UnmarshalBinary(data)
 }
 
-func (p *Element) Negate() *Element {
-	return &Element{p.Element.Negate()}
+// MarshalText implements the encoding.MarshalText interface.
+func (e *Element) MarshalText() (text []byte, err error) {
+	return e.Element.MarshalText()
+}
+
+// UnmarshalText implements the encoding.UnmarshalText interface.
+func (e *Element) UnmarshalText(text []byte) error {
+	return e.Element.UnmarshalText(text)
 }

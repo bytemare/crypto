@@ -12,7 +12,7 @@ import (
 	"crypto/elliptic"
 	"encoding/hex"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -45,8 +45,9 @@ func ecFromGroup(g crypto.Group) elliptic.Curve {
 		return elliptic.P384()
 	case crypto.P521Sha512:
 		return elliptic.P521()
+	default:
+		panic("invalid nist group")
 	}
-	panic(nil)
 }
 
 func vectorToNistBig(x, y string) (*big.Int, *big.Int) {
@@ -63,66 +64,26 @@ func vectorToNistBig(x, y string) (*big.Int, *big.Int) {
 	return xb, yb
 }
 
-func decodeEd25519(x, y string) []byte {
-	xb, err := hex.DecodeString(x)
-	if err != nil {
-		panic(err)
-	}
-
-	yb, err := hex.DecodeString(y)
-	if err != nil {
-		panic(err)
-	}
-
-	yb = reverse(yb)
-	isXNeg := int(xb[31] & 1)
-	yb[31] |= byte(isXNeg << 7)
-
-	q, err := crypto.Edwards25519Sha512.NewElement().Decode(yb)
-	if err != nil {
-		panic(err)
-	}
-
-	return q.Bytes()
-}
-
-func reverse(b []byte) []byte {
-	l := len(b) - 1
-	for i := 0; i < len(b)/2; i++ {
-		b[i], b[l-i] = b[l-i], b[i]
-	}
-
-	return b
-}
-
 func (v *vector) run(t *testing.T) {
 	var expected string
-	switch {
-	case v.group == crypto.P256Sha256 || v.group == crypto.P384Sha384 || v.group == crypto.P521Sha512:
+	if v.group == crypto.P256Sha256 || v.group == crypto.P384Sha384 || v.group == crypto.P521Sha512 {
 		e := ecFromGroup(v.group)
 		x, y := vectorToNistBig(v.P.X, v.P.Y)
 		expected = hex.EncodeToString(elliptic.MarshalCompressed(e, x, y))
-	// case v.group == Curve25519Sha512:
-	//	exp, _ := hex.DecodeString(v.P.X[2:])
-	//	expected = hex.EncodeToString(reverse(exp))
-	case v.group == crypto.Edwards25519Sha512:
-		expected = hex.EncodeToString(decodeEd25519(v.P.X[2:], v.P.Y[2:]))
-	default:
-		return
 	}
 
 	switch v.Ciphersuite[len(v.Ciphersuite)-3:] {
 	case "RO_":
 		p := v.group.HashToGroup([]byte(v.Msg), []byte(v.Dst))
 
-		if hex.EncodeToString(p.Bytes()) != expected {
-			t.Fatalf("Unexpected HashToGroup output.\n\tExpected %q\n\tgot %q", expected, hex.EncodeToString(p.Bytes()))
+		if hex.EncodeToString(p.Encode()) != expected {
+			t.Fatalf("Unexpected HashToGroup output.\n\tExpected %q\n\tgot %q", expected, hex.EncodeToString(p.Encode()))
 		}
 	case "NU_":
 		p := v.group.EncodeToGroup([]byte(v.Msg), []byte(v.Dst))
 
-		if hex.EncodeToString(p.Bytes()) != expected {
-			t.Fatalf("Unexpected EncodeToGroup output.\n\tExpected %q\n\tgot %q", expected, hex.EncodeToString(p.Bytes()))
+		if hex.EncodeToString(p.Encode()) != expected {
+			t.Fatalf("Unexpected EncodeToGroup output.\n\tExpected %q\n\tgot %q", expected, hex.EncodeToString(p.Encode()))
 		}
 	default:
 		t.Fatal("ciphersuite not recognized")
@@ -160,9 +121,14 @@ func TestHashToGroupVectors(t *testing.T) {
 				t.Fatal(errOpen)
 			}
 
-			defer file.Close()
+			defer func(file *os.File) {
+				err := file.Close()
+				if err != nil {
+					t.Logf("error closing file: %v", err)
+				}
+			}(file)
 
-			val, errRead := ioutil.ReadAll(file)
+			val, errRead := io.ReadAll(file)
 			if errRead != nil {
 				t.Fatal(errRead)
 			}

@@ -9,83 +9,168 @@
 package group_test
 
 import (
+	"encoding/hex"
 	"testing"
 
 	"github.com/bytemare/crypto"
+	"github.com/bytemare/crypto/internal"
 )
 
-func TestScalar_Arithmetic(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *group) {
-		testScalarArithmetic(t, group.id)
+func TestScalar_WrongInput(t *testing.T) {
+	exec := func(f func(*crypto.Scalar) *crypto.Scalar, arg *crypto.Scalar) func() {
+		return func() {
+			f(arg)
+		}
+	}
+
+	equal := func(f func(*crypto.Scalar) int, arg *crypto.Scalar) func() {
+		return func() {
+			f(arg)
+		}
+	}
+
+	testAll(t, func(t2 *testing.T, group *testGroup) {
+		scalar := group.id.NewScalar()
+		methods := []func(arg *crypto.Scalar) *crypto.Scalar{
+			scalar.Add, scalar.Subtract, scalar.Multiply, scalar.Set,
+		}
+
+		var wrongGroup crypto.Group
+
+		switch group.id {
+		case crypto.Ristretto255Sha512:
+			wrongGroup = crypto.P256Sha256
+		case crypto.P256Sha256, crypto.P384Sha384, crypto.P521Sha512:
+			wrongGroup = crypto.Ristretto255Sha512
+
+			// Add a special test for nist groups, using a different field
+			wrongfield := ((group.id + 1) % 3) + 3
+			if err := testPanic("wrong field", internal.ErrWrongField, exec(scalar.Add, wrongfield.NewScalar())); err != nil {
+				t.Fatal(err)
+			}
+		default:
+			t.Fatalf("Invalid group id %d", group.id)
+		}
+
+		for _, f := range methods {
+			if err := testPanic("wrong group", internal.ErrCastScalar, exec(f, wrongGroup.NewScalar())); err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		if err := testPanic("wrong group", internal.ErrCastScalar, equal(scalar.Equal, wrongGroup.NewScalar())); err != nil {
+			t.Fatal(err)
+		}
+
 	})
 }
 
-func testScalarArithmetic(t *testing.T, g crypto.Group) {
-	s := g.NewScalar().Random()
+func TestScalar_Arithmetic(t *testing.T) {
+	testAll(t, func(t2 *testing.T, group *testGroup) {
+		scalarTestZero(t, group.id)
+		scalarTestOne(t, group.id)
+		scalarTestEqual(t, group.id)
+		scalarTestRandom(t, group.id)
+		scalarTestAdd(t, group.id)
+		scalarTestSubtract(t, group.id)
+		scalarTestMultiply(t, group.id)
+		scalarTestInvert(t, group.id)
+	})
+}
 
-	// Adding and subtracting nil must yield the same element
-	if s.Add(nil).Equal(s) != 1 {
-		t.Fatal("expected equality")
-	}
-
-	if s.Sub(nil).Equal(s) != 1 {
-		t.Fatal("expected equality")
-	}
-
-	// Test zero Scalar
+func scalarTestZero(t *testing.T, g crypto.Group) {
 	zero := g.NewScalar()
 	if !zero.IsZero() {
 		t.Fatal("expected zero scalar")
 	}
 
-	s = g.NewScalar().Random()
-
-	zero = s.Sub(s)
-	if !zero.IsZero() {
+	s := g.NewScalar().Random()
+	if !s.Subtract(s).IsZero() {
 		t.Fatal("expected zero scalar")
 	}
 
+	s = g.NewScalar().Random()
 	if s.Add(zero).Equal(s) != 1 {
 		t.Fatal("expected no change in adding zero scalar")
 	}
+
+	s = g.NewScalar().Random()
 	if s.Add(zero).Equal(s) != 1 {
 		t.Fatal("not equal")
 	}
+}
 
-	// Test Multiplication and inversion
-	s = g.NewScalar().Random()
-	sqr := s.Mult(s)
+func scalarTestOne(t *testing.T, g crypto.Group) {
+	one := g.NewScalar().One()
+	m := one.Copy()
+	if one.Equal(m.Multiply(m)) != 1 {
+		t.Fatal(expectedEquality)
+	}
+}
 
-	i := s.Invert().Mult(sqr)
-	if i.Equal(s) != 1 {
-		t.Fatal("expected equality")
+func scalarTestRandom(t *testing.T, g crypto.Group) {
+	r := g.NewScalar().Random()
+	if r.Equal(g.NewScalar().Zero()) == 1 {
+		t.Fatalf("random scalar is zero: %v", hex.EncodeToString(r.Encode()))
+	}
+}
+
+func scalarTestEqual(t *testing.T, g crypto.Group) {
+	zero := g.NewScalar().Zero()
+	zero2 := g.NewScalar().Zero()
+
+	if zero.Equal(zero2) != 1 {
+		t.Fatal(expectedEquality)
 	}
 
+	random := g.NewScalar().Random()
+	cpy := random.Copy()
+	if random.Equal(cpy) != 1 {
+		t.Fatal(expectedEquality)
+	}
+
+	random2 := g.NewScalar().Random()
+	if random.Equal(random2) == 1 {
+		t.Fatal("unexpected equality")
+	}
+}
+
+func scalarTestAdd(t *testing.T, g crypto.Group) {
+	r := g.NewScalar().Random()
+	cpy := r.Copy()
+	if r.Add(nil).Equal(cpy) != 1 {
+		t.Fatal(expectedEquality)
+	}
+}
+
+func scalarTestSubtract(t *testing.T, g crypto.Group) {
+	r := g.NewScalar().Random()
+	cpy := r.Copy()
+	if r.Subtract(nil).Equal(cpy) != 1 {
+		t.Fatal(expectedEquality)
+	}
+}
+
+func scalarTestMultiply(t *testing.T, g crypto.Group) {
+	s := g.NewScalar().Random()
 	if !s.Multiply(nil).IsZero() {
 		t.Fatal("expected zero")
 	}
 }
 
-func TestScalar_Decode(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *group) {
-		testScalarDecoding(t, group.id)
-	})
-}
-
-func testScalarDecoding(t *testing.T, g crypto.Group) {
+func scalarTestInvert(t *testing.T, g crypto.Group) {
 	s := g.NewScalar().Random()
-	enc := s.Bytes()
-	dec, err := g.NewScalar().Decode(enc)
-	if err != nil {
-		t.Fatalf("unexpected error %v", err)
+	sqr := s.Copy().Multiply(s)
+
+	i := s.Copy().Invert().Multiply(sqr)
+	if i.Equal(s) != 1 {
+		t.Fatal(expectedEquality)
 	}
 
-	if !dec.Sub(s).IsZero() {
-		t.Fatal("expected assertion to be true")
-	}
-
-	_, err = g.NewScalar().Decode(nil)
-	if err == nil {
-		t.Fatal("expected error on nil input")
+	s = g.NewScalar().Random()
+	square := s.Copy().Multiply(s)
+	inv := square.Copy().Invert()
+	if s.One().Equal(square.Multiply(inv)) != 1 {
+		t.Fatal(expectedEquality)
 	}
 }
