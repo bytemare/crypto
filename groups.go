@@ -126,11 +126,6 @@ func (g Group) EncodeToGroup(input, dst []byte) *Element {
 	return newPoint(g.get().EncodeToGroup(input, dst))
 }
 
-// Ciphersuite returns the hash-to-curve ciphersuite identifier.
-func (g Group) Ciphersuite() string {
-	return g.get().Ciphersuite()
-}
-
 // ScalarLength returns the byte size of an encoded scalar.
 func (g Group) ScalarLength() uint {
 	return g.get().ScalarLength()

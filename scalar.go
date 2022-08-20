@@ -41,7 +41,7 @@ func (s *Scalar) Random() *Scalar {
 	return s
 }
 
-// Add set the receiver to the sum of the input to the receiver, and returns the receiver.
+// Add sets the receiver to the sum of the input and the receiver, and returns the receiver.
 func (s *Scalar) Add(scalar *Scalar) *Scalar {
 	if scalar == nil {
 		return s
@@ -74,7 +74,7 @@ func (s *Scalar) Multiply(scalar *Scalar) *Scalar {
 	return s
 }
 
-// Invert set the receiver to the scalar's modular inverse ( 1 / scalar ), and returns it.
+// Invert sets the receiver to the scalar's modular inverse ( 1 / scalar ), and returns it.
 func (s *Scalar) Invert() *Scalar {
 	s.Scalar.Invert()
 	return s
@@ -92,6 +92,12 @@ func (s *Scalar) Equal(scalar *Scalar) int {
 // IsZero returns whether the scalar is 0.
 func (s *Scalar) IsZero() bool {
 	return s.Scalar.IsZero()
+}
+
+// Set sets the receiver to the argument, and returns the receiver.
+func (s *Scalar) Set(scalar *Scalar) *Scalar {
+	s.Scalar.Set(scalar.Scalar)
+	return s
 }
 
 // Copy returns a copy of the receiver.

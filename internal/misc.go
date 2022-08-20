@@ -30,6 +30,9 @@ var (
 	// ErrCastScalar indicates a failed attempt to cast to a scalar.
 	ErrCastScalar = errors.New("could not cast to same group scalar (wrong group ?)")
 
+	// ErrWrongField indicates an incompatible field has been encountered.
+	ErrWrongField = errors.New("incompatible fields")
+
 	// ErrIdentity indicates that the identity point (or point at infinity) has been encountered.
 	ErrIdentity = errors.New("infinity/identity point")
 )

@@ -23,7 +23,7 @@ type Scalar interface {
 	// The random source is crypto/rand, and this functions is guaranteed to return a non-zero scalar.
 	Random() Scalar
 
-	// Add set the receiver to the sum of the input to the receiver, and returns the receiver.
+	// Add sets the receiver to the sum of the input and the receiver, and returns the receiver.
 	Add(Scalar) Scalar
 
 	// Subtract subtracts the input from the receiver, and returns the receiver.
@@ -32,7 +32,7 @@ type Scalar interface {
 	// Multiply multiplies the receiver with the input, and returns the receiver.
 	Multiply(Scalar) Scalar
 
-	// Invert set the receiver to the scalar's modular inverse ( 1 / scalar ), and returns it.
+	// Invert sets the receiver to the scalar's modular inverse ( 1 / scalar ), and returns it.
 	Invert() Scalar
 
 	// Equal returns 1 if the scalars are equal, and 0 otherwise.

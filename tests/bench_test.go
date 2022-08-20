@@ -11,14 +11,11 @@ package group_test
 import (
 	"bytes"
 	"testing"
-
-	"github.com/bytemare/crypto"
-	"github.com/bytemare/crypto/internal/nist"
 )
 
-func benchAll(t *testing.B, f func(*testing.B, *testGroup)) {
+func benchAll(b *testing.B, f func(*testing.B, *testGroup)) {
 	for _, group := range testGroups() {
-		t.Run(group.name, func(t *testing.B) {
+		b.Run(group.name, func(t *testing.B) {
 			f(t, group)
 		})
 	}
@@ -30,6 +27,7 @@ func BenchmarkHashToGroup(b *testing.B) {
 	benchAll(b, func(b *testing.B, group *testGroup) {
 		b.SetBytes(int64(len(msg)))
 		b.ResetTimer()
+		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
 			group.id.HashToGroup(msg, dst)
 		}
@@ -37,20 +35,21 @@ func BenchmarkHashToGroup(b *testing.B) {
 }
 
 func BenchmarkSubtraction(b *testing.B) {
-	group := testGroup{"P256", nist.H2CP256, nist.E2CP256, crypto.P256Sha256, 33, 32}
-	b.ResetTimer()
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		base := group.id.Base()
-		base.Subtract(base)
-	}
+	benchAll(b, func(b *testing.B, group *testGroup) {
+		b.ResetTimer()
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			base := group.id.Base()
+			base.Subtract(base)
+		}
+	})
 }
 
 func BenchmarkScalarBaseMult(b *testing.B) {
 	benchAll(b, func(b *testing.B, group *testGroup) {
 		priv := group.id.NewScalar().Random()
-		b.ReportAllocs()
 		b.ResetTimer()
+		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
 			_ = group.id.Base().Multiply(priv)
 			// to do : Prevent the compiler from optimizing out the operation.
@@ -62,8 +61,8 @@ func BenchmarkScalarMult(b *testing.B) {
 	benchAll(b, func(b *testing.B, group *testGroup) {
 		priv := group.id.NewScalar().Random()
 		pub := group.id.Base().Multiply(group.id.NewScalar().Random())
-		b.ReportAllocs()
 		b.ResetTimer()
+		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
 			pub = pub.Multiply(priv)
 		}

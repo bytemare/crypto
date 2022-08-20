@@ -11,6 +11,7 @@ package ristretto
 
 import (
 	"encoding/base64"
+	"fmt"
 
 	"github.com/gtank/ristretto255"
 
@@ -70,7 +71,7 @@ func (s *Scalar) Random() internal.Scalar {
 	}
 }
 
-// Add set the receiver to the sum of the input to the receiver, and returns the receiver.
+// Add sets the receiver to the sum of the input and the receiver, and returns the receiver.
 func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s
@@ -106,7 +107,7 @@ func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
 	return s
 }
 
-// Invert set the receiver to the scalar's modular inverse ( 1 / scalar ), and returns it.
+// Invert sets the receiver to the scalar's modular inverse ( 1 / scalar ), and returns it.
 func (s *Scalar) Invert() internal.Scalar {
 	s.scalar.Invert(&s.scalar)
 	return s
@@ -114,6 +115,10 @@ func (s *Scalar) Invert() internal.Scalar {
 
 // Equal returns 1 if the scalars are equal, and 0 otherwise.
 func (s *Scalar) Equal(scalar internal.Scalar) int {
+	if scalar == nil {
+		return 0
+	}
+
 	sc := assert(scalar)
 
 	return s.scalar.Equal(&sc.scalar)
@@ -173,7 +178,7 @@ func decodeScalar(scalar []byte) (*ristretto255.Scalar, error) {
 
 	s := ristretto255.NewScalar()
 	if err := s.Decode(scalar); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ristretto scalar Decode: %w", err)
 	}
 
 	return s, nil
@@ -202,5 +207,5 @@ func (s *Scalar) UnmarshalText(text []byte) error {
 		return s.Decode(sb)
 	}
 
-	return err
+	return fmt.Errorf("ristretto scalar UnmarshalText: %w", err)
 }

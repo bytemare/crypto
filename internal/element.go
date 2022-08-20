@@ -19,23 +19,23 @@ type Element interface {
 	// Identity sets the element to the point at infinity of the Group's underlying curve.
 	Identity() Element
 
-	// Add set the receiver to the sum of the input to the receiver, and returns the receiver.
+	// Add sets the receiver to the sum of the input and the receiver, and returns the receiver.
 	Add(Element) Element
 
-	// Double set the receiver to its double, and returns it.
+	// Double sets the receiver to its double, and returns it.
 	Double() Element
 
-	// Negate set the receiver to its negation, and returns it.
+	// Negate sets the receiver to its negation, and returns it.
 	Negate() Element
 
 	// Subtract subtracts the input from the receiver, and returns the receiver.
 	Subtract(Element) Element
 
-	// Multiply set the receiver to the scalar multiplication of the receiver with the given Scalar, and returns it.
+	// Multiply sets the receiver to the scalar multiplication of the receiver with the given Scalar, and returns it.
 	Multiply(Scalar) Element
 
 	// Equal returns 1 if the elements are equivalent, and 0 otherwise.
-	Equal(element Element) int
+	Equal(Element) int
 
 	// IsIdentity returns whether the Element is the point at infinity of the Group's underlying curve.
 	IsIdentity() bool
