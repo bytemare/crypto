@@ -94,7 +94,7 @@ func (s *Scalar) IsZero() bool {
 	return s.Scalar.IsZero()
 }
 
-// Set sets the receiver to the argument, and returns the receiver.
+// Set sets the receiver to the value of the argument scalar, and returns the receiver.
 func (s *Scalar) Set(scalar *Scalar) *Scalar {
 	s.Scalar.Set(scalar.Scalar)
 	return s

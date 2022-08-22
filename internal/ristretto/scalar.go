@@ -134,15 +134,16 @@ func (s *Scalar) set(scalar *Scalar) *Scalar {
 	return s
 }
 
-// Set sets the receiver to the argument, and returns the receiver.
+// Set sets the receiver to the value of the argument scalar, and returns the receiver.
 func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s.set(nil)
 	}
 
 	ec := assert(scalar)
+	s.scalar = ec.scalar
 
-	return s.set(ec)
+	return s
 }
 
 // Copy returns a copy of the receiver.

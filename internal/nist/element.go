@@ -140,7 +140,9 @@ func (e *Element[P]) Set(element internal.Element) internal.Element {
 		panic(internal.ErrCastElement)
 	}
 
-	return e.set(ec)
+	e.p.Set(ec.p)
+
+	return e
 }
 
 // Copy returns a copy of the receiver.

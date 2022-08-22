@@ -21,20 +21,43 @@ const (
 	wrongGroup       = "wrong group"
 )
 
-func TestElement_SetCopy(t *testing.T) {
+func testElementCopySet(t *testing.T, element, other *crypto.Element) {
+	// Verify they don't point to the same thing
+	if &element == &other {
+		t.Fatalf("Pointer to the same scalar")
+	}
+
+	// Verify whether they are equivalent
+	if element.Equal(other) != 1 {
+		t.Fatalf("Expected equality")
+	}
+
+	// Verify than operations on one don't affect the other
+	element.Add(element)
+	if element.Equal(other) == 1 {
+		t.Fatalf("Unexpected equality")
+	}
+
+	other.Double().Double()
+	if element.Equal(other) == 1 {
+		t.Fatalf("Unexpected equality")
+	}
+}
+
+func TestElementCopy(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		g := group.id
-		base := g.Base()
-
-		set := g.NewElement().Set(base)
-		if set.Equal(base) != 1 {
-			t.Fatal(expectedEquality)
-		}
-
+		base := group.id.Base()
 		cpy := base.Copy()
-		if cpy.Equal(base) != 1 {
-			t.Fatal(expectedEquality)
-		}
+		testElementCopySet(t, base, cpy)
+	})
+}
+
+func TestElementSet(t *testing.T) {
+	testAll(t, func(t2 *testing.T, group *testGroup) {
+		base := group.id.Base()
+		other := group.id.NewElement()
+		other.Set(base)
+		testElementCopySet(t, base, other)
 	})
 }
 

@@ -65,6 +65,46 @@ func TestScalar_WrongInput(t *testing.T) {
 	})
 }
 
+func testScalarCopySet(t *testing.T, scalar, other *crypto.Scalar) {
+	// Verify they don't point to the same thing
+	if &scalar == &other {
+		t.Fatalf("Pointer to the same scalar")
+	}
+
+	// Verify whether they are equivalent
+	if scalar.Equal(other) != 1 {
+		t.Fatalf("Expected equality")
+	}
+
+	// Verify than operations on one don't affect the other
+	scalar.Add(scalar)
+	if scalar.Equal(other) == 1 {
+		t.Fatalf("Unexpected equality")
+	}
+
+	other.Invert()
+	if scalar.Equal(other) == 1 {
+		t.Fatalf("Unexpected equality")
+	}
+}
+
+func TestScalarCopy(t *testing.T) {
+	testAll(t, func(t2 *testing.T, group *testGroup) {
+		random := group.id.NewScalar().Random()
+		cpy := random.Copy()
+		testScalarCopySet(t, random, cpy)
+	})
+}
+
+func TestScalarSet(t *testing.T) {
+	testAll(t, func(t2 *testing.T, group *testGroup) {
+		random := group.id.NewScalar().Random()
+		other := group.id.NewScalar()
+		other.Set(random)
+		testScalarCopySet(t, random, other)
+	})
+}
+
 func TestScalar_Arithmetic(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
 		scalarTestZero(t, group.id)

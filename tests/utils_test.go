@@ -139,6 +139,7 @@ func TestEncoding(t *testing.T) {
 		scalar := group.id.NewScalar().Random()
 		testEncoding(t, scalar, group.id.NewScalar())
 
+		scalar = group.id.NewScalar().Random()
 		element := group.id.Base().Multiply(scalar)
 		testEncoding(t, element, group.id.NewElement())
 	})
