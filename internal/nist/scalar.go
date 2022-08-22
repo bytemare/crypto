@@ -140,15 +140,16 @@ func (s *Scalar) set(scalar *Scalar) *Scalar {
 	return s
 }
 
-// Set sets the receiver to the argument scalar, and returns the receiver.
+// Set sets the receiver to the value of the argument scalar, and returns the receiver.
 func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s.set(nil)
 	}
 
 	ec := s.assert(scalar)
+	s.s.Set(&ec.s)
 
-	return s.set(ec)
+	return s
 }
 
 // Copy returns a copy of the Scalar.
@@ -156,7 +157,7 @@ func (s *Scalar) Copy() internal.Scalar {
 	cpy := &Scalar{field: s.field}
 	cpy.s.Set(&s.s)
 
-	return s
+	return cpy
 }
 
 // Encode returns the compressed byte encoding of the scalar.

@@ -41,7 +41,7 @@ type Scalar interface {
 	// IsZero returns whether the scalar is 0.
 	IsZero() bool
 
-	// Set sets the receiver to the argument, and returns the receiver.
+	// Set sets the receiver to the value of the argument scalar, and returns the receiver.
 	Set(Scalar) Scalar
 
 	// Copy returns a copy of the receiver.
