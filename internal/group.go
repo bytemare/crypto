@@ -40,4 +40,7 @@ type Group interface {
 
 	// ElementLength returns the byte size of an encoded element.
 	ElementLength() uint
+
+	// Order returns the order of the canonical group of scalars.
+	Order() string
 }

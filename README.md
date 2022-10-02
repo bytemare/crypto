@@ -44,6 +44,7 @@ type Group interface {
     EncodeToGroup(input, dst []byte) Element
     ScalarLength() uint
     ElementLength() uint
+	Order() string
 }
 ```
 
@@ -67,8 +68,6 @@ type Scalar interface {
     Decode(in []byte) error
     encoding.BinaryMarshaler
     encoding.BinaryUnmarshaler
-    encoding.TextMarshaler
-    encoding.TextUnmarshaler
 }
 ```
 
@@ -91,8 +90,6 @@ type Element interface {
     Decode(data []byte) error
     encoding.BinaryMarshaler
     encoding.BinaryUnmarshaler
-    encoding.TextMarshaler
-    encoding.TextUnmarshaler
 }
 ```
 

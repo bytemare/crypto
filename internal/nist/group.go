@@ -144,6 +144,11 @@ func (g Group[P]) ElementLength() uint {
 	return uint(1 + byteLen)
 }
 
+// Order returns the order of the canonical group of scalars.
+func (g Group[P]) Order() string {
+	return g.scalarField.prime.String()
+}
+
 var (
 	initOnceP256 sync.Once
 	initOnceP384 sync.Once
