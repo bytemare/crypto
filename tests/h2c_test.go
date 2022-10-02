@@ -22,10 +22,10 @@ import (
 )
 
 type vectors struct {
-	Ciphersuite string `json:"ciphersuite"`
-	group       crypto.Group
+	Ciphersuite string   `json:"ciphersuite"`
 	Dst         string   `json:"dst"`
 	Vectors     []vector `json:"vectors"`
+	group       crypto.Group
 }
 
 type vector struct {

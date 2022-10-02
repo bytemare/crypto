@@ -9,9 +9,7 @@
 package nist
 
 import (
-	"encoding/base64"
 	"errors"
-	"fmt"
 	"math/big"
 
 	"github.com/bytemare/crypto/internal"
@@ -24,12 +22,15 @@ var (
 
 // Scalar implements the Scalar interface for group scalars.
 type Scalar struct {
-	s     big.Int
 	field *field
+	s     big.Int
 }
 
 func newScalar(field *field) *Scalar {
-	s := &Scalar{field: field}
+	s := &Scalar{
+		field: field,
+		s:     big.Int{},
+	}
 	s.s.Set(zero)
 
 	return s
@@ -154,7 +155,7 @@ func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 
 // Copy returns a copy of the Scalar.
 func (s *Scalar) Copy() internal.Scalar {
-	cpy := &Scalar{field: s.field}
+	cpy := newScalar(s.field)
 	cpy.s.Set(&s.s)
 
 	return cpy
@@ -197,20 +198,4 @@ func (s *Scalar) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary sets e to the decoding of the byte encoded scalar.
 func (s *Scalar) UnmarshalBinary(data []byte) error {
 	return s.Decode(data)
-}
-
-// MarshalText implements the encoding.MarshalText interface.
-func (s *Scalar) MarshalText() (text []byte, err error) {
-	b := s.Encode()
-	return []byte(base64.StdEncoding.EncodeToString(b)), nil
-}
-
-// UnmarshalText implements the encoding.UnmarshalText interface.
-func (s *Scalar) UnmarshalText(text []byte) error {
-	sb, err := base64.StdEncoding.DecodeString(string(text))
-	if err == nil {
-		return s.Decode(sb)
-	}
-
-	return fmt.Errorf("nist scalar UnmarshalText: %w", err)
 }

@@ -24,9 +24,9 @@ func s2int(s string) *big.Int {
 }
 
 type mapping struct {
+	z         *big.Int
 	hash      crypto.Hash
 	secLength int
-	z         *big.Int
 }
 
 type curve[point nistECPoint[point]] struct {

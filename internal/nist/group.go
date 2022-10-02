@@ -61,9 +61,9 @@ func P521() internal.Group {
 // Group represents the prime-order group over the P256 curve.
 // It exposes a prime-order group API with hash-to-curve operations.
 type Group[Point nistECPoint[Point]] struct {
+	scalarField field
 	h2c         string
 	curve       curve[Point]
-	scalarField field
 }
 
 // NewScalar returns a new, empty, scalar.
@@ -109,7 +109,7 @@ func (g Group[P]) HashToScalar(input, dst []byte) internal.Scalar {
 		bytes = buf
 	}
 
-	res := &Scalar{field: &g.scalarField}
+	res := newScalar(&g.scalarField)
 	res.s.SetBytes(bytes)
 
 	return res
