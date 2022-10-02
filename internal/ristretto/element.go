@@ -173,13 +173,3 @@ func (e *Element) MarshalBinary() ([]byte, error) {
 func (e *Element) UnmarshalBinary(data []byte) error {
 	return e.Decode(data)
 }
-
-// MarshalText implements the encoding.MarshalText interface.
-func (e *Element) MarshalText() (text []byte, err error) {
-	return e.element.MarshalText()
-}
-
-// UnmarshalText implements the encoding.UnmarshalText interface.
-func (e *Element) UnmarshalText(text []byte) error {
-	return e.element.UnmarshalText(text)
-}

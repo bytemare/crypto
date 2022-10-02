@@ -10,6 +10,7 @@ package nist
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/bytemare/crypto/internal"
@@ -197,5 +198,9 @@ func (s *Scalar) MarshalBinary() ([]byte, error) {
 
 // UnmarshalBinary sets e to the decoding of the byte encoded scalar.
 func (s *Scalar) UnmarshalBinary(data []byte) error {
-	return s.Decode(data)
+	if err := s.Decode(data); err != nil {
+		return fmt.Errorf("nist: %w", err)
+	}
+
+	return nil
 }

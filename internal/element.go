@@ -57,10 +57,4 @@ type Element interface {
 
 	// BinaryUnmarshaler implementation.
 	encoding.BinaryUnmarshaler
-
-	// TextMarshaler implementation.
-	encoding.TextMarshaler
-
-	// TextUnmarshaler implementation.
-	encoding.TextUnmarshaler
 }
