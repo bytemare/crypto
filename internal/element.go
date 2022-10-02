@@ -40,7 +40,7 @@ type Element interface {
 	// IsIdentity returns whether the Element is the point at infinity of the Group's underlying curve.
 	IsIdentity() bool
 
-	// Set sets the receiver to the argument, and returns the receiver.
+	// Set sets the receiver to the value of the argument, and returns the receiver.
 	Set(Element) Element
 
 	// Copy returns a copy of the receiver.
@@ -57,10 +57,4 @@ type Element interface {
 
 	// BinaryUnmarshaler implementation.
 	encoding.BinaryUnmarshaler
-
-	// TextMarshaler implementation.
-	encoding.TextMarshaler
-
-	// TextUnmarshaler implementation.
-	encoding.TextUnmarshaler
 }

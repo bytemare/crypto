@@ -21,12 +21,12 @@ import (
 // IsOnCurve, all other behavior is undefined.
 func TestNistInvalidCoordinates(t *testing.T) {
 	tests := []struct {
-		name  string
 		curve elliptic.Curve
+		name  string
 	}{
-		{"P256", elliptic.P256()},
-		{"P384", elliptic.P384()},
-		{"P521", elliptic.P521()},
+		{elliptic.P256(), "P256"},
+		{elliptic.P384(), "P384"},
+		{elliptic.P521(), "P521"},
 	}
 
 	for _, test := range tests {

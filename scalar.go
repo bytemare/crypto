@@ -10,6 +10,8 @@
 package crypto
 
 import (
+	"fmt"
+
 	"github.com/bytemare/crypto/internal"
 )
 
@@ -111,26 +113,29 @@ func (s *Scalar) Encode() []byte {
 }
 
 // Decode sets the receiver to a decoding of the input data, and returns an error on failure.
-func (s *Scalar) Decode(in []byte) error {
-	return s.Scalar.Decode(in)
+func (s *Scalar) Decode(data []byte) error {
+	if err := s.Scalar.Decode(data); err != nil {
+		return fmt.Errorf("scalar Decode: %w", err)
+	}
+
+	return nil
 }
 
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
 func (s *Scalar) MarshalBinary() ([]byte, error) {
-	return s.Scalar.MarshalBinary()
+	dec, err := s.Scalar.MarshalBinary()
+	if err != nil {
+		return nil, fmt.Errorf("scalar MarshalBinary: %w", err)
+	}
+
+	return dec, nil
 }
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
 func (s *Scalar) UnmarshalBinary(data []byte) error {
-	return s.Scalar.UnmarshalBinary(data)
-}
+	if err := s.Scalar.UnmarshalBinary(data); err != nil {
+		return fmt.Errorf("scalar UnmarshalBinary: %w", err)
+	}
 
-// MarshalText implements the encoding.TextMarshaler interface.
-func (s *Scalar) MarshalText() (text []byte, err error) {
-	return s.Scalar.MarshalText()
-}
-
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
-func (s *Scalar) UnmarshalText(text []byte) error {
-	return s.Scalar.UnmarshalText(text)
+	return nil
 }

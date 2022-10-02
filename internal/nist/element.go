@@ -10,7 +10,6 @@ package nist
 
 import (
 	"crypto/subtle"
-	"encoding/base64"
 	"fmt"
 
 	"github.com/bytemare/crypto/internal"
@@ -129,7 +128,7 @@ func (e *Element[P]) set(element *Element[P]) *Element[P] {
 	return e
 }
 
-// Set sets the receiver to the argument, and returns the receiver.
+// Set sets the receiver to the value of the argument, and returns the receiver.
 func (e *Element[P]) Set(element internal.Element) internal.Element {
 	if element == nil {
 		return e.set(nil)
@@ -175,20 +174,4 @@ func (e *Element[P]) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary sets e to the decoding of the byte encoded element.
 func (e *Element[P]) UnmarshalBinary(data []byte) error {
 	return e.Decode(data)
-}
-
-// MarshalText implements the encoding.MarshalText interface.
-func (e *Element[P]) MarshalText() (text []byte, err error) {
-	b := e.Encode()
-	return []byte(base64.StdEncoding.EncodeToString(b)), nil
-}
-
-// UnmarshalText implements the encoding.UnmarshalText interface.
-func (e *Element[P]) UnmarshalText(text []byte) error {
-	eb, err := base64.StdEncoding.DecodeString(string(text))
-	if err == nil {
-		return e.Decode(eb)
-	}
-
-	return fmt.Errorf("nist element UnmarshalText: %w", err)
 }

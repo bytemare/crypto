@@ -10,7 +10,6 @@
 package ristretto
 
 import (
-	"encoding/base64"
 	"fmt"
 
 	"github.com/gtank/ristretto255"
@@ -192,21 +191,9 @@ func (s *Scalar) MarshalBinary() ([]byte, error) {
 
 // UnmarshalBinary sets e to the decoding of the byte encoded scalar.
 func (s *Scalar) UnmarshalBinary(data []byte) error {
-	return s.Decode(data)
-}
-
-// MarshalText implements the encoding.MarshalText interface.
-func (s *Scalar) MarshalText() (text []byte, err error) {
-	b := s.Encode()
-	return []byte(base64.StdEncoding.EncodeToString(b)), nil
-}
-
-// UnmarshalText implements the encoding.UnmarshalText interface.
-func (s *Scalar) UnmarshalText(text []byte) error {
-	sb, err := base64.StdEncoding.DecodeString(string(text))
-	if err == nil {
-		return s.Decode(sb)
+	if err := s.Decode(data); err != nil {
+		return fmt.Errorf("ristretto: %w", err)
 	}
 
-	return fmt.Errorf("ristretto scalar UnmarshalText: %w", err)
+	return nil
 }

@@ -1,6 +1,6 @@
 module github.com/bytemare/crypto
 
-go 1.18
+go 1.19
 
 require (
 	filippo.io/nistec v0.0.0-20220513155737-c4b6d02e738c

@@ -11,7 +11,6 @@ package group_test
 import (
 	"bytes"
 	"encoding"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"testing"
@@ -24,18 +23,18 @@ type testGroup struct {
 	name          string
 	h2c           string
 	e2c           string
-	id            crypto.Group
+	basePoint     string
 	elementLength uint
 	scalarLength  uint
-	basePoint     string
+	id            crypto.Group
 }
 
 func testGroups() []*testGroup {
 	return []*testGroup{
-		{"Ristretto255", "ristretto255_XMD:SHA-512_R255MAP_RO_", "ristretto255_XMD:SHA-512_R255MAP_RO_", 1, 32, 32, "e2f2ae0a6abc4e71a884a961c500515f58e30b6aa582dd8db6a65945e08d2d76"},
-		{"P256", "P256_XMD:SHA-256_SSWU_RO_", "P256_XMD:SHA-256_SSWU_NU_", 3, 33, 32, "036b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296"},
-		{"P384", "P384_XMD:SHA-384_SSWU_RO_", "P384_XMD:SHA-384_SSWU_NU_", 4, 49, 48, "03aa87ca22be8b05378eb1c71ef320ad746e1d3b628ba79b9859f741e082542a385502f25dbf55296c3a545e3872760ab7"},
-		{"P521", "P521_XMD:SHA-512_SSWU_RO_", "P521_XMD:SHA-512_SSWU_NU_", 5, 67, 66, "0200c6858e06b70404e9cd9e3ecb662395b4429c648139053fb521f828af606b4d3dbaa14b5e77efe75928fe1dc127a2ffa8de3348b3c1856a429bf97e7e31c2e5bd66"},
+		{"Ristretto255", "ristretto255_XMD:SHA-512_R255MAP_RO_", "ristretto255_XMD:SHA-512_R255MAP_RO_", "e2f2ae0a6abc4e71a884a961c500515f58e30b6aa582dd8db6a65945e08d2d76", 32, 32, 1},
+		{"P256", "P256_XMD:SHA-256_SSWU_RO_", "P256_XMD:SHA-256_SSWU_NU_", "036b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296", 33, 32, 3},
+		{"P384", "P384_XMD:SHA-384_SSWU_RO_", "P384_XMD:SHA-384_SSWU_NU_", "03aa87ca22be8b05378eb1c71ef320ad746e1d3b628ba79b9859f741e082542a385502f25dbf55296c3a545e3872760ab7", 49, 48, 4},
+		{"P521", "P521_XMD:SHA-512_SSWU_RO_", "P521_XMD:SHA-512_SSWU_NU_", "0200c6858e06b70404e9cd9e3ecb662395b4429c648139053fb521f828af606b4d3dbaa14b5e77efe75928fe1dc127a2ffa8de3348b3c1856a429bf97e7e31c2e5bd66", 67, 66, 5},
 	}
 }
 
@@ -99,22 +98,14 @@ type serde interface {
 	Decode(data []byte) error
 	encoding.BinaryMarshaler
 	encoding.BinaryUnmarshaler
-	encoding.TextMarshaler
-	encoding.TextUnmarshaler
 }
 
 func testEncoding(t *testing.T, thing1, thing2 serde) {
 	encoded := thing1.Encode()
 	marshalled, _ := thing1.MarshalBinary()
-	texted := []byte(base64.StdEncoding.EncodeToString(encoded))
-	texted2, _ := thing1.MarshalText()
 
 	if !bytes.Equal(encoded, marshalled) {
 		t.Fatalf("Encode() and MarshalBinary() are expected to have the same output.\twant: %v\tgot : %v", encoded, marshalled)
-	}
-
-	if !bytes.Equal(texted, texted2) {
-		t.Fatalf("MarshalText() is expected to be the base64 encoding of the encoding.\twant: %v\tgot : %v", texted, texted2)
 	}
 
 	if err := thing2.Decode(nil); err == nil {
@@ -127,10 +118,6 @@ func testEncoding(t *testing.T, thing1, thing2 serde) {
 
 	if err := thing2.UnmarshalBinary(encoded); err != nil {
 		t.Fatalf("UnmarshalBinary() failed on a valid encoding: %v", err)
-	}
-
-	if err := thing2.UnmarshalText(texted2); err != nil {
-		t.Fatalf("UnmarshalText() failed on a valid encoding: %v", err)
 	}
 }
 

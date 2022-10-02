@@ -26,12 +26,14 @@ const (
 )
 
 type ristrettoTest struct {
-	name            string
-	hashID          crypto.Hash
-	app             string
-	version         string
-	scalar, element string // hex encoding of a scalar and element
-	scal, elem      bool   // says whether the scalar or element is supposed to be valid
+	name    string
+	app     string
+	version string
+	scalar  string // hex encoding
+	element string // hex encoding
+	hashID  crypto.Hash
+	scal    bool // says whether the scalar is supposed to be valid
+	elem    bool // says whether the element is supposed to be valid
 }
 
 var tests = []ristrettoTest{

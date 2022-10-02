@@ -59,10 +59,4 @@ type Scalar interface {
 	// BinaryUnmarshaler recovers an element from a byte representation
 	// produced either by encoding.BinaryMarshaler or MarshalBinaryCompress.
 	encoding.BinaryUnmarshaler
-
-	// TextMarshaler returns a base64 standard string encoding of the element.
-	encoding.TextMarshaler
-
-	// TextUnmarshaler sets the base64 standard string encoding of the element.
-	encoding.TextUnmarshaler
 }

@@ -10,6 +10,8 @@
 package crypto
 
 import (
+	"fmt"
+
 	"github.com/bytemare/crypto/internal"
 )
 
@@ -110,25 +112,28 @@ func (e *Element) Encode() []byte {
 
 // Decode sets the receiver to a decoding of the input data, and returns an error on failure.
 func (e *Element) Decode(data []byte) error {
-	return e.Element.Decode(data)
+	if err := e.Element.Decode(data); err != nil {
+		return fmt.Errorf("element UnmarshalBinary: %w", err)
+	}
+
+	return nil
 }
 
 // MarshalBinary returns the compressed byte encoding of the element.
 func (e *Element) MarshalBinary() ([]byte, error) {
-	return e.Element.MarshalBinary()
+	dec, err := e.Element.MarshalBinary()
+	if err != nil {
+		return nil, fmt.Errorf("scalar MarshalBinary: %w", err)
+	}
+
+	return dec, nil
 }
 
 // UnmarshalBinary sets e to the decoding of the byte encoded element.
 func (e *Element) UnmarshalBinary(data []byte) error {
-	return e.Element.UnmarshalBinary(data)
-}
+	if err := e.Element.UnmarshalBinary(data); err != nil {
+		return fmt.Errorf("element UnmarshalBinary: %w", err)
+	}
 
-// MarshalText implements the encoding.MarshalText interface.
-func (e *Element) MarshalText() (text []byte, err error) {
-	return e.Element.MarshalText()
-}
-
-// UnmarshalText implements the encoding.UnmarshalText interface.
-func (e *Element) UnmarshalText(text []byte) error {
-	return e.Element.UnmarshalText(text)
+	return nil
 }

@@ -105,7 +105,7 @@ func (e *Element) set(element *Element) *Element {
 	return e
 }
 
-// Set sets the receiver to the argument, and returns the receiver.
+// Set sets the receiver to the value of the argument, and returns the receiver.
 func (e *Element) Set(element internal.Element) internal.Element {
 	if element == nil {
 		return e.set(nil)
@@ -172,14 +172,4 @@ func (e *Element) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary sets e to the decoding of the byte encoded element.
 func (e *Element) UnmarshalBinary(data []byte) error {
 	return e.Decode(data)
-}
-
-// MarshalText implements the encoding.MarshalText interface.
-func (e *Element) MarshalText() (text []byte, err error) {
-	return e.element.MarshalText()
-}
-
-// UnmarshalText implements the encoding.UnmarshalText interface.
-func (e *Element) UnmarshalText(text []byte) error {
-	return e.element.UnmarshalText(text)
 }

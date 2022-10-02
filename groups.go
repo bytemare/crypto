@@ -152,6 +152,8 @@ func (g Group) init() {
 		g.initGroup(nist.P384)
 	case P521Sha512:
 		g.initGroup(nist.P521)
+	case maxID:
+		fallthrough
 	default:
 		panic("group not recognized")
 	}

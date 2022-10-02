@@ -1,6 +1,3 @@
-gcPACKAGES    := $(shell go list ./...)
-COMMIT      := $(shell git rev-parse HEAD)
-
 .PHONY: update
 update:
 	@echo "Updating dependencies..."
@@ -9,7 +6,7 @@ update:
 	@echo "Updating Github Actions pins..."
 	@$(foreach file, $(wildcard workflows/*.yml), pin-github-action $(file);)
 	@echo "Updating linters..."
-	@go get -u mvdan.cc/gofumpt@latest github.com/daixiang0/gci github.com/segmentio/golines@latest
+	@go get -u mvdan.cc/gofumpt@latest github.com/daixiang0/gci github.com/segmentio/golines@latest golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest
 	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
 
 .PHONY: fmt
@@ -19,12 +16,13 @@ fmt:
 	@go fmt ../...
 	#@golines -m 120 -t 4 -w ../
 	#@gofumpt -w -extra ../
-	@gci write -s standard -s default -s "prefix($(shell go list -m))" ../
+	@gci write --Section Standard --Section Default --Section "Prefix($(shell go list -m))" ../
+	@fieldalignment ../...
 
 .PHONY: license
 license:
 	@echo "Checking License headers ..."
-	@if addlicense -check -v -f licence-header.tmpl ../*; then echo "License headers OK"; else return 1; fi;
+	@if addlicense -check -v -skip yaml -f licence-header.tmpl ../*; then echo "License headers OK"; else return 1; fi;
 
 .PHONY: lint
 lint: fmt license

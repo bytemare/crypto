@@ -61,7 +61,6 @@ func TestScalar_WrongInput(t *testing.T) {
 		if err := testPanic("wrong group", internal.ErrCastScalar, equal(scalar.Equal, wrongGroup.NewScalar())); err != nil {
 			t.Fatal(err)
 		}
-
 	})
 }
 
