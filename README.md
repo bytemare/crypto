@@ -44,7 +44,7 @@ type Group interface {
     EncodeToGroup(input, dst []byte) Element
     ScalarLength() uint
     ElementLength() uint
-	Order() string
+    Order() string
 }
 ```
 
