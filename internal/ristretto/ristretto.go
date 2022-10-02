@@ -23,6 +23,12 @@ const (
 
 	// H2C represents the hash-to-curve string identifier.
 	H2C = "ristretto255_XMD:SHA-512_R255MAP_RO_"
+
+	// orderPrime represents curve25519's subgroup prime-order
+	// = 2^252 + 27742317777372353535851937790883648493
+	// = 0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed
+	// cofactor h = 8.
+	orderPrime = "7237005577332262213973186563042994240857116359379907606001950938285454250989"
 )
 
 // Group represents the Ristretto255 group. It exposes a prime-order group API with hash-to-curve operations.
@@ -82,4 +88,9 @@ func (g Group) ScalarLength() uint {
 // ElementLength returns the byte size of an encoded element.
 func (g Group) ElementLength() uint {
 	return canonicalEncodingLength
+}
+
+// Order returns the order of the canonical group of scalars.
+func (g Group) Order() string {
+	return orderPrime
 }

@@ -136,6 +136,11 @@ func (g Group) ElementLength() uint {
 	return g.get().ElementLength()
 }
 
+// Order returns the order of the canonical group of scalars.
+func (g Group) Order() string {
+	return g.get().Order()
+}
+
 func (g Group) initGroup(get func() internal.Group) {
 	groups[g-1] = get()
 }
