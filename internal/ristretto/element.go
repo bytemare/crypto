@@ -105,7 +105,7 @@ func (e *Element) set(element *Element) *Element {
 	return e
 }
 
-// Set sets the receiver to the argument, and returns the receiver.
+// Set sets the receiver to the value of the argument, and returns the receiver.
 func (e *Element) Set(element internal.Element) internal.Element {
 	if element == nil {
 		return e.set(nil)
