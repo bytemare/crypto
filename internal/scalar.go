@@ -38,6 +38,9 @@ type Scalar interface {
 	// Equal returns 1 if the scalars are equal, and 0 otherwise.
 	Equal(Scalar) int
 
+	// LessOrEqual returns 1 if s <= scalar, and 0 otherwise.
+	LessOrEqual(scalar Scalar) int
+
 	// IsZero returns whether the scalar is 0.
 	IsZero() bool
 
