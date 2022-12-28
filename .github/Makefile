@@ -1,12 +1,16 @@
 .PHONY: update
 update:
+	@cd ../
 	@echo "Updating dependencies..."
 	@go get -u
 	@go mod tidy
 	@echo "Updating Github Actions pins..."
 	@$(foreach file, $(wildcard workflows/*.yml), pin-github-action $(file);)
 	@echo "Updating linters..."
-	@go get -u mvdan.cc/gofumpt@latest github.com/daixiang0/gci github.com/segmentio/golines@latest golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest
+	@go install mvdan.cc/gofumpt@latest
+	@go install github.com/daixiang0/gci@latest
+	@go install github.com/segmentio/golines@latest
+	@go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest
 	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
 
 .PHONY: fmt
@@ -15,9 +19,9 @@ fmt:
 	@go mod tidy
 	@go fmt ../...
 	#@golines -m 120 -t 4 -w ../
-	#@gofumpt -w -extra ../
-	@gci write --Section Standard --Section Default --Section "Prefix($(shell go list -m))" ../
-	@fieldalignment ../...
+	@gofumpt -w -extra ../
+	@gci write -s Standard -s Default -s "Prefix($(shell go list -m))" ../
+	@fieldalignment -fix ../...
 
 .PHONY: license
 license:
@@ -34,10 +38,10 @@ test:
 	@echo "Running all tests ..."
 	@go test -v -vet=all ../...
 
-#.PHONY: vectors
-#vectors:
-#	@echo "Testing vectors ..."
-#	@go test -v tests/vectors_test.go
+# .PHONY: vectors
+# vectors:
+# 	@echo "Testing vectors ..."
+# 	@go test -v ../tests/...
 
 .PHONY: cover
 cover:

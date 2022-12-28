@@ -117,7 +117,7 @@ func TestGroup_NewElement(t *testing.T) {
 
 func TestGroup_ScalarLength(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		if group.id.ScalarLength() != group.scalarLength {
+		if int(group.id.ScalarLength()) != group.scalarLength {
 			t.Fatalf("expected encoded scalar length %d, but got %d", group.scalarLength, group.id.ScalarLength())
 		}
 	})
@@ -125,7 +125,7 @@ func TestGroup_ScalarLength(t *testing.T) {
 
 func TestGroup_ElementLength(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		if group.id.ElementLength() != group.elementLength {
+		if int(group.id.ElementLength()) != group.elementLength {
 			t.Fatalf("expected encoded element length %d, but got %d", group.elementLength, group.id.ElementLength())
 		}
 	})
