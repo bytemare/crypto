@@ -9,6 +9,7 @@
 package nist
 
 import (
+	"crypto/subtle"
 	"errors"
 	"fmt"
 	"math/big"
@@ -124,12 +125,32 @@ func (s *Scalar) Equal(scalar internal.Scalar) int {
 
 	sc := s.assert(scalar)
 
-	switch s.s.Cmp(&sc.s) {
-	case 0:
-		return 1
-	default:
+	return subtle.ConstantTimeCompare(s.s.Bytes(), sc.s.Bytes())
+}
+
+// LessOrEqual returns 1 if s <= scalar, and 0 otherwise.
+func (s *Scalar) LessOrEqual(scalar internal.Scalar) int {
+	sc := s.assert(scalar)
+
+	ienc := s.Encode()
+	jenc := sc.Encode()
+
+	leni := len(ienc)
+	if leni != len(jenc) {
+		panic(internal.ErrParamScalarLength)
+	}
+
+	var res bool
+
+	for i := 0; i < leni; i++ {
+		res = res || (ienc[i] > jenc[i])
+	}
+
+	if res {
 		return 0
 	}
+
+	return 1
 }
 
 // IsZero returns whether the scalar is 0.

@@ -123,6 +123,31 @@ func (s *Scalar) Equal(scalar internal.Scalar) int {
 	return s.scalar.Equal(&sc.scalar)
 }
 
+// LessOrEqual returns 1 if s <= scalar and 0 otherwise.
+func (s *Scalar) LessOrEqual(scalar internal.Scalar) int {
+	sc := assert(scalar)
+
+	ienc := s.Encode()
+	jenc := sc.Encode()
+
+	i := len(ienc)
+	if i != len(jenc) {
+		panic(internal.ErrParamScalarLength)
+	}
+
+	var res bool
+
+	for i--; i >= 0; i-- {
+		res = res || (ienc[i] > jenc[i])
+	}
+
+	if res {
+		return 0
+	}
+
+	return 1
+}
+
 // IsZero returns whether the scalar is 0.
 func (s *Scalar) IsZero() bool {
 	return s.scalar.Equal(ristretto255.NewScalar().Zero()) == 1

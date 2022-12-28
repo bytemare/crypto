@@ -91,6 +91,15 @@ func (s *Scalar) Equal(scalar *Scalar) int {
 	return s.Scalar.Equal(scalar.Scalar)
 }
 
+// LessOrEqual returns 1 if s <= scalar, and 0 otherwise.
+func (s *Scalar) LessOrEqual(scalar *Scalar) int {
+	if scalar == nil {
+		return 0
+	}
+
+	return s.Scalar.LessOrEqual(scalar.Scalar)
+}
+
 // IsZero returns whether the scalar is 0.
 func (s *Scalar) IsZero() bool {
 	return s.Scalar.IsZero()

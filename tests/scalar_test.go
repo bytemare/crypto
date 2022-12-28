@@ -118,6 +118,7 @@ func TestScalar_Arithmetic(t *testing.T) {
 		scalarTestZero(t, group.id)
 		scalarTestOne(t, group.id)
 		scalarTestEqual(t, group.id)
+		scalarTestLessOrEqual(t, group.id)
 		scalarTestRandom(t, group.id)
 		scalarTestAdd(t, group.id)
 		scalarTestSubtract(t, group.id)
@@ -180,6 +181,32 @@ func scalarTestEqual(t *testing.T, g crypto.Group) {
 	random2 := g.NewScalar().Random()
 	if random.Equal(random2) == 1 {
 		t.Fatal("unexpected equality")
+	}
+}
+
+func scalarTestLessOrEqual(t *testing.T, g crypto.Group) {
+	zero := g.NewScalar().Zero()
+	one := g.NewScalar().One()
+	two := g.NewScalar().One().Add(one)
+
+	if zero.LessOrEqual(one) != 1 {
+		t.Fatal("expected 0 < 1")
+	}
+
+	if one.LessOrEqual(two) != 1 {
+		t.Fatal("expected 1 < 2")
+	}
+
+	if one.LessOrEqual(zero) == 1 {
+		t.Fatal("expected 1 > 0")
+	}
+
+	if two.LessOrEqual(one) == 1 {
+		t.Fatal("expected 2 > 1")
+	}
+
+	if two.LessOrEqual(two) != 1 {
+		t.Fatal("expected 2 == 2")
 	}
 }
 
