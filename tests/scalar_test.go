@@ -104,6 +104,15 @@ func TestScalarSet(t *testing.T) {
 	})
 }
 
+func TestScalar_EncodedLength(t *testing.T) {
+	testAll(t, func(t2 *testing.T, group *testGroup) {
+		encodedScalar := group.id.NewScalar().Random().Encode()
+		if len(encodedScalar) != group.scalarLength {
+			t.Fatalf("Encode() is expected to return %d bytes, but returned %d bytes", group.scalarLength, encodedScalar)
+		}
+	})
+}
+
 func TestScalar_Arithmetic(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
 		scalarTestZero(t, group.id)

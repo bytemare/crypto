@@ -116,6 +116,15 @@ func TestElement_WrongInput(t *testing.T) {
 	}
 }
 
+func TestElement_EncodedLength(t *testing.T) {
+	testAll(t, func(t2 *testing.T, group *testGroup) {
+		encodedElement := group.id.NewElement().Base().Multiply(group.id.NewScalar().Random()).Encode()
+		if len(encodedElement) != group.elementLength {
+			t.Fatalf("Encode() is expected to return %d bytes, but returned %d bytes", group.elementLength, encodedElement)
+		}
+	})
+}
+
 func TestElement_Arithmetic(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
 		elementTestEqual(t, group.id)

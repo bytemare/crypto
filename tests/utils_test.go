@@ -18,14 +18,14 @@ import (
 	"github.com/bytemare/crypto"
 )
 
-// a testGroup references the components a Group must expose.
+// a testGroup references some components of a Group.
 type testGroup struct {
 	name          string
 	h2c           string
 	e2c           string
 	basePoint     string
-	elementLength uint
-	scalarLength  uint
+	elementLength int
+	scalarLength  int
 	id            crypto.Group
 }
 
