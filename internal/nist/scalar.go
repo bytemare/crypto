@@ -9,6 +9,7 @@
 package nist
 
 import (
+	"crypto/subtle"
 	"errors"
 	"fmt"
 	"math/big"
@@ -50,19 +51,19 @@ func (s *Scalar) assert(scalar internal.Scalar) *Scalar {
 	return _sc
 }
 
-// Zero sets the scalar to 0, and returns it.
+// Zero sets s to 0, and returns it.
 func (s *Scalar) Zero() internal.Scalar {
 	s.s.Set(zero)
 	return s
 }
 
-// One sets the scalar to 1, and returns it.
+// One sets s to 1, and returns it.
 func (s *Scalar) One() internal.Scalar {
 	s.s.Set(one)
 	return s
 }
 
-// Random sets the current scalar to a new random scalar and returns it.
+// Random sets s to a new random scalar and returns it.
 // The random source is crypto/rand, and this functions is guaranteed to return a non-zero scalar.
 func (s *Scalar) Random() internal.Scalar {
 	for {
@@ -74,7 +75,7 @@ func (s *Scalar) Random() internal.Scalar {
 	}
 }
 
-// Add returns the sum of the scalars, and does not change the receiver.
+// Add returns s+scalar, and returns s.
 func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s
@@ -86,7 +87,7 @@ func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	return s
 }
 
-// Subtract returns the difference between the scalars, and does not change the receiver.
+// Subtract returns s-scalar, and returns s.
 func (s *Scalar) Subtract(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s
@@ -98,7 +99,7 @@ func (s *Scalar) Subtract(scalar internal.Scalar) internal.Scalar {
 	return s
 }
 
-// Multiply returns the multiplication of the scalars, and does not change the receiver.
+// Multiply sets s to s*scalar, and returns s.
 func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s.Zero()
@@ -110,13 +111,29 @@ func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
 	return s
 }
 
-// Invert returns the scalar's modular inverse ( 1 / scalar ), and does not change the receiver.
+// Pow sets s to s**scalar modulo the group order, and returns s. If scalar is nil, it returns 1.
+func (s *Scalar) Pow(scalar internal.Scalar) internal.Scalar {
+	if scalar == nil || scalar.IsZero() {
+		return s.One()
+	}
+
+	if scalar.Equal(scalar.Copy().One()) == 1 {
+		return s
+	}
+
+	sc := s.assert(scalar)
+	s.field.exponent(&s.s, &s.s, &sc.s)
+
+	return s
+}
+
+// Invert sets s to its modular inverse ( 1 / s ).
 func (s *Scalar) Invert() internal.Scalar {
 	s.field.inv(&s.s, &s.s)
 	return s
 }
 
-// Equal returns 1 if the scalars are equal, and 0 otherwise.
+// Equal returns 1 if the s == scalar are equal, and 0 otherwise.
 func (s *Scalar) Equal(scalar internal.Scalar) int {
 	if scalar == nil {
 		return 0
@@ -124,12 +141,32 @@ func (s *Scalar) Equal(scalar internal.Scalar) int {
 
 	sc := s.assert(scalar)
 
-	switch s.s.Cmp(&sc.s) {
-	case 0:
-		return 1
-	default:
+	return subtle.ConstantTimeCompare(s.s.Bytes(), sc.s.Bytes())
+}
+
+// LessOrEqual returns 1 if s <= scalar, and 0 otherwise.
+func (s *Scalar) LessOrEqual(scalar internal.Scalar) int {
+	sc := s.assert(scalar)
+
+	ienc := s.Encode()
+	jenc := sc.Encode()
+
+	leni := len(ienc)
+	if leni != len(jenc) {
+		panic(internal.ErrParamScalarLength)
+	}
+
+	var res bool
+
+	for i := 0; i < leni; i++ {
+		res = res || (ienc[i] > jenc[i])
+	}
+
+	if res {
 		return 0
 	}
+
+	return 1
 }
 
 // IsZero returns whether the scalar is 0.

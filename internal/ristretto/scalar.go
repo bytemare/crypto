@@ -106,6 +106,27 @@ func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
 	return s
 }
 
+// Pow sets s to s**scalar modulo the group order, and returns s. If scalar is nil, it returns 1.
+func (s *Scalar) Pow(scalar internal.Scalar) internal.Scalar {
+	if scalar == nil || scalar.IsZero() {
+		return s.One()
+	}
+
+	if scalar.Equal(scalar.Copy().One()) == 1 {
+		return s
+	}
+
+	sc := assert(scalar)
+	sc.Subtract(&scOne)
+
+	for !sc.IsZero() {
+		s.Multiply(s)
+		sc.Subtract(&scOne)
+	}
+
+	return s
+}
+
 // Invert sets the receiver to the scalar's modular inverse ( 1 / scalar ), and returns it.
 func (s *Scalar) Invert() internal.Scalar {
 	s.scalar.Invert(&s.scalar)
@@ -121,6 +142,31 @@ func (s *Scalar) Equal(scalar internal.Scalar) int {
 	sc := assert(scalar)
 
 	return s.scalar.Equal(&sc.scalar)
+}
+
+// LessOrEqual returns 1 if s <= scalar and 0 otherwise.
+func (s *Scalar) LessOrEqual(scalar internal.Scalar) int {
+	sc := assert(scalar)
+
+	ienc := s.Encode()
+	jenc := sc.Encode()
+
+	i := len(ienc)
+	if i != len(jenc) {
+		panic(internal.ErrParamScalarLength)
+	}
+
+	var res bool
+
+	for i--; i >= 0; i-- {
+		res = res || (ienc[i] > jenc[i])
+	}
+
+	if res {
+		return 0
+	}
+
+	return 1
 }
 
 // IsZero returns whether the scalar is 0.

@@ -32,11 +32,17 @@ type Scalar interface {
 	// Multiply multiplies the receiver with the input, and returns the receiver.
 	Multiply(Scalar) Scalar
 
+	// Pow sets s to s**scalar modulo the group order, and returns s. If scalar is nil, it returns 1.
+	Pow(scalar Scalar) Scalar
+
 	// Invert sets the receiver to the scalar's modular inverse ( 1 / scalar ), and returns it.
 	Invert() Scalar
 
 	// Equal returns 1 if the scalars are equal, and 0 otherwise.
 	Equal(Scalar) int
+
+	// LessOrEqual returns 1 if s <= scalar, and 0 otherwise.
+	LessOrEqual(scalar Scalar) int
 
 	// IsZero returns whether the scalar is 0.
 	IsZero() bool
