@@ -9,7 +9,10 @@
 // Package internal defines simple and abstract APIs to group Elements and Scalars.
 package internal
 
-import "encoding"
+import (
+	"encoding"
+	"math/big"
+)
 
 // Scalar interface abstracts common operations on scalars in a prime-order Group.
 type Scalar interface {
@@ -49,6 +52,9 @@ type Scalar interface {
 
 	// Set sets the receiver to the value of the argument scalar, and returns the receiver.
 	Set(Scalar) Scalar
+
+	// SetInt sets s to i modulo the field order, and returns an error if one occurs.
+	SetInt(i *big.Int) error
 
 	// Copy returns a copy of the receiver.
 	Copy() Scalar
