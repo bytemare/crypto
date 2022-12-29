@@ -76,6 +76,17 @@ func (s *Scalar) Multiply(scalar *Scalar) *Scalar {
 	return s
 }
 
+// Pow sets s to s**scalar modulo the group order, and returns s. If scalar is nil, it returns 1.
+func (s *Scalar) Pow(scalar *Scalar) *Scalar {
+	if scalar == nil {
+		return s.One()
+	}
+
+	s.Scalar.Pow(scalar.Scalar)
+
+	return s
+}
+
 // Invert sets the receiver to the scalar's modular inverse ( 1 / scalar ), and returns it.
 func (s *Scalar) Invert() *Scalar {
 	s.Scalar.Invert()
