@@ -191,6 +191,14 @@ func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 	return s
 }
 
+// SetInt sets s to i modulo the field order, and returns an error if one occurs.
+func (s *Scalar) SetInt(i *big.Int) error {
+	s.s.Set(i)
+	s.field.mod(&s.s)
+
+	return nil
+}
+
 // Copy returns a copy of the Scalar.
 func (s *Scalar) Copy() internal.Scalar {
 	cpy := newScalar(s.field)

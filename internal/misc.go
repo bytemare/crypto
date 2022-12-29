@@ -35,6 +35,9 @@ var (
 
 	// ErrIdentity indicates that the identity point (or point at infinity) has been encountered.
 	ErrIdentity = errors.New("infinity/identity point")
+
+	// ErrBigIntConversion reports an error in converting to a *big.int.
+	ErrBigIntConversion = errors.New("conversion error")
 )
 
 // RandomBytes returns random bytes of length len (wrapper for crypto/rand).

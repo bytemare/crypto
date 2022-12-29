@@ -10,6 +10,7 @@ package group_test
 
 import (
 	"encoding/hex"
+	"math/big"
 	"testing"
 
 	"github.com/bytemare/crypto"
@@ -101,6 +102,43 @@ func TestScalarSet(t *testing.T) {
 		other := group.id.NewScalar()
 		other.Set(random)
 		testScalarCopySet(t, random, other)
+	})
+}
+
+func TestScalarSetInt(t *testing.T) {
+	testAll(t, func(t2 *testing.T, group *testGroup) {
+		i := big.NewInt(0)
+
+		s := group.id.NewScalar()
+		if err := s.SetInt(i); err != nil {
+			t.Fatal(err)
+		}
+
+		if !s.IsZero() {
+			t.Fatal("expected 0")
+		}
+
+		i = big.NewInt(1)
+		if err := s.SetInt(i); err != nil {
+			t.Fatal(err)
+		}
+
+		if s.Equal(group.id.NewScalar().One()) != 1 {
+			t.Fatal("expected 1")
+		}
+
+		order, ok := new(big.Int).SetString(group.id.Order(), 10)
+		if !ok {
+			t.Fatal("conversion error")
+		}
+
+		if err := s.SetInt(order); err != nil {
+			t.Fatal(err)
+		}
+
+		if !s.IsZero() {
+			t.Fatal("expected 0")
+		}
 	})
 }
 

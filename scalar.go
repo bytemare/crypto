@@ -11,6 +11,7 @@ package crypto
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/bytemare/crypto/internal"
 )
@@ -120,6 +121,15 @@ func (s *Scalar) IsZero() bool {
 func (s *Scalar) Set(scalar *Scalar) *Scalar {
 	s.Scalar.Set(scalar.Scalar)
 	return s
+}
+
+// SetInt sets s to i modulo the field order, and returns an error if one occurs.
+func (s *Scalar) SetInt(i *big.Int) error {
+	if err := s.Scalar.SetInt(i); err != nil {
+		return fmt.Errorf("scalar: %w", err)
+	}
+
+	return nil
 }
 
 // Copy returns a copy of the receiver.

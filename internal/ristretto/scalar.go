@@ -11,6 +11,7 @@ package ristretto
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/gtank/ristretto255"
 
@@ -189,6 +190,25 @@ func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 	s.scalar = ec.scalar
 
 	return s
+}
+
+// SetInt sets s to i modulo the field order, and returns an error if one occurs.
+func (s *Scalar) SetInt(i *big.Int) error {
+	a := new(big.Int).Set(i)
+
+	order, ok := new(big.Int).SetString(orderPrime, 10)
+	if !ok {
+		return internal.ErrBigIntConversion
+	}
+
+	bytes := make([]byte, 32)
+	bytes = a.Mod(a, order).FillBytes(bytes)
+
+	for j, k := 0, len(bytes)-1; j < k; j, k = j+1, k-1 {
+		bytes[j], bytes[k] = bytes[k], bytes[j]
+	}
+
+	return s.Decode(bytes)
 }
 
 // Copy returns a copy of the receiver.
