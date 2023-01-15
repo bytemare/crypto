@@ -159,7 +159,16 @@ func (e *Element[P]) Encode() []byte {
 
 // XCoordinate returns the encoded x coordinate of the element.
 func (e *Element[P]) XCoordinate() []byte {
-	return e.p.BytesX()
+	if e.IsIdentity() {
+		return e.new().BytesCompressed()
+	}
+
+	b, err := e.p.BytesX()
+	if err != nil {
+		panic("encountered infinity point failing IsIdentity()")
+	}
+
+	return b
 }
 
 // Decode sets the receiver to a decoding of the input data, and returns an error on failure.
