@@ -157,6 +157,11 @@ func (e *Element[P]) Encode() []byte {
 	return e.p.BytesCompressed()
 }
 
+// XCoordinate returns the encoded x coordinate of the element.
+func (e *Element[P]) XCoordinate() []byte {
+	return e.p.BytesX()
+}
+
 // Decode sets the receiver to a decoding of the input data, and returns an error on failure.
 func (e *Element[P]) Decode(data []byte) error {
 	if _, err := e.p.SetBytes(data); err != nil {
