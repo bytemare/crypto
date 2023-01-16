@@ -49,6 +49,9 @@ type Element interface {
 	// Encode returns the compressed byte encoding of the element.
 	Encode() []byte
 
+	// XCoordinate returns the encoded x coordinate of the element.
+	XCoordinate() []byte
+
 	// Decode sets the receiver to a decoding of the input data, and returns an error on failure.
 	Decode(data []byte) error
 

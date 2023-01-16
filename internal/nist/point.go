@@ -11,6 +11,7 @@ package nist
 type nistECPoint[point any] interface {
 	Add(p1, p2 point) point
 	BytesCompressed() []byte
+	BytesX() ([]byte, error)
 	Double(p point) point
 	ScalarBaseMult(scalar []byte) (point, error)
 	ScalarMult(p point, scalar []byte) (point, error)

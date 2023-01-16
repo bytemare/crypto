@@ -134,6 +134,11 @@ func (e *Element) Encode() []byte {
 	return e.element.Encode(nil)
 }
 
+// XCoordinate returns the encoded x coordinate of the element, which is the same as Encode().
+func (e *Element) XCoordinate() []byte {
+	return e.Encode()
+}
+
 // Decode sets the receiver to a decoding of the input data, and returns an error on failure.
 func (e *Element) Decode(data []byte) error {
 	element, err := decodeElement(data)
