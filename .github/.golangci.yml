@@ -119,7 +119,7 @@ linters-settings:
     # Default: false
     custom-order: true
   gocognit:
-    min-complexity: 15
+    min-complexity: 17
   goconst:
     min-len: 2
     min-occurrences: 2

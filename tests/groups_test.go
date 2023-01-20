@@ -36,7 +36,7 @@ func TestNonAvailability(t *testing.T) {
 		t.Errorf(consideredAvailableFmt, d)
 	}
 
-	oob = crypto.P521Sha512 + 1
+	oob = crypto.Edwards25519Sha512 + 1
 	if oob.Available() {
 		t.Errorf(consideredAvailableFmt, oob)
 	}
@@ -58,6 +58,7 @@ func TestDST(t *testing.T) {
 		crypto.P256Sha256:         app + "-V01-CS03-",
 		crypto.P384Sha384:         app + "-V01-CS04-",
 		crypto.P521Sha512:         app + "-V01-CS05-",
+		crypto.Edwards25519Sha512: app + "-V01-CS06-",
 	}
 
 	testAll(t, func(t2 *testing.T, group *testGroup) {
@@ -70,18 +71,11 @@ func TestDST(t *testing.T) {
 }
 
 func TestGroup_String(t *testing.T) {
-	tests := map[crypto.Group]string{
-		crypto.Ristretto255Sha512: "ristretto255_XMD:SHA-512_R255MAP_RO_",
-		crypto.P256Sha256:         "P256_XMD:SHA-256_SSWU_RO_",
-		crypto.P384Sha384:         "P384_XMD:SHA-384_SSWU_RO_",
-		crypto.P521Sha512:         "P521_XMD:SHA-512_SSWU_RO_",
-	}
-
 	testAll(t, func(t2 *testing.T, group *testGroup) {
 		res := group.id.String()
-		test := tests[group.id]
-		if res != test {
-			t.Errorf("Wrong DST. want %q, got %q", res, test)
+		ref := group.h2c
+		if res != ref {
+			t.Errorf("Wrong DST. want %q, got %q", ref, res)
 		}
 	})
 }
@@ -98,16 +92,9 @@ func TestGroup_NewScalar(t *testing.T) {
 }
 
 func TestGroup_NewElement(t *testing.T) {
-	identity := map[crypto.Group]string{
-		crypto.Ristretto255Sha512: "0000000000000000000000000000000000000000000000000000000000000000",
-		crypto.P256Sha256:         "00",
-		crypto.P384Sha384:         "00",
-		crypto.P521Sha512:         "00",
-	}
-
 	testAll(t, func(t2 *testing.T, group *testGroup) {
 		e := hex.EncodeToString(group.id.NewElement().Encode())
-		ref := identity[group.id]
+		ref := group.identity
 
 		if e != ref {
 			t.Fatalf("expected identity element %v, but got %v", ref, e)

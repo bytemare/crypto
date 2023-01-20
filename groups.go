@@ -18,6 +18,7 @@ import (
 	"sync"
 
 	"github.com/bytemare/crypto/internal"
+	"github.com/bytemare/crypto/internal/edwards25519"
 	"github.com/bytemare/crypto/internal/nist"
 	"github.com/bytemare/crypto/internal/ristretto"
 )
@@ -40,6 +41,9 @@ const (
 
 	// P521Sha512 identifies a group over P521 with SHA2-512 hash-to-group hashing.
 	P521Sha512
+
+	// Edwards25519Sha512 identifies the Edwards25519 group with SHA2-512 hash-to-group hashing.
+	Edwards25519Sha512
 
 	maxID
 
@@ -157,6 +161,8 @@ func (g Group) init() {
 		g.initGroup(nist.P384)
 	case P521Sha512:
 		g.initGroup(nist.P521)
+	case Edwards25519Sha512:
+		g.initGroup(edwards25519.New)
 	case maxID:
 		fallthrough
 	default:
