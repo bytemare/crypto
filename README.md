@@ -17,14 +17,16 @@ don't need to adapt.
 
 The following table indexes supported groups with hash-to-curve capability and links each one to the underlying implementations:
 
-| ID  | Name         | Implementation                |
+| ID  | Name         | Backend                       |
 |-----|--------------|-------------------------------|
 | 1   | Ristretto255 | github.com/gtank/ristretto255 |
 | 2   | Decaf448     | not yet supported             |
 | 3   | P-256        | filippo.io/nistec             |
 | 4   | P-384        | filippo.io/nistec             |
 | 5   | P-521        | filippo.io/nistec             |
-| 6   | Double-Odd   | not yet supported             |
+| 6   | Edwards25519 | filippo.io/edwards25519       |
+| 7   | Secp256k1    | not yet supported             |
+| 8   | Double-Odd   | not yet supported             |
 
 ## Prime-order group interface
 
@@ -42,6 +44,7 @@ type Group interface {
     HashToScalar(input, dst []byte) Scalar
     HashToGroup(input, dst []byte) Element
     EncodeToGroup(input, dst []byte) Element
+    Ciphersuite() string
     ScalarLength() uint
     ElementLength() uint
     Order() string
@@ -59,10 +62,13 @@ type Scalar interface {
     Add(Scalar) Scalar
     Subtract(Scalar) Scalar
     Multiply(Scalar) Scalar
+    Pow(Scalar) Scalar
     Invert() Scalar
     Equal(Scalar) int
+    LessOrEqual(Scalar) int
     IsZero() bool
     Set(Scalar) Scalar
+    SetInt(big.Int) error
     Copy() Scalar
     Encode() []byte
     Decode(in []byte) error
@@ -87,6 +93,7 @@ type Element interface {
     Set(Element) Element
     Copy() Element
     Encode() []byte
+    XCoordinate() []byte
     Decode(data []byte) error
     encoding.BinaryMarshaler
     encoding.BinaryUnmarshaler
