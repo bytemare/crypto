@@ -6,28 +6,37 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-// Package ristretto allows simple and abstracted operations in the Ristretto255 group.
-package ristretto
+package edwards25519
 
 import (
 	"fmt"
 	"math/big"
 
-	"github.com/gtank/ristretto255"
+	ed "filippo.io/edwards25519"
 
 	"github.com/bytemare/crypto/internal"
 )
 
-const canonicalEncodingLength = 32
+const (
+	inputLength = 64
+)
 
 var (
-	scZero = &Scalar{*ristretto255.NewScalar()}
+	scZero Scalar
 	scOne  Scalar
 	order  big.Int
 )
 
 func init() {
-	scOne = Scalar{*ristretto255.NewScalar()}
+	scZero = Scalar{*ed.NewScalar()}
+	if err := scZero.Decode([]byte{
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	}); err != nil {
+		panic(err)
+	}
+
+	scOne = Scalar{*ed.NewScalar()}
 	if err := scOne.Decode([]byte{
 		1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -42,7 +51,7 @@ func init() {
 
 // Scalar implements the Scalar interface for Ristretto255 group scalars.
 type Scalar struct {
-	scalar ristretto255.Scalar
+	scalar ed.Scalar
 }
 
 func assert(scalar internal.Scalar) *Scalar {
@@ -51,16 +60,17 @@ func assert(scalar internal.Scalar) *Scalar {
 		panic(internal.ErrCastScalar)
 	}
 
-	return sc
+	return &Scalar{*ed.NewScalar().Set(&sc.scalar)}
 }
 
-func (s *Scalar) set(scalar *ristretto255.Scalar) {
-	s.scalar = *ristretto255.NewScalar().Add(&scZero.scalar, scalar)
+func (s *Scalar) set(scalar *ed.Scalar) *Scalar {
+	s.scalar = *scalar
+	return s
 }
 
 // Zero sets the scalar to 0, and returns it.
 func (s *Scalar) Zero() internal.Scalar {
-	s.scalar.Zero()
+	s.scalar = *ed.NewScalar()
 	return s
 }
 
@@ -75,7 +85,9 @@ func (s *Scalar) One() internal.Scalar {
 func (s *Scalar) Random() internal.Scalar {
 	for {
 		random := internal.RandomBytes(inputLength)
-		s.scalar.FromUniformBytes(random)
+		if _, err := s.scalar.SetUniformBytes(random); err != nil {
+			panic(err)
+		}
 
 		if !s.IsZero() {
 			return s
@@ -153,7 +165,7 @@ func (s *Scalar) square() {
 // Pow sets s to s**scalar modulo the group order, and returns s. If scalar is nil, it returns 1.
 func (s *Scalar) Pow(scalar internal.Scalar) internal.Scalar {
 	sc := assert(scalar)
-	exponent := sc.scalar.Encode(nil)
+	exponent := sc.scalar.Bytes()
 	msbyte := getMSByte(exponent)
 	msbit := getMSBit(exponent[msbyte])
 
@@ -239,14 +251,13 @@ func (s *Scalar) LessOrEqual(scalar internal.Scalar) int {
 
 // IsZero returns whether the scalar is 0.
 func (s *Scalar) IsZero() bool {
-	return s.scalar.Equal(&scZero.scalar) == 1
+	return s.scalar.Equal(ed.NewScalar()) == 1
 }
 
 // Set sets the receiver to the value of the argument scalar, and returns the receiver.
 func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
-		s.set(nil)
-		return s
+		return s.set(nil)
 	}
 
 	ec := assert(scalar)
@@ -270,20 +281,20 @@ func (s *Scalar) SetInt(i *big.Int) error {
 }
 
 func (s *Scalar) copy() *Scalar {
-	return &Scalar{*ristretto255.NewScalar().Add(ristretto255.NewScalar(), &s.scalar)}
+	return &Scalar{*ed.NewScalar().Set(&s.scalar)}
 }
 
 // Copy returns a copy of the receiver.
 func (s *Scalar) Copy() internal.Scalar {
-	return s.copy()
+	return &Scalar{*ed.NewScalar().Set(&s.scalar)}
 }
 
 // Encode returns the compressed byte encoding of the scalar.
 func (s *Scalar) Encode() []byte {
-	return s.scalar.Encode(nil)
+	return s.scalar.Bytes()
 }
 
-func decodeScalar(scalar []byte) (*ristretto255.Scalar, error) {
+func decodeScalar(scalar []byte) (*ed.Scalar, error) {
 	if len(scalar) == 0 {
 		return nil, internal.ErrParamNilScalar
 	}
@@ -292,8 +303,8 @@ func decodeScalar(scalar []byte) (*ristretto255.Scalar, error) {
 		return nil, internal.ErrParamScalarLength
 	}
 
-	s := ristretto255.NewScalar()
-	if err := s.Decode(scalar); err != nil {
+	s := ed.NewScalar()
+	if _, err := s.SetCanonicalBytes(scalar); err != nil {
 		return nil, fmt.Errorf("ristretto scalar Decode: %w", err)
 	}
 
@@ -313,14 +324,14 @@ func (s *Scalar) Decode(in []byte) error {
 }
 
 // MarshalBinary returns the compressed byte encoding of the scalar.
-func (s *Scalar) MarshalBinary() ([]byte, error) {
+func (s *Scalar) MarshalBinary() (data []byte, err error) {
 	return s.Encode(), nil
 }
 
 // UnmarshalBinary sets e to the decoding of the byte encoded scalar.
 func (s *Scalar) UnmarshalBinary(data []byte) error {
 	if err := s.Decode(data); err != nil {
-		return fmt.Errorf("ristretto: %w", err)
+		return fmt.Errorf("edwards25519: %w", err)
 	}
 
 	return nil

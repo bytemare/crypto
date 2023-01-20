@@ -18,7 +18,11 @@ import (
 	"path/filepath"
 	"testing"
 
+	"filippo.io/edwards25519"
+	"filippo.io/edwards25519/field"
+
 	"github.com/bytemare/crypto"
+	edwards255192 "github.com/bytemare/crypto/internal/edwards25519"
 )
 
 type vectors struct {
@@ -64,12 +68,42 @@ func vectorToNistBig(x, y string) (*big.Int, *big.Int) {
 	return xb, yb
 }
 
+func affineToEdwards(t *testing.T, a string) *field.Element {
+	aBytes, err := hex.DecodeString(a[2:])
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// reverse
+	for i, j := 0, len(aBytes)-1; j > i; i++ {
+		aBytes[i], aBytes[j] = aBytes[j], aBytes[i]
+		j--
+	}
+
+	u := &field.Element{}
+	if _, err := u.SetBytes(aBytes); err != nil {
+		t.Fatal(err)
+	}
+
+	return u
+}
+
+func vectorToEdwards25519(t *testing.T, x, y string) *edwards25519.Point {
+	u, v := affineToEdwards(t, x), affineToEdwards(t, y)
+	return edwards255192.AffineToEdwards(u, v)
+}
+
 func (v *vector) run(t *testing.T) {
 	var expected string
-	if v.group == crypto.P256Sha256 || v.group == crypto.P384Sha384 || v.group == crypto.P521Sha512 {
+
+	switch v.group {
+	case crypto.P256Sha256, crypto.P384Sha384, crypto.P521Sha512:
 		e := ecFromGroup(v.group)
 		x, y := vectorToNistBig(v.P.X, v.P.Y)
 		expected = hex.EncodeToString(elliptic.MarshalCompressed(e, x, y))
+	case crypto.Edwards25519Sha512:
+		p := vectorToEdwards25519(t, v.P.X, v.P.Y)
+		expected = hex.EncodeToString(p.Bytes())
 	}
 
 	switch v.Ciphersuite[len(v.Ciphersuite)-3:] {

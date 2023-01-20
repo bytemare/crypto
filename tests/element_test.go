@@ -85,7 +85,8 @@ func TestElement_WrongInput(t *testing.T) {
 		var alternativeGroup crypto.Group
 
 		switch group.id {
-		case crypto.Ristretto255Sha512:
+		// The following is arbitrary, and simply aims at confusing identifiers
+		case crypto.Ristretto255Sha512, crypto.Edwards25519Sha512:
 			alternativeGroup = crypto.P256Sha256
 		case crypto.P256Sha256, crypto.P384Sha384, crypto.P521Sha512:
 			alternativeGroup = crypto.Ristretto255Sha512

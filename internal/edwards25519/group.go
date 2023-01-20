@@ -6,73 +6,59 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-// Package ristretto allows simple and abstracted operations in the Ristretto255 group.
-package ristretto
+// Package edwards25519 allows simple and abstracted operations in the Edwards25519 group.
+package edwards25519
 
 import (
-	"crypto"
-
-	"github.com/bytemare/hash2curve"
-	"github.com/gtank/ristretto255"
+	ed "filippo.io/edwards25519"
 
 	"github.com/bytemare/crypto/internal"
 )
 
 const (
-	inputLength = 64
-
-	// H2C represents the hash-to-curve string identifier.
-	H2C = "ristretto255_XMD:SHA-512_R255MAP_RO_"
-
-	// orderPrime represents curve25519's subgroup prime-order
-	// = 2^252 + 27742317777372353535851937790883648493
-	// = 0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed
-	// cofactor h = 8.
-	orderPrime = "7237005577332262213973186563042994240857116359379907606001950938285454250989"
+	canonicalEncodingLength = 32
+	orderPrime              = "7237005577332262213973186563042994240857116359379907606001950938285454250989"
 )
 
-// Group represents the Ristretto255 group. It exposes a prime-order group API with hash-to-curve operations.
+// Group represents the Edwards25519 group. It exposes a prime-order group API with hash-to-curve operations.
 type Group struct{}
 
-// New returns a new instantiation of the Ristretto255 Group.
+// New returns a new instantiation of the Edwards25519 Group.
 func New() internal.Group {
 	return Group{}
 }
 
 // NewScalar returns a new, empty, scalar.
 func (g Group) NewScalar() internal.Scalar {
-	return &Scalar{*ristretto255.NewScalar()}
+	return &Scalar{*ed.NewScalar()}
 }
 
 // NewElement returns the identity element (point at infinity).
 func (g Group) NewElement() internal.Element {
-	return &Element{*ristretto255.NewElement()}
+	return &Element{*ed.NewIdentityPoint()}
 }
 
 // Base returns group's base point a.k.a. canonical generator.
 func (g Group) Base() internal.Element {
-	return &Element{*ristretto255.NewElement().Base()}
+	return &Element{*ed.NewGeneratorPoint()}
 }
 
 // HashToScalar returns a safe mapping of the arbitrary input to a Scalar.
 // The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) HashToScalar(input, dst []byte) internal.Scalar {
-	uniform := hash2curve.ExpandXMD(crypto.SHA512, input, dst, inputLength)
-	return &Scalar{*ristretto255.NewScalar().FromUniformBytes(uniform)}
+	return &Scalar{*HashToEdwards25519Field(input, dst)}
 }
 
 // HashToGroup returns a safe mapping of the arbitrary input to an Element in the Group.
 // The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) HashToGroup(input, dst []byte) internal.Element {
-	uniform := hash2curve.ExpandXMD(crypto.SHA512, input, dst, inputLength)
-
-	return &Element{*ristretto255.NewElement().FromUniformBytes(uniform)}
+	return &Element{*HashToEdwards25519(input, dst)}
 }
 
 // EncodeToGroup returns a non-uniform mapping of the arbitrary input to an Element in the Group.
 // The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) EncodeToGroup(input, dst []byte) internal.Element {
-	return g.HashToGroup(input, dst)
+	return &Element{*EncodeToEdwards25519(input, dst)}
 }
 
 // Ciphersuite returns the hash-to-curve ciphersuite identifier.

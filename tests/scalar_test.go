@@ -39,7 +39,8 @@ func TestScalar_WrongInput(t *testing.T) {
 		var wrongGroup crypto.Group
 
 		switch group.id {
-		case crypto.Ristretto255Sha512:
+		// The following is arbitrary, and simply aims at confusing identifiers
+		case crypto.Ristretto255Sha512, crypto.Edwards25519Sha512:
 			wrongGroup = crypto.P256Sha256
 		case crypto.P256Sha256, crypto.P384Sha384, crypto.P521Sha512:
 			wrongGroup = crypto.Ristretto255Sha512
@@ -288,18 +289,135 @@ func scalarTestPow(t *testing.T, g crypto.Group) {
 
 	// s**1 = s
 	s = g.NewScalar().Random()
-	one := g.NewScalar().One()
-	if s.Copy().Pow(one).Equal(s) != 1 {
+	exp := g.NewScalar().One()
+	if s.Copy().Pow(exp).Equal(s) != 1 {
 		t.Fatal("expected s**1 = s")
 	}
 
 	// s**2 = s*s
-	s = g.NewScalar().Random()
+	s = g.NewScalar().One()
+	s.Add(s.Copy().One())
 	s2 := s.Copy().Multiply(s)
-	two := g.NewScalar().One().Add(g.NewScalar().One())
+	if err := exp.SetInt(big.NewInt(2)); err != nil {
+		t.Fatal(err)
+	}
 
-	if s.Pow(two).Equal(s2) != 1 {
+	if s.Pow(exp).Equal(s2) != 1 {
 		t.Fatal("expected s**2 = s*s")
+	}
+
+	// s**3 = s*s*s
+	s = g.NewScalar().Random()
+	s3 := s.Copy().Multiply(s)
+	s3.Multiply(s)
+	_ = exp.SetInt(big.NewInt(3))
+
+	if s.Pow(exp).Equal(s3) != 1 {
+		t.Fatal("expected s**3 = s*s*s")
+	}
+
+	// 5**7 = 78125 = 00000000 00000001 00110001 00101101 = 1 49 45
+	iBase := big.NewInt(5)
+	iExp := big.NewInt(7)
+	order, ok := new(big.Int).SetString(g.Order(), 0)
+	if !ok {
+		t.Fatal(ok)
+	}
+	iResult := new(big.Int).Exp(iBase, iExp, order)
+	result := g.NewScalar()
+	if err := result.SetInt(iResult); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := s.SetInt(iBase); err != nil {
+		t.Fatal(err)
+	}
+	if err := exp.SetInt(iExp); err != nil {
+		t.Fatal(err)
+	}
+	res := s.Pow(exp)
+	if res.Equal(result) != 1 {
+		t.Fatal("expected 5**7 = 78125")
+	}
+
+	// 3**255 = 11F1B08E87EC42C5D83C3218FC83C41DCFD9F4428F4F92AF1AAA80AA46162B1F71E981273601F4AD1DD4709B5ACA650265A6AB
+	iBase = big.NewInt(3)
+	iExp = big.NewInt(255)
+	order, ok = new(big.Int).SetString(g.Order(), 0)
+	if !ok {
+		t.Fatal(ok)
+	}
+	iResult = new(big.Int).Exp(iBase, iExp, order)
+	result = g.NewScalar()
+	if err := result.SetInt(iResult); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := s.SetInt(iBase); err != nil {
+		t.Fatal(err)
+	}
+	if err := exp.SetInt(iExp); err != nil {
+		t.Fatal(err)
+	}
+	res = s.Pow(exp)
+	if res.Equal(result) != 1 {
+		t.Fatal("expected 3**255 = 11F1B08E87EC42C5D83C3218FC83C41DCFD9F4428F4F92AF1AAA80AA46162B1F71E981273601F4AD1DD4709B5ACA650265A6AB")
+	}
+
+	// 7945232487465**513
+	iBase.SetInt64(7945232487465)
+	iExp.SetInt64(513)
+	iResult = iResult.Exp(iBase, iExp, order)
+	if err := result.SetInt(iResult); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := s.SetInt(iBase); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := exp.SetInt(iExp); err != nil {
+		t.Fatal(err)
+	}
+
+	res = s.Pow(exp)
+	if res.Equal(result) != 1 {
+		t.Fatal("expect equality on 7945232487465**513")
+	}
+
+	// random**random
+	s.Random()
+	exp.Random()
+
+	switch g {
+	case crypto.Ristretto255Sha512, crypto.Edwards25519Sha512:
+		e := s.Encode()
+		for i, j := 0, len(e)-1; i < j; i++ {
+			e[i], e[j] = e[j], e[i]
+			j--
+		}
+		iBase.SetBytes(e)
+
+		e = exp.Encode()
+		for i, j := 0, len(e)-1; i < j; i++ {
+			e[i], e[j] = e[j], e[i]
+			j--
+		}
+		iExp.SetBytes(e)
+
+	default:
+		iBase.SetBytes(s.Encode())
+		iExp.SetBytes(exp.Encode())
+	}
+
+	iResult.Exp(iBase, iExp, order)
+
+	if err := result.SetInt(iResult); err != nil {
+		t.Fatal(err)
+	}
+
+	if s.Pow(exp).Equal(result) != 1 {
+		t.Fatal("expected equality on random numbers")
 	}
 }
 
