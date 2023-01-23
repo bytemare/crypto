@@ -141,7 +141,7 @@ func (e *Element) XCoordinate() []byte {
 
 func decodeElement(element []byte) (*ristretto255.Element, error) {
 	if len(element) == 0 {
-		return nil, internal.ErrParamNilPoint
+		return nil, internal.ErrParamInvalidPointEncoding
 	}
 
 	e := ristretto255.NewElement()

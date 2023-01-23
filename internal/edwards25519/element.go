@@ -16,7 +16,7 @@ import (
 	"github.com/bytemare/crypto/internal"
 )
 
-// Element implements the Element interface for the Ristretto255 group element.
+// Element implements the Element interface for the Edwards25519 group element.
 type Element struct {
 	element ed.Point
 }
@@ -134,7 +134,7 @@ func (e *Element) XCoordinate() []byte {
 
 func decodeElement(element []byte) (*ed.Point, error) {
 	if len(element) == 0 {
-		return nil, internal.ErrParamNilPoint
+		return nil, internal.ErrParamInvalidPointEncoding
 	}
 
 	e := ed.NewIdentityPoint()

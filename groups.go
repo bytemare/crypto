@@ -21,6 +21,7 @@ import (
 	"github.com/bytemare/crypto/internal/edwards25519"
 	"github.com/bytemare/crypto/internal/nist"
 	"github.com/bytemare/crypto/internal/ristretto"
+	"github.com/bytemare/crypto/internal/secp256k1"
 )
 
 // Group identifies prime-order groups over elliptic curves with hash-to-group operations.
@@ -33,7 +34,7 @@ const (
 	// decaf448Shake256 is not implemented.
 	decaf448Shake256
 
-	// P256Sha256 identifies a group over P256 with SHA2-512 hash-to-group hashing.
+	// P256Sha256 identifies a group over P256 with SHA2-256 hash-to-group hashing.
 	P256Sha256
 
 	// P384Sha384 identifies a group over P384 with SHA2-384 hash-to-group hashing.
@@ -44,6 +45,9 @@ const (
 
 	// Edwards25519Sha512 identifies the Edwards25519 group with SHA2-512 hash-to-group hashing.
 	Edwards25519Sha512
+
+	// Secp256k1 identifies the Secp256k1 group with SHA2-256 hash-to-group hashing.
+	Secp256k1
 
 	maxID
 
@@ -86,7 +90,7 @@ func (g Group) String() string {
 	return g.get().Ciphersuite()
 }
 
-// NewScalar returns a new, empty, scalar.
+// NewScalar returns a new scalar set to 0.
 func (g Group) NewScalar() *Scalar {
 	return newScalar(g.get().NewScalar())
 }
@@ -163,6 +167,8 @@ func (g Group) init() {
 		g.initGroup(nist.P521)
 	case Edwards25519Sha512:
 		g.initGroup(edwards25519.New)
+	case Secp256k1:
+		g.initGroup(secp256k1.New)
 	case maxID:
 		fallthrough
 	default:
