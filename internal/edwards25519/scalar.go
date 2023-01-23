@@ -49,7 +49,7 @@ func init() {
 	}
 }
 
-// Scalar implements the Scalar interface for Ristretto255 group scalars.
+// Scalar implements the Scalar interface for Edwards25519 group scalars.
 type Scalar struct {
 	scalar ed.Scalar
 }

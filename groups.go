@@ -33,7 +33,7 @@ const (
 	// decaf448Shake256 is not implemented.
 	decaf448Shake256
 
-	// P256Sha256 identifies a group over P256 with SHA2-512 hash-to-group hashing.
+	// P256Sha256 identifies a group over P256 with SHA2-256 hash-to-group hashing.
 	P256Sha256
 
 	// P384Sha384 identifies a group over P384 with SHA2-384 hash-to-group hashing.
@@ -86,7 +86,7 @@ func (g Group) String() string {
 	return g.get().Ciphersuite()
 }
 
-// NewScalar returns a new, empty, scalar.
+// NewScalar returns a new scalar set to 0.
 func (g Group) NewScalar() *Scalar {
 	return newScalar(g.get().NewScalar())
 }

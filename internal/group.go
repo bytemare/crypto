@@ -11,7 +11,7 @@ package internal
 
 // Group abstracts operations in a prime-order group.
 type Group interface {
-	// NewScalar returns a new, empty, scalar.
+	// NewScalar returns a new scalar set to 0.
 	NewScalar() Scalar
 
 	// NewElement returns the identity element (point at infinity).

@@ -118,7 +118,7 @@ func (e *Element) XCoordinate() []byte {
 // Decode sets the receiver to a decoding of the input data, and returns an error on failure.
 func (e *Element) Decode(data []byte) error {
 	if err := e.Element.Decode(data); err != nil {
-		return fmt.Errorf("element UnmarshalBinary: %w", err)
+		return fmt.Errorf("element decoding: %w", err)
 	}
 
 	return nil
@@ -128,7 +128,7 @@ func (e *Element) Decode(data []byte) error {
 func (e *Element) MarshalBinary() ([]byte, error) {
 	dec, err := e.Element.MarshalBinary()
 	if err != nil {
-		return nil, fmt.Errorf("scalar MarshalBinary: %w", err)
+		return nil, fmt.Errorf("element MarshalBinary: %w", err)
 	}
 
 	return dec, nil
