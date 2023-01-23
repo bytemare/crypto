@@ -39,7 +39,7 @@ func New() internal.Group {
 	return Group{}
 }
 
-// NewScalar returns a new, empty, scalar.
+// NewScalar returns a new scalar set to 0.
 func (g Group) NewScalar() internal.Scalar {
 	return &Scalar{*ristretto255.NewScalar()}
 }
