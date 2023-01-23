@@ -9,6 +9,7 @@
 package group_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/bytemare/crypto"
@@ -16,10 +17,32 @@ import (
 )
 
 const (
-	expectedEquality = "expected equality"
-	expectedIdentity = "expected identity"
-	wrongGroup       = "wrong group"
+	errExpectedEquality = "expected equality"
+	errExpectedIdentity = "expected identity"
+	errWrongGroup       = "wrong group"
 )
+
+func TestSecp256k1Double(t *testing.T) {
+	g := crypto.Secp256k1
+
+	// Verify whether double works like
+	fmt.Printf("### Add\n")
+	add := g.Base().Add(g.Base())
+
+	fmt.Printf("### Double\n")
+	double := g.Base().Double()
+
+	if double.Equal(add) != 1 {
+		t.Fatal(errExpectedEquality)
+	}
+
+	//two := g.NewScalar().One().Add(g.NewScalar().One())
+	//fmt.Printf("### Multiply\n")
+	//mult := g.Base().Multiply(two)
+	//if mult.Equal(double) != 1 {
+	//	t.Fatal(errExpectedEquality)
+	//}
+}
 
 func testElementCopySet(t *testing.T, element, other *crypto.Element) {
 	// Verify they don't point to the same thing
@@ -46,7 +69,7 @@ func testElementCopySet(t *testing.T, element, other *crypto.Element) {
 
 func TestElementCopy(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		base := group.id.Base()
+		base := group.group.Base()
 		cpy := base.Copy()
 		testElementCopySet(t, base, cpy)
 	})
@@ -54,8 +77,8 @@ func TestElementCopy(t *testing.T) {
 
 func TestElementSet(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		base := group.id.Base()
-		other := group.id.NewElement()
+		base := group.group.Base()
+		other := group.group.NewElement()
 		other.Set(base)
 		testElementCopySet(t, base, other)
 	})
@@ -81,45 +104,45 @@ func TestElement_WrongInput(t *testing.T) {
 	}
 
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		element := group.id.NewElement()
+		element := group.group.NewElement()
 		var alternativeGroup crypto.Group
 
-		switch group.id {
+		switch group.group {
 		// The following is arbitrary, and simply aims at confusing identifiers
 		case crypto.Ristretto255Sha512, crypto.Edwards25519Sha512:
 			alternativeGroup = crypto.P256Sha256
-		case crypto.P256Sha256, crypto.P384Sha384, crypto.P521Sha512:
+		case crypto.P256Sha256, crypto.P384Sha384, crypto.P521Sha512, crypto.Secp256k1:
 			alternativeGroup = crypto.Ristretto255Sha512
 		default:
-			t.Fatalf("Invalid group id %d", group.id)
+			t.Fatalf("Invalid group id %d", group.group)
 		}
 
-		if err := testPanic(wrongGroup, internal.ErrCastElement, exec(element.Add, alternativeGroup.NewElement())); err != nil {
+		if err := testPanic(errWrongGroup, internal.ErrCastElement, exec(element.Add, alternativeGroup.NewElement())); err != nil {
 			t.Fatal(err)
 		}
 
-		if err := testPanic(wrongGroup, internal.ErrCastElement, exec(element.Subtract, alternativeGroup.NewElement())); err != nil {
+		if err := testPanic(errWrongGroup, internal.ErrCastElement, exec(element.Subtract, alternativeGroup.NewElement())); err != nil {
 			t.Fatal(err)
 		}
 
-		if err := testPanic(wrongGroup, internal.ErrCastElement, exec(element.Set, alternativeGroup.NewElement())); err != nil {
+		if err := testPanic(errWrongGroup, internal.ErrCastElement, exec(element.Set, alternativeGroup.NewElement())); err != nil {
 			t.Fatal(err)
 		}
 
-		if err := testPanic(wrongGroup, internal.ErrCastElement, equal(element.Equal, alternativeGroup.NewElement())); err != nil {
+		if err := testPanic(errWrongGroup, internal.ErrCastElement, equal(element.Equal, alternativeGroup.NewElement())); err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	// Specifically test Ristretto
-	if err := testPanic(wrongGroup, internal.ErrCastScalar, mult(crypto.Ristretto255Sha512.NewElement().Multiply, crypto.P384Sha384.NewScalar())); err != nil {
+	if err := testPanic(errWrongGroup, internal.ErrCastScalar, mult(crypto.Ristretto255Sha512.NewElement().Multiply, crypto.P384Sha384.NewScalar())); err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestElement_EncodedLength(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		encodedElement := group.id.NewElement().Base().Multiply(group.id.NewScalar().Random()).Encode()
+		encodedElement := group.group.NewElement().Base().Multiply(group.group.NewScalar().Random()).Encode()
 		if len(encodedElement) != group.elementLength {
 			t.Fatalf("Encode() is expected to return %d bytes, but returned %d bytes", group.elementLength, encodedElement)
 		}
@@ -128,13 +151,13 @@ func TestElement_EncodedLength(t *testing.T) {
 
 func TestElement_Arithmetic(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		elementTestEqual(t, group.id)
-		elementTestAdd(t, group.id)
-		elementTestDouble(t, group.id)
-		elementTestSubstract(t, group.id)
-		elementTestMultiply(t, group.id)
-		elementTestInversion(t, group.id)
-		elementTestIdentity(t, group.id)
+		elementTestEqual(t, group.group)
+		elementTestAdd(t, group.group)
+		elementTestDouble(t, group.group)
+		elementTestSubstract(t, group.group)
+		elementTestMultiply(t, group.group)
+		elementTestInversion(t, group.group)
+		elementTestIdentity(t, group.group)
 	})
 }
 
@@ -143,7 +166,7 @@ func elementTestEqual(t *testing.T, g crypto.Group) {
 	base2 := g.Base()
 
 	if base.Equal(base2) != 1 {
-		t.Fatal(expectedEquality)
+		t.Fatal(errExpectedEquality)
 	}
 
 	random := g.NewElement().Multiply(g.NewScalar().Random())
@@ -158,17 +181,22 @@ func elementTestAdd(t *testing.T, g crypto.Group) {
 	base := g.Base()
 	cpy := base.Copy()
 	if cpy.Add(nil).Equal(base) != 1 {
-		t.Fatal(expectedEquality)
+		t.Fatal(errExpectedEquality)
 	}
 }
 
 func elementTestDouble(t *testing.T, g crypto.Group) {
 	// Verify whether double works like adding
 	base := g.Base()
-
-	double := g.Base().Add(base)
+	double := g.Base().Add(g.Base())
 	if double.Equal(base.Double()) != 1 {
-		t.Fatal(expectedEquality)
+		t.Fatal(errExpectedEquality)
+	}
+
+	two := g.NewScalar().One().Add(g.NewScalar().One())
+	mult := g.Base().Multiply(two)
+	if mult.Equal(double) != 1 {
+		t.Fatal(errExpectedEquality)
 	}
 }
 
@@ -177,13 +205,13 @@ func elementTestSubstract(t *testing.T, g crypto.Group) {
 
 	// Verify whether subtrating yields the same element when given nil.
 	if base.Subtract(nil).Equal(base) != 1 {
-		t.Fatal(expectedEquality)
+		t.Fatal(errExpectedEquality)
 	}
 
 	// Verify whether subtracting and then adding yields the same element.
 	base2 := base.Add(base).Subtract(base)
 	if base.Equal(base2) != 1 {
-		t.Fatal(expectedEquality)
+		t.Fatal(errExpectedEquality)
 	}
 }
 
@@ -198,18 +226,28 @@ func elementTestMultiply(t *testing.T, g crypto.Group) {
 
 	// base = base * 1
 	base := g.Base()
-	if base.Equal(g.Base().Multiply(scalar.One())) != 1 {
-		t.Fatal(expectedEquality)
+	mult := g.Base().Multiply(scalar.One())
+	if base.Equal(mult) != 1 {
+		t.Fatal(errExpectedEquality)
+	}
+
+	// 2 * base = base + base
+	twoG := g.Base().Add(g.Base())
+	two := g.NewScalar().One().Add(g.NewScalar().One())
+	mult = g.Base().Multiply(two)
+
+	if mult.Equal(twoG) != 1 {
+		t.Fatal(errExpectedEquality)
 	}
 
 	// base * 0 = id
 	if !g.Base().Multiply(scalar.Zero()).IsIdentity() {
-		t.Fatal(expectedIdentity)
+		t.Fatal(errExpectedIdentity)
 	}
 
 	// base * nil = id
 	if !g.Base().Multiply(nil).IsIdentity() {
-		t.Fatal(expectedIdentity)
+		t.Fatal(errExpectedIdentity)
 	}
 }
 
@@ -220,39 +258,39 @@ func elementTestInversion(t *testing.T, g crypto.Group) {
 	inv := m.Multiply(scalar.Invert())
 
 	if inv.Equal(base) != 1 {
-		t.Fatal(expectedEquality)
+		t.Fatal(errExpectedEquality)
 	}
 }
 
 func elementTestIdentity(t *testing.T, g crypto.Group) {
 	id := g.NewElement()
 	if !id.IsIdentity() {
-		t.Fatal(expectedIdentity)
+		t.Fatal(errExpectedIdentity)
 	}
 
 	base := g.Base()
 	if id.Equal(base.Subtract(base)) != 1 {
-		t.Fatal(expectedIdentity)
+		t.Fatal(errExpectedIdentity)
 	}
 
 	sub1 := g.Base().Double().Negate().Add(g.Base().Double())
 	sub2 := g.Base().Subtract(g.Base())
 	if sub1.Equal(sub2) != 1 {
-		t.Fatal(expectedEquality)
+		t.Fatal(errExpectedEquality)
 	}
 
 	if id.Equal(base.Multiply(nil)) != 1 {
-		t.Fatal(expectedIdentity)
+		t.Fatal(errExpectedIdentity)
 	}
 
 	if id.Equal(base.Multiply(g.NewScalar().Zero())) != 1 {
-		t.Fatal(expectedIdentity)
+		t.Fatal(errExpectedIdentity)
 	}
 
 	base = g.Base()
 	neg := base.Copy().Negate()
 	base.Add(neg)
 	if id.Equal(base) != 1 {
-		t.Fatal(expectedIdentity)
+		t.Fatal(errExpectedIdentity)
 	}
 }

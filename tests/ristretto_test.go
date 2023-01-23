@@ -18,8 +18,8 @@ import (
 )
 
 const (
-	goodScalar = "243170e83a77812893c234314116e1c007671adfe23325011e3827c1b2ff8d0a"
-	basePoint  = "e2f2ae0a6abc4e71a884a961c500515f58e30b6aa582dd8db6a65945e08d2d76"
+	goodRistrettoScalar = "243170e83a77812893c234314116e1c007671adfe23325011e3827c1b2ff8d0a"
+	ristrettoBasePoint  = "e2f2ae0a6abc4e71a884a961c500515f58e30b6aa582dd8db6a65945e08d2d76"
 
 	testApp     = "testRistretto255"
 	testVersion = "0.0"
@@ -36,34 +36,34 @@ type ristrettoTest struct {
 	elem    bool // says whether the element is supposed to be valid
 }
 
-var tests = []ristrettoTest{
+var ristrettoTests = []ristrettoTest{
 	{
 		name:    "Valid element (base point), valid scalar",
 		hashID:  crypto.SHA512,
 		app:     testApp,
 		version: testVersion,
-		scalar:  goodScalar,
-		element: basePoint,
+		scalar:  goodRistrettoScalar,
+		element: ristrettoBasePoint,
 		scal:    true,
 		elem:    true,
 	},
 	{
-		name:    "Valid element (base point), wrong scalar (size)",
+		name:    "Valid element (base point), bad scalar (size)",
 		hashID:  crypto.SHA512,
 		app:     testApp,
 		version: testVersion,
 		scalar:  "243170e83a77812893c234314116e1c007671adfe23325011e3827c1b2ff8d",
-		element: basePoint,
+		element: ristrettoBasePoint,
 		scal:    false,
 		elem:    true,
 	},
 	{
-		name:    "Valid element (base point), wrong scalar (encoding)",
+		name:    "Valid element (base point), bad scalar (encoding)",
 		hashID:  crypto.SHA512,
 		app:     testApp,
 		version: testVersion,
 		scalar:  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-		element: basePoint,
+		element: ristrettoBasePoint,
 		scal:    false,
 		elem:    true,
 	},
@@ -72,7 +72,7 @@ var tests = []ristrettoTest{
 		hashID:  crypto.SHA512,
 		app:     testApp,
 		version: testVersion,
-		scalar:  goodScalar,
+		scalar:  goodRistrettoScalar,
 		element: "2a292df7e32cababbd9de088d1d1abec9fc0440f637ed2fba145094dc14bea08",
 		scal:    true,
 		elem:    false,
@@ -100,7 +100,7 @@ var tests = []ristrettoTest{
 }
 
 func TestRistrettoScalar(t *testing.T) {
-	for _, tt := range tests {
+	for _, tt := range ristrettoTests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Grab the bytes of the encoding
 			encoding, err := hex.DecodeString(tt.scalar)
@@ -149,16 +149,16 @@ func TestRistrettoElement(t *testing.T) {
 	bp := ristretto.Group{}.NewElement().(*ristretto.Element).Base()
 
 	// Grab the bytes of the encoding
-	encoding, err := hex.DecodeString(tests[0].element)
+	encoding, err := hex.DecodeString(ristrettoTests[0].element)
 	if err != nil {
-		t.Fatalf("%s: bad hex encoding in test vector: %v", tests[0].name, err)
+		t.Fatalf("%s: bad hex encoding in test vector: %v", ristrettoTests[0].name, err)
 	}
 
 	if !bytes.Equal(bp.Encode(), encoding) {
-		t.Fatalf("%s: element doesn't decode to basepoint", tests[0].name)
+		t.Fatalf("%s: element doesn't decode to basepoint", ristrettoTests[0].name)
 	}
 
-	for _, tt := range tests {
+	for _, tt := range ristrettoTests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Grab the bytes of the encoding
 			encoding, err := hex.DecodeString(tt.element)

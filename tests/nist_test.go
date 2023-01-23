@@ -16,6 +16,8 @@ import (
 	"testing"
 )
 
+var errParamNotOnCurve = errors.New("point is not on curve")
+
 // TestNistInvalidCoordinates tests big.Int values that are not valid field elements
 // (negative or bigger than P). They are expected to return false from
 // IsOnCurve, all other behavior is undefined.
@@ -30,10 +32,9 @@ func TestNistInvalidCoordinates(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		curve := test.curve
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			testInvalidCoordinates(t, test.name, curve)
+			testInvalidCoordinates(t, test.name, test.curve)
 		})
 	}
 }
@@ -78,8 +79,6 @@ func solveNist(x, b, order *big.Int) *big.Int {
 
 	return x3
 }
-
-var errParamNotOnCurve = errors.New("point is not on curve")
 
 type solver func(x *big.Int) *big.Int
 

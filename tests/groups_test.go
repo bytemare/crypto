@@ -19,8 +19,8 @@ const consideredAvailableFmt = "%v is considered available when it must not"
 
 func TestAvailability(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		if !group.id.Available() {
-			t.Errorf("'%s' is not available, but should be", group.id.String())
+		if !group.group.Available() {
+			t.Errorf("'%s' is not available, but should be", group.group.String())
 		}
 	})
 }
@@ -36,7 +36,7 @@ func TestNonAvailability(t *testing.T) {
 		t.Errorf(consideredAvailableFmt, d)
 	}
 
-	oob = crypto.Edwards25519Sha512 + 1
+	oob = crypto.Secp256k1 + 1
 	if oob.Available() {
 		t.Errorf(consideredAvailableFmt, oob)
 	}
@@ -44,8 +44,10 @@ func TestNonAvailability(t *testing.T) {
 
 func TestGroup_Base(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		if hex.EncodeToString(group.id.Base().Encode()) != group.basePoint {
-			t.Fatalf("Got wrong base element %s", hex.EncodeToString(group.id.Base().Encode()))
+		if hex.EncodeToString(group.group.Base().Encode()) != group.basePoint {
+			t.Fatalf("Got wrong base element\n\tgot : %s\n\twant: %s",
+				hex.EncodeToString(group.group.Base().Encode()),
+				group.basePoint)
 		}
 	})
 }
@@ -59,11 +61,12 @@ func TestDST(t *testing.T) {
 		crypto.P384Sha384:         app + "-V01-CS04-",
 		crypto.P521Sha512:         app + "-V01-CS05-",
 		crypto.Edwards25519Sha512: app + "-V01-CS06-",
+		crypto.Secp256k1:          app + "-V01-CS07-",
 	}
 
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		res := string(group.id.MakeDST(app, version))
-		test := tests[group.id] + group.h2c
+		res := string(group.group.MakeDST(app, version))
+		test := tests[group.group] + group.h2c
 		if res != test {
 			t.Errorf("Wrong DST. want %q, got %q", res, test)
 		}
@@ -72,7 +75,7 @@ func TestDST(t *testing.T) {
 
 func TestGroup_String(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		res := group.id.String()
+		res := group.group.String()
 		ref := group.h2c
 		if res != ref {
 			t.Errorf("Wrong DST. want %q, got %q", ref, res)
@@ -82,7 +85,7 @@ func TestGroup_String(t *testing.T) {
 
 func TestGroup_NewScalar(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		s := group.id.NewScalar().Encode()
+		s := group.group.NewScalar().Encode()
 		for _, b := range s {
 			if b != 0 {
 				t.Fatalf("expected zero scalar, but got %v", hex.EncodeToString(s))
@@ -93,7 +96,7 @@ func TestGroup_NewScalar(t *testing.T) {
 
 func TestGroup_NewElement(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		e := hex.EncodeToString(group.id.NewElement().Encode())
+		e := hex.EncodeToString(group.group.NewElement().Encode())
 		ref := group.identity
 
 		if e != ref {
@@ -104,16 +107,16 @@ func TestGroup_NewElement(t *testing.T) {
 
 func TestGroup_ScalarLength(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		if int(group.id.ScalarLength()) != group.scalarLength {
-			t.Fatalf("expected encoded scalar length %d, but got %d", group.scalarLength, group.id.ScalarLength())
+		if int(group.group.ScalarLength()) != group.scalarLength {
+			t.Fatalf("expected encoded scalar length %d, but got %d", group.scalarLength, group.group.ScalarLength())
 		}
 	})
 }
 
 func TestGroup_ElementLength(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		if int(group.id.ElementLength()) != group.elementLength {
-			t.Fatalf("expected encoded element length %d, but got %d", group.elementLength, group.id.ElementLength())
+		if int(group.group.ElementLength()) != group.elementLength {
+			t.Fatalf("expected encoded element length %d, but got %d", group.elementLength, group.group.ElementLength())
 		}
 	})
 }

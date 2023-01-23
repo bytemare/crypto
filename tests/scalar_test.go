@@ -31,27 +31,27 @@ func TestScalar_WrongInput(t *testing.T) {
 	}
 
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		scalar := group.id.NewScalar()
+		scalar := group.group.NewScalar()
 		methods := []func(arg *crypto.Scalar) *crypto.Scalar{
 			scalar.Add, scalar.Subtract, scalar.Multiply, scalar.Set,
 		}
 
 		var wrongGroup crypto.Group
 
-		switch group.id {
+		switch group.group {
 		// The following is arbitrary, and simply aims at confusing identifiers
-		case crypto.Ristretto255Sha512, crypto.Edwards25519Sha512:
+		case crypto.Ristretto255Sha512, crypto.Edwards25519Sha512, crypto.Secp256k1:
 			wrongGroup = crypto.P256Sha256
 		case crypto.P256Sha256, crypto.P384Sha384, crypto.P521Sha512:
 			wrongGroup = crypto.Ristretto255Sha512
 
 			// Add a special test for nist groups, using a different field
-			wrongfield := ((group.id + 1) % 3) + 3
-			if err := testPanic("wrong field", internal.ErrWrongField, exec(scalar.Add, wrongfield.NewScalar())); err != nil {
+			wrongfield := ((group.group + 1) % 3) + 3
+			if err := testPanic("wrong field", internal.ErrCastScalar, exec(scalar.Add, wrongfield.NewScalar())); err != nil {
 				t.Fatal(err)
 			}
 		default:
-			t.Fatalf("Invalid group id %d", group.id)
+			t.Fatalf("Invalid group id %d", group.group)
 		}
 
 		for _, f := range methods {
@@ -91,7 +91,7 @@ func testScalarCopySet(t *testing.T, scalar, other *crypto.Scalar) {
 
 func TestScalarCopy(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		random := group.id.NewScalar().Random()
+		random := group.group.NewScalar().Random()
 		cpy := random.Copy()
 		testScalarCopySet(t, random, cpy)
 	})
@@ -99,8 +99,8 @@ func TestScalarCopy(t *testing.T) {
 
 func TestScalarSet(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		random := group.id.NewScalar().Random()
-		other := group.id.NewScalar()
+		random := group.group.NewScalar().Random()
+		other := group.group.NewScalar()
 		other.Set(random)
 		testScalarCopySet(t, random, other)
 	})
@@ -110,7 +110,7 @@ func TestScalarSetInt(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
 		i := big.NewInt(0)
 
-		s := group.id.NewScalar()
+		s := group.group.NewScalar()
 		if err := s.SetInt(i); err != nil {
 			t.Fatal(err)
 		}
@@ -124,11 +124,11 @@ func TestScalarSetInt(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if s.Equal(group.id.NewScalar().One()) != 1 {
+		if s.Equal(group.group.NewScalar().One()) != 1 {
 			t.Fatal("expected 1")
 		}
 
-		order, ok := new(big.Int).SetString(group.id.Order(), 10)
+		order, ok := new(big.Int).SetString(group.group.Order(), 10)
 		if !ok {
 			t.Fatal("conversion error")
 		}
@@ -138,14 +138,14 @@ func TestScalarSetInt(t *testing.T) {
 		}
 
 		if !s.IsZero() {
-			t.Fatal("expected 0")
+			t.Fatalf("expected 0, got %v\n%v", s.Encode(), order)
 		}
 	})
 }
 
 func TestScalar_EncodedLength(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		encodedScalar := group.id.NewScalar().Random().Encode()
+		encodedScalar := group.group.NewScalar().Random().Encode()
 		if len(encodedScalar) != group.scalarLength {
 			t.Fatalf("Encode() is expected to return %d bytes, but returned %d bytes", group.scalarLength, encodedScalar)
 		}
@@ -154,16 +154,16 @@ func TestScalar_EncodedLength(t *testing.T) {
 
 func TestScalar_Arithmetic(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		scalarTestZero(t, group.id)
-		scalarTestOne(t, group.id)
-		scalarTestEqual(t, group.id)
-		scalarTestLessOrEqual(t, group.id)
-		scalarTestRandom(t, group.id)
-		scalarTestAdd(t, group.id)
-		scalarTestSubtract(t, group.id)
-		scalarTestMultiply(t, group.id)
-		scalarTestPow(t, group.id)
-		scalarTestInvert(t, group.id)
+		scalarTestZero(t, group.group)
+		scalarTestOne(t, group.group)
+		scalarTestEqual(t, group.group)
+		scalarTestLessOrEqual(t, group.group)
+		scalarTestRandom(t, group.group)
+		scalarTestAdd(t, group.group)
+		scalarTestSubtract(t, group.group)
+		scalarTestMultiply(t, group.group)
+		scalarTestPow(t, group.group)
+		scalarTestInvert(t, group.group)
 	})
 }
 
@@ -193,7 +193,7 @@ func scalarTestOne(t *testing.T, g crypto.Group) {
 	one := g.NewScalar().One()
 	m := one.Copy()
 	if one.Equal(m.Multiply(m)) != 1 {
-		t.Fatal(expectedEquality)
+		t.Fatal(errExpectedEquality)
 	}
 }
 
@@ -209,13 +209,13 @@ func scalarTestEqual(t *testing.T, g crypto.Group) {
 	zero2 := g.NewScalar().Zero()
 
 	if zero.Equal(zero2) != 1 {
-		t.Fatal(expectedEquality)
+		t.Fatal(errExpectedEquality)
 	}
 
 	random := g.NewScalar().Random()
 	cpy := random.Copy()
 	if random.Equal(cpy) != 1 {
-		t.Fatal(expectedEquality)
+		t.Fatal(errExpectedEquality)
 	}
 
 	random2 := g.NewScalar().Random()
@@ -248,13 +248,20 @@ func scalarTestLessOrEqual(t *testing.T, g crypto.Group) {
 	if two.LessOrEqual(two) != 1 {
 		t.Fatal("expected 2 == 2")
 	}
+
+	s := g.NewScalar().Random()
+	r := s.Copy().Add(g.NewScalar().One())
+
+	if s.LessOrEqual(r) != 1 {
+		t.Fatal("expected s < s + 1")
+	}
 }
 
 func scalarTestAdd(t *testing.T, g crypto.Group) {
 	r := g.NewScalar().Random()
 	cpy := r.Copy()
 	if r.Add(nil).Equal(cpy) != 1 {
-		t.Fatal(expectedEquality)
+		t.Fatal(errExpectedEquality)
 	}
 }
 
@@ -262,7 +269,7 @@ func scalarTestSubtract(t *testing.T, g crypto.Group) {
 	r := g.NewScalar().Random()
 	cpy := r.Copy()
 	if r.Subtract(nil).Equal(cpy) != 1 {
-		t.Fatal(expectedEquality)
+		t.Fatal(errExpectedEquality)
 	}
 }
 
@@ -390,6 +397,7 @@ func scalarTestPow(t *testing.T, g crypto.Group) {
 	exp.Random()
 
 	switch g {
+	// These are in little-endian
 	case crypto.Ristretto255Sha512, crypto.Edwards25519Sha512:
 		e := s.Encode()
 		for i, j := 0, len(e)-1; i < j; i++ {
@@ -427,13 +435,13 @@ func scalarTestInvert(t *testing.T, g crypto.Group) {
 
 	i := s.Copy().Invert().Multiply(sqr)
 	if i.Equal(s) != 1 {
-		t.Fatal(expectedEquality)
+		t.Fatal(errExpectedEquality)
 	}
 
 	s = g.NewScalar().Random()
 	square := s.Copy().Multiply(s)
 	inv := square.Copy().Invert()
 	if s.One().Equal(square.Multiply(inv)) != 1 {
-		t.Fatal(expectedEquality)
+		t.Fatal(errExpectedEquality)
 	}
 }

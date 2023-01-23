@@ -6,7 +6,7 @@
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-// Package nist implements a prime-order group over NIST P-256 with hash-to-curve.
+// Package nist allows simple and abstracted operations in  the NIST P-256, P-384, and P-521 groups.
 package nist
 
 import (
@@ -18,6 +18,7 @@ import (
 	"github.com/bytemare/hash2curve"
 
 	"github.com/bytemare/crypto/internal"
+	"github.com/bytemare/crypto/internal/field"
 )
 
 const (
@@ -61,12 +62,12 @@ func P521() internal.Group {
 // Group represents the prime-order group over the P256 curve.
 // It exposes a prime-order group API with hash-to-curve operations.
 type Group[Point nistECPoint[Point]] struct {
-	scalarField field
+	scalarField field.Field
 	h2c         string
 	curve       curve[Point]
 }
 
-// NewScalar returns a new, empty, scalar.
+// NewScalar returns a new scalar set to 0. set to 0.
 func (g Group[P]) NewScalar() internal.Scalar {
 	return newScalar(&g.scalarField)
 }
@@ -97,7 +98,7 @@ func (g Group[P]) newPoint(p P) *Element[P] {
 // HashToScalar returns a safe mapping of the arbitrary input to a Scalar.
 // The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group[P]) HashToScalar(input, dst []byte) internal.Scalar {
-	s := hash2curve.HashToFieldXMD(g.curve.hash, input, dst, 1, 1, g.curve.secLength, g.scalarField.prime)[0]
+	s := hash2curve.HashToFieldXMD(g.curve.hash, input, dst, 1, 1, g.curve.secLength, g.scalarField.Order())[0]
 
 	// If necessary, build a buffer of right size, so it gets correctly interpreted.
 	bytes := s.Bytes()
@@ -110,7 +111,7 @@ func (g Group[P]) HashToScalar(input, dst []byte) internal.Scalar {
 	}
 
 	res := newScalar(&g.scalarField)
-	res.s.SetBytes(bytes)
+	res.scalar.SetBytes(bytes)
 
 	return res
 }
@@ -134,19 +135,19 @@ func (g Group[P]) Ciphersuite() string {
 
 // ScalarLength returns the byte size of an encoded element.
 func (g Group[P]) ScalarLength() uint {
-	byteLen := (g.scalarField.bitLen() + 7) / 8
+	byteLen := (g.scalarField.BitLen() + 7) / 8
 	return uint(byteLen)
 }
 
 // ElementLength returns the byte size of an encoded element.
 func (g Group[P]) ElementLength() uint {
-	byteLen := (g.curve.field.bitLen() + 7) / 8
+	byteLen := (g.curve.field.BitLen() + 7) / 8
 	return uint(1 + byteLen)
 }
 
 // Order returns the order of the canonical group of scalars.
 func (g Group[P]) Order() string {
-	return g.scalarField.prime.String()
+	return g.scalarField.Order().String()
 }
 
 var (
@@ -206,5 +207,5 @@ func initP521() {
 }
 
 func (g *Group[Point]) setScalarField(order string) {
-	g.scalarField = *newField(s2int(order))
+	g.scalarField = *field.NewField(field.String2int(order))
 }

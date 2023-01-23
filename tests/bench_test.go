@@ -14,7 +14,7 @@ import (
 )
 
 func benchAll(b *testing.B, f func(*testing.B, *testGroup)) {
-	for _, group := range testGroups() {
+	for _, group := range testTable {
 		b.Run(group.name, func(t *testing.B) {
 			f(t, group)
 		})
@@ -29,7 +29,7 @@ func BenchmarkHashToGroup(b *testing.B) {
 		b.ResetTimer()
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
-			group.id.HashToGroup(msg, dst)
+			group.group.HashToGroup(msg, dst)
 		}
 	})
 }
@@ -39,7 +39,7 @@ func BenchmarkSubtraction(b *testing.B) {
 		b.ResetTimer()
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
-			base := group.id.Base()
+			base := group.group.Base()
 			base.Subtract(base)
 		}
 	})
@@ -47,11 +47,11 @@ func BenchmarkSubtraction(b *testing.B) {
 
 func BenchmarkScalarBaseMult(b *testing.B) {
 	benchAll(b, func(b *testing.B, group *testGroup) {
-		priv := group.id.NewScalar().Random()
+		priv := group.group.NewScalar().Random()
 		b.ResetTimer()
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
-			_ = group.id.Base().Multiply(priv)
+			_ = group.group.Base().Multiply(priv)
 			// to do : Prevent the compiler from optimizing out the operation.
 		}
 	})
@@ -59,8 +59,8 @@ func BenchmarkScalarBaseMult(b *testing.B) {
 
 func BenchmarkScalarMult(b *testing.B) {
 	benchAll(b, func(b *testing.B, group *testGroup) {
-		priv := group.id.NewScalar().Random()
-		pub := group.id.Base().Multiply(group.id.NewScalar().Random())
+		priv := group.group.NewScalar().Random()
+		pub := group.group.Base().Multiply(group.group.NewScalar().Random())
 		b.ResetTimer()
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
@@ -71,11 +71,11 @@ func BenchmarkScalarMult(b *testing.B) {
 
 func BenchmarkMarshalUnmarshal(b *testing.B) {
 	benchAll(b, func(b *testing.B, group *testGroup) {
-		pub := group.id.Base().Multiply(group.id.NewScalar().Random())
+		pub := group.group.Base().Multiply(group.group.NewScalar().Random())
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
 			buf := pub.Encode()
-			pk := group.id.NewElement()
+			pk := group.group.NewElement()
 			if err := pk.Decode(buf); err != nil {
 				b.Fatal(err)
 			}
