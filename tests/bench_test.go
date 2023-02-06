@@ -21,6 +21,19 @@ func benchAll(b *testing.B, f func(*testing.B, *testGroup)) {
 	}
 }
 
+func BenchmarkPow(b *testing.B) {
+	benchAll(b, func(b *testing.B, group *testGroup) {
+		b.ResetTimer()
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			base := group.id.NewScalar().Random()
+			exp := group.id.NewScalar().Random()
+			res := base.Pow(exp)
+			res.Equal(base)
+		}
+	})
+}
+
 func BenchmarkHashToGroup(b *testing.B) {
 	msg := make([]byte, 256)
 	dst := make([]byte, 10)
