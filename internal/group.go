@@ -36,10 +36,10 @@ type Group interface {
 	Ciphersuite() string
 
 	// ScalarLength returns the byte size of an encoded scalar.
-	ScalarLength() uint
+	ScalarLength() int
 
 	// ElementLength returns the byte size of an encoded element.
-	ElementLength() uint
+	ElementLength() int
 
 	// Order returns the order of the canonical group of scalars.
 	Order() string

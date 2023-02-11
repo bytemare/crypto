@@ -45,8 +45,8 @@ type Group interface {
     HashToGroup(input, dst []byte) Element
     EncodeToGroup(input, dst []byte) Element
     Ciphersuite() string
-    ScalarLength() uint
-    ElementLength() uint
+    ScalarLength() int
+    ElementLength() int
     Order() string
 }
 ```
