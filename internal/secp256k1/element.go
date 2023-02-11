@@ -21,16 +21,16 @@ type Element struct {
 }
 
 var identity = Element{
-	x: big.Int{},
-	y: big.Int{},
-	z: big.Int{}, // The Identity element is the only with z == 0
+	x: *fp.Zero(),
+	y: *fp.Zero(),
+	z: *fp.Zero(), // The Identity element is the only with z == 0
 }
 
 func newElementWithAffine(x, y *big.Int) *Element {
 	e := &Element{
-		x: big.Int{},
-		y: big.Int{},
-		z: *big.NewInt(1),
+		x: *fp.Zero(),
+		y: *fp.Zero(),
+		z: *fp.One(),
 	}
 	e.x.Set(x)
 	e.y.Set(y)
@@ -40,12 +40,7 @@ func newElementWithAffine(x, y *big.Int) *Element {
 
 // newElement returns a new element set to the point at infinity.
 func newElement() *Element {
-	e := &Element{
-		x: big.Int{},
-		y: big.Int{},
-		z: big.Int{},
-	}
-
+	e := &Element{}
 	return e.set(&identity)
 }
 
@@ -60,6 +55,23 @@ func assertElement(element internal.Element) *Element {
 	}
 
 	return ec
+}
+
+func (e *Element) fromJacobiToAffine() {
+	if fp.AreEqual(&e.z, fp.One()) {
+		return
+	}
+
+	var zInv, zInvSq big.Int
+
+	fp.Inv(&zInv, &e.z)
+	fp.Mul(&zInvSq, &zInv, &zInv)
+
+	fp.Mul(&e.x, &e.x, &zInvSq)
+	fp.Mul(&zInvSq, &zInvSq, &zInvSq)
+	fp.Mul(&e.y, &e.y, &zInvSq)
+
+	e.y.Set(fp.One())
 }
 
 // Base sets the element to the group's base point a.k.a. canonical generator.
@@ -94,9 +106,60 @@ func (e *Element) addAffine(element *Element) *Element {
 	e.x.Set(&x)
 	e.y.Set(&y)
 
+	return e
+}
+
+// From http://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#addition-add-2007-bl.
+func (e *Element) addJacobian(element *Element) *Element {
 	fmt.Printf("Add\n")
-	fmt.Printf(".\t - x: %v\n", x.String())
-	fmt.Printf(".\t - y: %v\n", y.String())
+	//if e != nil {
+	//	return e.addAffine(element)
+	//}
+	z1 := fp.One()
+	z2 := fp.One()
+
+	var u1, u2, h, i, j, s1, s2, r, v, x3, y3, z3 big.Int
+
+	z1z1 := z1.Mul(z1, z1) // Z1Z1 = Z12
+	z2z2 := z2.Mul(z2, z2) // Z2Z2 = Z22
+
+	fp.Mul(&u1, &e.x, z2)       // U1 = X1*Z2Z2
+	fp.Mul(&u2, &element.x, z1) // U2 = X2*Z1Z1
+	fp.Sub(&h, &u2, &u1)        // H = U2-U1
+	fp.Lsh(&i, &h, 1)           // I = (2*H)2
+	fp.Mul(&i, &i, &i)          //
+	fp.Mul(&j, &h, &i)          // J = H*I
+
+	fp.Mul(&s1, &e.y, z2)
+	fp.Mul(&s1, &s1, z2z2)
+	fp.Mul(&s2, &element.y, z1) // S2 = Y2*Z1*Z1Z1
+	fp.Mul(&s2, &s2, z1z1)
+	fp.Sub(&r, &s2, &s1) // r = 2*(S2-S1)
+	fp.Lsh(&r, &r, 1)
+	fp.Mul(&v, &u1, &i) // V = U1*I
+
+	x3.Set(&r)
+	fp.Mul(&x3, &x3, &x3)
+	fp.Sub(&x3, &x3, &j)
+	fp.Sub(&x3, &x3, &v)
+	fp.Sub(&x3, &x3, &v) // X3 = r2-J-2*V
+
+	y3.Set(&r)
+	fp.Sub(&v, &v, &x3)
+	fp.Mul(&y3, &y3, &v)
+	fp.Mul(&s1, &s1, &j) // S1 = Y1*Z2*Z2Z2
+	fp.Lsh(&s1, &s1, 1)
+	fp.Sub(&y3, &y3, &s1) // Y3 = r*(V-X3)-2*S1*J
+
+	fp.Add(&z3, z1, z2)
+	fp.Mul(&z3, &z3, &z3)
+	fp.Sub(&z3, &z3, z1z1)
+	fp.Sub(&z3, &z3, z2z2)
+	fp.Mul(&z3, &z3, &h) // Z3 = ((Z1+Z2)2-Z1Z1-Z2Z2)*H
+
+	e.x.Set(&x3)
+	e.y.Set(&y3)
+	e.z.Set(&z3)
 
 	return e
 }
@@ -104,153 +167,57 @@ func (e *Element) addAffine(element *Element) *Element {
 // Add sets the receiver to the sum of the input and the receiver, and returns the receiver.
 func (e *Element) Add(element internal.Element) internal.Element {
 	q := assertElement(element)
-	return e.addAffine(q)
-}
 
-func bl2007Double(x, y *big.Int) (x3, y3 *big.Int) {
-	x3, y3 = new(big.Int), new(big.Int)
-	var x2, y2, y4, s, s2, m, t, z3 big.Int
+	//if q.IsIdentity() {
+	//	return e
+	//}
+	//
+	//if e.IsIdentity() {
+	//	e.set(q)
+	//	return e
+	//}
 
-	// 1M + 5S + (7 - 1) add
-	fp.Square(&x2, x)
-	fp.Square(&y2, y)
-	fp.Square(&y4, &y2)
-	fp.Add(&s, x, &y2)
-	fp.Square(&s, &s)
-	fp.Sub(&s, &s, &x2)
-	fp.Sub(&s, &s, &y4)
-	fp.Mul(&s, &s, big.NewInt(2))
-	fp.Mul(&m, &x2, big.NewInt(3))
-	// fp.Add(&m, &m, a) // a = 0
+	//if e.isEqual(q) == 1 {
+	//	return e.Double()
+	//}
 
-	fp.Mul(&s2, &s, big.NewInt(2))
-	fp.Square(&t, &m)
-	fp.Sub(&t, &t, &s2)
-
-	x3.Set(&t)
-	fp.Mul(&y4, &y4, big.NewInt(8))
-	fp.Sub(y3, &s, &t)
-	fp.Mul(y3, y3, &m)
-	fp.Sub(y3, y3, &y4)
-	fp.Mul(&z3, y, big.NewInt(2))
-
-	return jacobiToAffine(x3, y3, &z3)
-}
-
-func jacobiDouble(X, Y, Z *big.Int) (x3, y3 *big.Int) {
-	x3, y3 = new(big.Int), new(big.Int)
-	var t0, t1, t2, z3 big.Int
-	// 2S + 7M + 8A
-	fp.Square(&t0, Y)     // t0 := Y^2
-	fp.Add(&z3, &t0, &t0) // Z3 := t0 + t0
-	fp.Add(&z3, &z3, &z3) // Z3 := Z3 + Z3
-	fp.Add(&z3, &z3, &z3) // Z3 := Z3 + Z3
-	fp.Mul(&t1, Y, Z)     // t1 := Y * Z
-	fp.Square(&t2, Z)     // t2 := Z ^2
-	fp.Mul(&t2, &t2, b)   // t2 := b3 * t2
-	fp.Mul(x3, &t2, &z3)  // X3 := t2 * Z3
-	fp.Add(y3, &t0, &t2)  // Y3 := t0 + t2
-	fp.Mul(&z3, &t1, &z3) // Z3 := t1 * Z3
-	fp.Add(&t1, &t2, &t2) // t1 := t2 + t2
-	fp.Add(&t1, &t1, &t2) // t2 := t1 + t2
-	fp.Sub(&t0, &t0, &t2) // t0 := t0 - t2
-	fp.Mul(y3, &t0, y3)   // Y3 := t0 * Y3
-	fp.Add(y3, x3, y3)    // Y3 := X3 + Y3
-	fp.Mul(&t1, X, Y)     // t1 := X * Y
-	fp.Mul(x3, &t0, &t1)  // X3 := t0 * t1
-	fp.Add(x3, x3, x3)    // X3 := X3 + X3
-
-	return jacobiToAffine(x3, y3, &z3)
-}
-
-func djbDouble(x1, y1 *big.Int) (*big.Int, *big.Int) {
-	var t0, t1, _l, ll, lll, x, y big.Int
-
-	fp.Square(&t0, x1)
-	fp.Mul(&t0, &t0, big.NewInt(3)) // 3x^2
-	fp.Add(&t1, y1, y1)
-	fp.Inv(&t1, &t1)      // 1/2y
-	fp.Mul(&_l, &t0, &t1) // _l = (3x^2+2A)/(2y)
-	fp.Square(&ll, &_l)   // ll = (3x^2+2A)^2/(2y)^2
-
-	// x
-	fp.Sub(&x, &ll, x1) // l^2-x
-	fp.Sub(&x, &x, x1)  // x' = l^2-2x
-
-	// y
-	fp.Mul(&y, x1, big.NewInt(3)) // 3x
-	fp.Mul(&y, &y, &_l)           // 3x._l
-	fp.Mul(&lll, &_l, &ll)        // lll = _l^3
-	fp.Sub(&y, &y, &lll)          // 3x._l.lll
-	fp.Sub(&y, &y, y1)            // y = 3x8- lll
-
-	fmt.Printf("djbDouble\n")
-	fmt.Printf(".\t - x: %v\n", x.String())
-	fmt.Printf(".\t - y: %v\n", y.String())
-
-	return &x, &y
-}
-
-func h2cDouble(x1, y1 *big.Int) (*big.Int, *big.Int) {
-	var t0, t1, ll, x, y big.Int
-	fp.Square(&t0, x1)              // x^2
-	fp.Mul(&t0, &t0, big.NewInt(3)) // 3x^2
-	fp.Add(&t0, &t0, a)             // 3x^2+A, A = 0 so we could skip that
-	fp.Add(&t1, y1, y1)             // 2y
-	fp.Inv(&t1, &t1)                // 1/2y
-	fp.Mul(&ll, &t0, &t1)           // l = (3x^2+2A)/(2y)
-
-	fp.Square(&t0, &ll)  // l^2
-	fp.Sub(&t0, &t0, x1) // l^2-x
-	fp.Sub(&x, &t0, x1)  // x' = l^2-2x
-
-	fp.Sub(&t0, x1, &x)   // x-x'
-	fp.Mul(&t0, &t0, &ll) // l(x-x')
-	fp.Sub(&y, &t0, y1)   // y3 = l(x-x')-y1
-
-	fmt.Printf("h2cDouble\n")
-	fmt.Printf(".\t - x: %v\n", x.String())
-	fmt.Printf(".\t - y: %v\n", y.String())
-
-	return &x, &y
-}
-
-func jacobiToAffine(x, y, z *big.Int) (x2, y2 *big.Int) {
-	x2, y2 = new(big.Int), new(big.Int)
-
-	var z2, z3 big.Int
-	fp.Square(&z2, z)
-	fp.Mul(&z3, &z2, z)
-
-	fp.Inv(&z2, &z2)
-	fp.Inv(&z3, &z3)
-
-	fp.Mul(x2, x, &z2)
-	fp.Mul(y2, y, &z3)
-
-	return x, y
+	return e.addJacobian(q)
 }
 
 // Double sets the receiver to its double, and returns it.
+// From http://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#doubling-dbl-2009-l.
 func (e *Element) Double() internal.Element {
-	x, y := jacobiDouble(&e.x, &e.y, scOne)
+	var a, b, c, d, e2, f, x3, y3, z3 big.Int
 
-	fmt.Printf("Jacobi Double\n")
-	fmt.Printf(".\t - x: %v\n", x.String())
-	fmt.Printf(".\t - y: %v\n", y.String())
+	fp.Mul(&a, &e.x, &e.x)
+	fp.Mul(&b, &e.y, &e.y)
+	fp.Mul(&c, &b, &b)
 
-	x, y = bl2007Double(&e.x, &e.y)
+	fp.Add(&d, &e.x, &b)
+	fp.Mul(&d, &d, &d)
+	fp.Sub(&d, &d, &a)
+	fp.Sub(&d, &d, &c)
+	fp.Lsh(&d, &d, 1)
 
-	fmt.Printf("BL Double\n")
-	fmt.Printf(".\t - x: %v\n", x.String())
-	fmt.Printf(".\t - y: %v\n", y.String())
+	fp.Mul(&e2, &a, big.NewInt(3))
+	fp.Mul(&f, &e2, &e2)
 
-	djbDouble(&e.x, &e.y)
-	h2cDouble(&e.x, &e.y)
+	fp.Lsh(&x3, &d, 1)
+	fp.Sub(&x3, &f, &x3)
 
-	e.x.Set(x)
-	e.y.Set(y)
-	e.z.Set(scOne)
+	fp.Sub(&y3, &d, &x3)
+	fp.Mul(&y3, &e2, &y3)
+	fp.Lsh(&c, &c, 3)
+	fp.Sub(&y3, &y3, &c)
+
+	fp.Mul(&z3, &e.y, &e.z)
+	fp.Lsh(&z3, &z3, 1)
+
+	e.x.Set(&x3)
+	e.y.Set(&y3)
+	e.z.Set(&z3)
+
+	e.fromJacobiToAffine()
 
 	return e
 }
@@ -272,7 +239,7 @@ func (e *Element) Negate() internal.Element {
 // Subtract subtracts the input from the receiver, and returns the receiver.
 func (e *Element) Subtract(element internal.Element) internal.Element {
 	q := assertElement(element).negate()
-	return e.addAffine(q)
+	return e.addJacobian(q)
 }
 
 // Multiply sets the receiver to the scalar multiplication of the receiver with the given Scalar, and returns it.
@@ -288,13 +255,17 @@ func (e *Element) Multiply(scalar internal.Scalar) internal.Element {
 
 	for i := s.scalar.BitLen() - 1; i >= 0; i-- {
 		if s.scalar.Bit(i) == 0 {
-			r1.addAffine(r0)
+			r1.addJacobian(r0)
 			r0.Double()
 		} else {
-			r0.addAffine(r1)
+			r0.addJacobian(r1)
 			r1.Double()
 		}
 	}
+
+	fmt.Printf("r0: %v\n", r0.Encode())
+
+	r0.fromJacobiToAffine()
 
 	return e.set(r0)
 }
@@ -319,12 +290,13 @@ func (e *Element) Equal(element internal.Element) int {
 
 // IsIdentity returns whether the Element is the point at infinity of the Group's underlying curve.
 func (e *Element) IsIdentity() bool {
-	return e.x.Sign() == 0 && e.y.Sign() == 0
+	return e.z.Sign() == 0 || e.x.Sign() == 0 && e.y.Sign() == 0
 }
 
 func (e *Element) set(element *Element) *Element {
 	e.x.Set(&element.x)
 	e.y.Set(&element.y)
+	e.z.Set(&element.z)
 
 	return e
 }
@@ -348,15 +320,40 @@ func (e *Element) Copy() internal.Element {
 	return e.copy()
 }
 
+func (e *Element) affine() (x, y *big.Int) {
+	if e.z.Sign() == 0 {
+		return fp.Zero(), fp.Zero()
+	}
+
+	if fp.AreEqual(&e.z, fp.One()) {
+		return &e.x, &e.y
+	}
+
+	var zInv, zInvSq big.Int
+
+	fp.Inv(&zInv, &e.z)
+	fp.Mul(&zInvSq, &zInv, &zInv)
+
+	x = new(big.Int)
+	fp.Mul(x, &e.x, &zInvSq)
+	fp.Mul(&zInvSq, &zInvSq, &zInvSq)
+	y = new(big.Int)
+	fp.Mul(y, &e.y, &zInvSq)
+
+	return x, y
+}
+
 // Encode returns the compressed byte encoding of the element.
 func (e *Element) Encode() []byte {
 	if e.IsIdentity() {
 		return []byte{0}
 	}
 
+	x, y := e.affine()
+
 	var output [elementLength]byte
-	output[0] = 2 | e.y.Bytes()[0]&1
-	e.x.FillBytes(output[1:])
+	output[0] = 2 | y.Bytes()[0]&1
+	x.FillBytes(output[1:])
 
 	return output[:]
 }

@@ -29,9 +29,9 @@ const (
 )
 
 var (
-	fp    = field.NewField(setString(fieldOrder, 10))
-	fn    = field.NewField(setString(groupOrder, 0))
-	a     = big.NewInt(0)
+	fp = field.NewField(setString(fieldOrder, 10))
+	fn = field.NewField(setString(groupOrder, 0))
+	//a     = big.NewInt(0)
 	b     = big.NewInt(7)
 	mapZ  = new(big.Int).Mod(big.NewInt(-11), fp.Order())
 	baseX = setString("0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798", 0)
@@ -81,7 +81,7 @@ func hashToCurve(input, dst []byte) *Element {
 	u := hash2curve.HashToFieldXMD(hash, input, dst, 2, 1, secLength, fp.Order())
 	q0 := map2IsoCurve(u[0])
 	q1 := map2IsoCurve(u[1])
-	q0.addAffine(q1)
+	q0.addJacobian(q1)
 	x, y, isIdentity := isogeny3map(fp, &q0.x, &q0.y)
 
 	if isIdentity {

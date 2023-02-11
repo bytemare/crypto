@@ -163,6 +163,11 @@ func (f Field) Sub(res, x, y *big.Int) *big.Int {
 	return f.Mod(res.Sub(x, y))
 }
 
+// Lsh sets res to the left shift of n bits on x modulo the field order.
+func (f Field) Lsh(res, x *big.Int, n uint) {
+	f.Mod(res.Lsh(x, n))
+}
+
 // Mul sets res to the multiplication of x and y modulo the field order.
 func (f Field) Mul(res, x, y *big.Int) {
 	f.Mod(res.Mul(x, y))

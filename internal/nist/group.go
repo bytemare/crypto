@@ -134,15 +134,15 @@ func (g Group[P]) Ciphersuite() string {
 }
 
 // ScalarLength returns the byte size of an encoded element.
-func (g Group[P]) ScalarLength() uint {
+func (g Group[P]) ScalarLength() int {
 	byteLen := (g.scalarField.BitLen() + 7) / 8
-	return uint(byteLen)
+	return byteLen
 }
 
 // ElementLength returns the byte size of an encoded element.
-func (g Group[P]) ElementLength() uint {
+func (g Group[P]) ElementLength() int {
 	byteLen := (g.curve.field.BitLen() + 7) / 8
-	return uint(1 + byteLen)
+	return 1 + byteLen
 }
 
 // Order returns the order of the canonical group of scalars.

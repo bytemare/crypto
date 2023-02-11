@@ -68,12 +68,12 @@ func (g Group) Ciphersuite() string {
 }
 
 // ScalarLength returns the byte size of an encoded scalar.
-func (g Group) ScalarLength() uint {
+func (g Group) ScalarLength() int {
 	return scalarLength
 }
 
 // ElementLength returns the byte size of an encoded element.
-func (g Group) ElementLength() uint {
+func (g Group) ElementLength() int {
 	return elementLength
 }
 
