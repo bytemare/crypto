@@ -27,21 +27,33 @@ const (
 )
 
 var (
-	a, _ = fe().SetBytes([]byte{
+	a, invsqrtD   *field.Element
+	minA          = fe().Negate(a)
+	zero          = fe().Zero()
+	one           = fe().One()
+	minOne        = fe().Negate(one)
+	two           = fe().Add(one, one)
+	fieldPrime, _ = new(big.Int).SetString(p25519, 10)
+)
+
+func init() {
+	var err error
+
+	a, err = fe().SetBytes([]byte{
 		6, 109, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	})
-	minA        = fe().Negate(a)
-	zero        = fe().Zero()
-	one         = fe().One()
-	minOne      = fe().Negate(one)
-	two         = fe().Add(one, one)
-	invsqrtD, _ = fe().SetBytes([]byte{
+	if err != nil {
+		panic(err)
+	}
+
+	invsqrtD, err = fe().SetBytes([]byte{
 		6, 126, 69, 255, 170, 4, 110, 204, 130, 26, 125, 75, 209, 211, 161, 197,
 		126, 79, 252, 3, 220, 8, 123, 210, 187, 6, 160, 96, 244, 237, 38, 15,
 	})
-
-	fieldPrime, _ = new(big.Int).SetString(p25519, 10)
-)
+	if err != nil {
+		panic(err)
+	}
+}
 
 func fe() *field.Element {
 	return new(field.Element)
