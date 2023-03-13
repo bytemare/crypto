@@ -27,13 +27,8 @@ const (
 )
 
 var (
-	a, invsqrtD   *field.Element
-	minA          = fe().Negate(a)
-	zero          = fe().Zero()
-	one           = fe().One()
-	minOne        = fe().Negate(one)
-	two           = fe().Add(one, one)
-	fieldPrime, _ = new(big.Int).SetString(p25519, 10)
+	a, invsqrtD, minA, zero, one, minOne, two *field.Element
+	fieldPrime, _                             = new(big.Int).SetString(p25519, 10)
 )
 
 func init() {
@@ -53,6 +48,12 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+
+	minA = fe().Negate(a)
+	zero = fe().Zero()
+	one = fe().One()
+	minOne = fe().Negate(one)
+	two = fe().Add(one, one)
 }
 
 func fe() *field.Element {
