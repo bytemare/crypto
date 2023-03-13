@@ -31,9 +31,8 @@ func TestNistInvalidCoordinates(t *testing.T) {
 
 	for _, test := range tests {
 		curve := test.curve
-		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
-			testInvalidCoordinates(t, test.name, curve)
+		t.Run(test.name, func(tt *testing.T) {
+			testInvalidCoordinates(tt, test.name, curve)
 		})
 	}
 }

@@ -102,7 +102,7 @@ func (g Group[P]) HashToScalar(input, dst []byte) internal.Scalar {
 	// If necessary, build a buffer of right size, so it gets correctly interpreted.
 	bytes := s.Bytes()
 
-	length := int(g.ScalarLength())
+	length := g.ScalarLength()
 	if l := length - len(bytes); l > 0 {
 		buf := make([]byte, l, length)
 		buf = append(buf, bytes...)
