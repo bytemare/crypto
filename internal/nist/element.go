@@ -63,6 +63,11 @@ func (e *Element[Point]) Double() internal.Element {
 // negateSmall returns the compressed byte encoding of the negated element e with 5 allocs in 13000 ns/op.
 func (e *Element[Point]) negateSmall() []byte {
 	enc := e.p.BytesCompressed()
+
+	if e.IsIdentity() {
+		return enc
+	}
+
 	switch enc[0] {
 	case 2:
 		enc[0] = 0x03

@@ -131,6 +131,7 @@ func TestElement_Arithmetic(t *testing.T) {
 		elementTestEqual(t, group.id)
 		elementTestAdd(t, group.id)
 		elementTestDouble(t, group.id)
+		elementTestNegate(t, group.id)
 		elementTestSubstract(t, group.id)
 		elementTestMultiply(t, group.id)
 		elementTestInversion(t, group.id)
@@ -159,6 +160,33 @@ func elementTestAdd(t *testing.T, g crypto.Group) {
 	cpy := base.Copy()
 	if cpy.Add(nil).Equal(base) != 1 {
 		t.Fatal(expectedEquality)
+	}
+}
+
+func elementTestNegate(t *testing.T, g crypto.Group) {
+	// 0 = -0
+	id := g.NewElement().Identity()
+	negId := g.NewElement().Identity().Negate()
+
+	if id.Equal(negId) != 1 {
+		t.Fatal("expected equality when negating identity element")
+	}
+
+	// b + (-b) = 0
+	b := g.NewElement().Base()
+	negB := g.NewElement().Base().Negate()
+	b.Add(negB)
+
+	if !b.IsIdentity() {
+		t.Fatal("expected identity for b + (-b)")
+	}
+
+	// -(-b) = b
+	b = g.NewElement().Base()
+	negB = g.NewElement().Base().Negate().Negate()
+
+	if b.Equal(negB) != 1 {
+		t.Fatal("expected equality -(-b) = b")
 	}
 }
 
