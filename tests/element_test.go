@@ -9,6 +9,7 @@
 package group_test
 
 import (
+	"encoding/hex"
 	"testing"
 
 	"github.com/bytemare/crypto"
@@ -119,6 +120,16 @@ func TestElement_WrongInput(t *testing.T) {
 
 func TestElement_EncodedLength(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
+		id := group.id.NewElement().Identity().Encode()
+		if len(id) != group.elementLength {
+			t.Fatalf("Encode() of the identity element is expected to return %d bytes, but returned %d bytes", group.elementLength, len(id))
+		}
+
+		encodedID := hex.EncodeToString(id)
+		if encodedID != group.identity {
+			t.Fatalf("Encode() of the identity element is unexpected.\n\twant: %v\n\tgot : %v", group.identity, encodedID)
+		}
+
 		encodedElement := group.id.NewElement().Base().Multiply(group.id.NewScalar().Random()).Encode()
 		if len(encodedElement) != group.elementLength {
 			t.Fatalf("Encode() is expected to return %d bytes, but returned %d bytes", group.elementLength, encodedElement)
