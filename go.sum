@@ -1,11 +1,13 @@
+filippo.io/bigmod v0.0.1 h1:OaEqDr3gEbofpnHbGqZweSL/bLMhy1pb54puiCDeuOA=
+filippo.io/bigmod v0.0.1/go.mod h1:KyzqAbH7bRH6MOuOF1TPfUjvLoi0mRF2bIyD2ouRNQI=
 filippo.io/edwards25519 v1.0.0 h1:0wAIcmJUqRdI8IJ/3eGi5/HwXZWPujYXXlkrQogz0Ek=
 filippo.io/edwards25519 v1.0.0/go.mod h1:N1IkdkCkiLB6tki+MYJoSx2JTY9NUlxZE7eHn5EwJns=
 filippo.io/nistec v0.0.2 h1:/NIXTUimcHIh0E2DsYucHlICvUisgj28/XEnKSEptUs=
 filippo.io/nistec v0.0.2/go.mod h1:84fxC9mi+MhC2AERXI4LSa8cmSVOzrFikg6hZ4IfCyw=
 github.com/bytemare/hash v0.1.5 h1:VW+X1YQ2b3chjRFHkRUnO42uclsQjXimdBCPOgIobR4=
 github.com/bytemare/hash v0.1.5/go.mod h1:+QmWXTky/2b63ngqM5IYezGydn9UTFDhpX7mLYwYxCA=
-github.com/bytemare/hash2curve v0.1.3 h1:BOqV8BF5dF+BbPZgIyoeAVTwd4m7jmw4LwacD1GFBvU=
-github.com/bytemare/hash2curve v0.1.3/go.mod h1:Wma3DmJdn8kqiK9j120hkWvC3tQVKS1PyA8ZzyG23BI=
+github.com/bytemare/hash2curve v0.2.0 h1:rkkEGfCwBMyYKdi5uVzPOX6Oo3zSWruTqg1dSZ3/810=
+github.com/bytemare/hash2curve v0.2.0/go.mod h1:2SCj1NS5fbnYy/Yqn74wzLO5KgBJp/8QLRRgAvxGIYo=
 github.com/gtank/ristretto255 v0.1.2 h1:JEqUCPA1NvLq5DwYtuzigd7ss8fwbYay9fi4/5uMzcc=
 github.com/gtank/ristretto255 v0.1.2/go.mod h1:Ph5OpO6c7xKUGROZfWVLiJf9icMDwUeIvY4OmlYW69o=
 golang.org/x/crypto v0.7.0 h1:AvwMYaRytfdeVt3u6mLaxYtErKYjxA2OXjJ1HHq6t3A=
