@@ -15,13 +15,13 @@ package crypto
 import (
 	"errors"
 	"fmt"
-	"github.com/bytemare/crypto/internal/secp256k1"
 	"sync"
 
 	"github.com/bytemare/crypto/internal"
 	"github.com/bytemare/crypto/internal/edwards25519"
 	"github.com/bytemare/crypto/internal/nist"
 	"github.com/bytemare/crypto/internal/ristretto"
+	"github.com/bytemare/crypto/internal/secp256k1"
 )
 
 // Group identifies prime-order groups over elliptic curves with hash-to-group operations.
