@@ -70,6 +70,7 @@ func (e *Element) affine() (x, y *big.Int) {
 	x = new(big.Int)
 	fp.Mul(x, &e.x, &zInvSq)
 	fp.Mul(&zInvSq, &zInvSq, &zInv)
+
 	y = new(big.Int)
 	fp.Mul(y, &e.y, &zInvSq)
 

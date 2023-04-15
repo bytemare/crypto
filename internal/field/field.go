@@ -198,8 +198,7 @@ func (f Field) sqrt3mod4(res, e *big.Int) *big.Int {
 
 // SquareRoot sets res to a square root of e mod the field's order, if such a square root exists.
 func (f Field) SquareRoot(res, e *big.Int) *big.Int {
-	// return f.sqrt3mod4(res, e)
-	return res.ModSqrt(e, f.order)
+	return f.sqrt3mod4(res, e)
 }
 
 // SqrtRatio res result to the square root of (e/v), and indicates whether (e/v) is a square.
