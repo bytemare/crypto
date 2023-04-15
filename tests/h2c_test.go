@@ -108,7 +108,8 @@ func vectorToSecp256k1(x, y string) []byte {
 	var output [33]byte
 
 	yb, _ := hex.DecodeString(y[2:])
-	output[0] = 2 | yb[0]&1
+	yint := new(big.Int).SetBytes(yb)
+	output[0] = byte(2 | yint.Bit(0)&1)
 
 	xb, _ := hex.DecodeString(x[2:])
 	copy(output[1:], xb)
@@ -136,7 +137,7 @@ func (v *h2cVector) run(t *testing.T) {
 		p := v.group.HashToGroup([]byte(v.Msg), []byte(v.Dst))
 
 		if hex.EncodeToString(p.Encode()) != expected {
-			t.Fatalf("Unexpected HashToGroup output.\n\tExpected %q\n\tgot %q", expected, hex.EncodeToString(p.Encode()))
+			t.Fatalf("Unexpected HashToGroup output.\n\tExpected %q\n\tgot  \t%q", expected, hex.EncodeToString(p.Encode()))
 		}
 	case "NU_":
 		p := v.group.EncodeToGroup([]byte(v.Msg), []byte(v.Dst))

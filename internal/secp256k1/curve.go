@@ -29,10 +29,10 @@ const (
 )
 
 var (
-	fp = field.NewField(setString(fieldOrder, 10))
-	fn = field.NewField(setString(groupOrder, 0))
-	//a     = big.NewInt(0)
+	fp    = field.NewField(setString(fieldOrder, 10))
+	fn    = field.NewField(setString(groupOrder, 0))
 	b     = big.NewInt(7)
+	b3    = big.NewInt(21)
 	mapZ  = new(big.Int).Mod(big.NewInt(-11), fp.Order())
 	baseX = setString("0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798", 0)
 	baseY = setString("0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8", 0)
@@ -73,7 +73,6 @@ var (
 
 func map2IsoCurve(fe *big.Int) *Element {
 	x, y := h2c.MapToCurveSSWU(fp, secp256k13ISOA, secp256k13ISOB, mapZ, fe)
-
 	return newElementWithAffine(x, y)
 }
 
@@ -81,28 +80,28 @@ func hashToCurve(input, dst []byte) *Element {
 	u := hash2curve.HashToFieldXMD(hash, input, dst, 2, 1, secLength, fp.Order())
 	q0 := map2IsoCurve(u[0])
 	q1 := map2IsoCurve(u[1])
-	q0.addJacobian(q1)
-	x, y, isIdentity := isogeny3map(fp, &q0.x, &q0.y)
+	q0.addAffine(q1) // we use a generic affine add here because the others are tailored for a = 0 and b = 7.
+	p, isIdentity := isogeny3map(fp, q0)
 
 	if isIdentity {
 		return newElement()
 	}
 
 	// We can save cofactor clearing because it is 1.
-	return newElementWithAffine(x, y)
+	return p
 }
 
 func encodeToCurve(input, dst []byte) *Element {
 	u := hash2curve.HashToFieldXMD(hash, input, dst, 1, 1, secLength, fp.Order())
 	q0 := map2IsoCurve(u[0])
-	x, y, isIdentity := isogeny3map(fp, &q0.x, &q0.y)
+	p, isIdentity := isogeny3map(fp, q0)
 
 	if isIdentity {
 		return newElement()
 	}
 
 	// We can save cofactor clearing because it is 1.
-	return newElementWithAffine(x, y)
+	return p
 }
 
 var (
@@ -122,38 +121,38 @@ var (
 )
 
 // isogeny3map is a 3-degree isogeny from secp256k1 3-ISO to the secp256k1 elliptic curve.
-func isogeny3map(f *field.Field, x, y *big.Int) (*big.Int, *big.Int, bool) {
+func isogeny3map(f *field.Field, e *Element) (*Element, bool) {
 	var isIdentity bool
 	var x2, x3, k11, k12, k13, k21, k31, k32, k33, k41, k42 big.Int
-	f.Mul(&x2, x, x)
-	f.Mul(&x3, &x2, x)
+	f.Mul(&x2, &e.x, &e.x)
+	f.Mul(&x3, &x2, &e.x)
 
 	// x_num, x_den
 	var xNum big.Int
-	f.Mul(&k13, _k13, &x3) // _k(1,3) * x'^3
-	f.Mul(&k12, _k12, &x2) // _k(1,2) * x'^2
-	f.Mul(&k11, _k11, x)   // _k(1,1) * x'
+	f.Mul(&k13, _k13, &x3)  // _k(1,3) * x'^3
+	f.Mul(&k12, _k12, &x2)  // _k(1,2) * x'^2
+	f.Mul(&k11, _k11, &e.x) // _k(1,1) * x'
 	f.Add(&xNum, &k13, &k12)
 	f.Add(&xNum, &xNum, &k11)
 	f.Add(&xNum, &xNum, _k10)
 
 	var xDen big.Int
-	f.Mul(&k21, _k21, x) // _k(2,1) * x'
+	f.Mul(&k21, _k21, &e.x) // _k(2,1) * x'
 	f.Add(&xDen, &x2, &k21)
 	f.Add(&xDen, &xDen, _k20)
 
 	// y_num, y_den
 	var yNum big.Int
-	f.Mul(&k33, _k33, &x3) // _k(3,3) * x'^3
-	f.Mul(&k32, _k32, &x2) // _k(3,2) * x'^2
-	f.Mul(&k31, _k31, x)   // _k(3,1) * x'
+	f.Mul(&k33, _k33, &x3)  // _k(3,3) * x'^3
+	f.Mul(&k32, _k32, &x2)  // _k(3,2) * x'^2
+	f.Mul(&k31, _k31, &e.x) // _k(3,1) * x'
 	f.Add(&yNum, &k33, &k32)
 	f.Add(&yNum, &yNum, &k31)
 	f.Add(&yNum, &yNum, _k30)
 
 	var yDen big.Int
-	f.Mul(&k42, _k42, &x2) // _k(4,2) * x'^2
-	f.Mul(&k41, _k41, x)   // _k(4,1) * x'
+	f.Mul(&k42, _k42, &x2)  // _k(4,2) * x'^2
+	f.Mul(&k41, _k41, &e.x) // _k(4,1) * x'
 	f.Add(&yDen, &x3, &k42)
 	f.Add(&yDen, &yDen, &k41)
 	f.Add(&yDen, &yDen, _k40)
@@ -168,7 +167,7 @@ func isogeny3map(f *field.Field, x, y *big.Int) (*big.Int, *big.Int, bool) {
 	f.Inv(&resY, &yDen)
 	isIdentity = isIdentity || f.IsZero(&resY)
 	f.Mul(&resY, &resY, &yNum)
-	f.Mul(&resY, &resY, y)
+	f.Mul(&resY, &resY, &e.y)
 
-	return &resX, &resY, isIdentity
+	return newElementWithAffine(&resX, &resY), isIdentity
 }

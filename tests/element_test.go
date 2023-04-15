@@ -128,12 +128,12 @@ func TestElement_EncodedLength(t *testing.T) {
 
 func TestElement_Arithmetic(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		//elementTestEqual(t, group.group)
-		//elementTestDouble(t, group.group)
-		//elementTestAdd(t, group.group)
-		//elementTestSubstract(t, group.group)
+		elementTestEqual(t, group.group)
+		elementTestDouble(t, group.group)
+		elementTestAdd(t, group.group)
+		elementTestSubstract(t, group.group)
 		elementTestMultiply(t, group.group)
-		//elementTestIdentity(t, group.group)
+		elementTestIdentity(t, group.group)
 	})
 }
 
