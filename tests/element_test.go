@@ -201,16 +201,17 @@ func elementTestAdd(t *testing.T, g crypto.Group) {
 		t.Fatal(errExpectedEquality)
 	}
 
-	//three := g.NewScalar().One()
-	//three.Add(three)
-	//three.Add(g.NewScalar().One())
-	//
-	//exp := g.Base().Multiply(three)
-	//e := g.Base().Add(g.Base()).Add(g.Base())
-	//
-	//if e.Equal(exp) != 1 {
-	//	t.Fatal(errExpectedEquality)
-	//}
+	// Verify whether 3*base = base + base + base
+	three := g.NewScalar().One()
+	three.Add(three)
+	three.Add(g.NewScalar().One())
+
+	mult := g.Base().Multiply(three)
+	e := g.Base().Add(g.Base()).Add(g.Base())
+
+	if e.Equal(mult) != 1 {
+		t.Fatal(errExpectedEquality)
+	}
 }
 
 func elementTestNegate(t *testing.T, g crypto.Group) {
