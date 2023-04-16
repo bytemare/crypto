@@ -17,6 +17,81 @@ import (
 	"testing"
 )
 
+// a testGroup references some components of a Group.
+type testGroup struct {
+	name          string
+	h2c           string
+	e2c           string
+	basePoint     string
+	identity      string
+	elementLength int
+	scalarLength  int
+	id            crypto.Group
+}
+
+func testGroups() []*testGroup {
+	return []*testGroup{
+		{
+			"Ristretto255",
+			"ristretto255_XMD:SHA-512_R255MAP_RO_",
+			"ristretto255_XMD:SHA-512_R255MAP_RO_",
+			"e2f2ae0a6abc4e71a884a961c500515f58e30b6aa582dd8db6a65945e08d2d76",
+			"0000000000000000000000000000000000000000000000000000000000000000",
+			32,
+			32,
+			1,
+		},
+		{
+			"P256",
+			"P256_XMD:SHA-256_SSWU_RO_",
+			"P256_XMD:SHA-256_SSWU_NU_",
+			"036b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296",
+			"000000000000000000000000000000000000000000000000000000000000000000",
+			33,
+			32,
+			3,
+		},
+		{
+			"P384",
+			"P384_XMD:SHA-384_SSWU_RO_",
+			"P384_XMD:SHA-384_SSWU_NU_",
+			"03aa87ca22be8b05378eb1c71ef320ad746e1d3b628ba79b9859f741e082542a385502f25dbf55296c3a545e3872760ab7",
+			"00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+			49,
+			48,
+			4,
+		},
+		{
+			"P521",
+			"P521_XMD:SHA-512_SSWU_RO_",
+			"P521_XMD:SHA-512_SSWU_NU_",
+			"0200c6858e06b70404e9cd9e3ecb662395b4429c648139053fb521f828af606b4d3dbaa14b5e77efe75928fe1dc127a2ffa8de3348b3c1856a429bf97e7e31c2e5bd66",
+			"00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+			67,
+			66,
+			5,
+		},
+		{
+			"Edwards25519",
+			"edwards25519_XMD:SHA-512_ELL2_RO_",
+			"edwards25519_XMD:SHA-512_ELL2_NU_",
+			"5866666666666666666666666666666666666666666666666666666666666666",
+			"0100000000000000000000000000000000000000000000000000000000000000",
+			32,
+			32,
+			6,
+		},
+	}
+}
+
+func testAll(t *testing.T, f func(*testing.T, *testGroup)) {
+	for _, test := range testGroups() {
+		t.Run(test.name, func(t *testing.T) {
+			f(t, test)
+		})
+	}
+}
+
 var (
 	errNoPanic        = errors.New("no panic")
 	errNoPanicMessage = errors.New("panic but no message")

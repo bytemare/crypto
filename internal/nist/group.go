@@ -135,7 +135,7 @@ func (g Group[P]) Ciphersuite() string {
 
 // ScalarLength returns the byte size of an encoded element.
 func (g Group[P]) ScalarLength() int {
-	byteLen := (g.scalarField.BitLen() + 7) / 8
+	byteLen := (g.scalarField.bitLen() + 7) / 8
 	return byteLen
 }
 

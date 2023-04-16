@@ -152,45 +152,48 @@ func (s *Scalar) square() {
 
 // Pow sets s to s**scalar modulo the group order, and returns s. If scalar is nil, it returns 1.
 func (s *Scalar) Pow(scalar internal.Scalar) internal.Scalar {
-	sc := assert(scalar)
-	exponent := sc.scalar.Encode(nil)
-	msbyte := getMSByte(exponent)
-	msbit := getMSBit(exponent[msbyte])
+	s1 := s.copy()
+	s2 := s.copy()
+	s2.square()
 
-	result := s.copy()
-	dummy := s.copy()
+	bytes := assert(scalar).Encode()
+	msbyte := getMSByte(bytes)
+	msbit := getMSBit(bytes[msbyte])
 
-	for i := 31; i >= 0; i-- {
-		exp := exponent[i]
-		firstByte := i == msbyte
+	// First round over the most significant byte
+	b := bytes[msbyte]
+	for j := msbit - 1; j >= 0; j-- {
+		bit := b & byte(1<<byte(j))
+		if bit == 0 {
+			s2.multiply(s1)
+			s1.square()
+		} else {
+			s1.multiply(s2)
+			s2.square()
+		}
+	}
 
+	for i := msbyte - 1; i >= 0; i-- {
+		b = bytes[i]
 		for j := 7; j >= 0; j-- {
-			run := i < msbyte || (firstByte && j < msbit)
-			currentBitValue := exp & byte(1<<byte(j))
-
-			if run {
-				result.square()
-
-				if currentBitValue != 0 {
-					result.multiply(s)
-				} else {
-					dummy.multiply(s)
-				}
+			bit := b & byte(1<<byte(j))
+			if bit == 0 {
+				s2.multiply(s1)
+				s1.square()
 			} else {
-				dummy.square()
-				dummy.multiply(s)
+				s1.multiply(s2)
+				s2.square()
 			}
 		}
 	}
 
-	switch {
-	case sc.IsZero():
-		s.set(&scOne.scalar)
-	case sc.scalar.Equal(&scOne.scalar) == 1:
-		s.set(&s.scalar)
-	default:
-		s.set(&result.scalar)
+	if scalar.IsZero() {
+		s1.One()
+	} else {
+		s2.One()
 	}
+
+	s.set(&s1.scalar)
 
 	return s
 }

@@ -1,11 +1,9 @@
 name: "CodeQL"
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [ main ]
+    branches:
+      - main
   schedule:
     - cron: '31 10 * * 0'
 
@@ -26,16 +24,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@7884fcad6b5d53d10323aee724dc68d8b9096a2e # pin@v2
+        uses: actions/checkout@27135e314dd1818f797af1db9dae03a9f045786b # pin@master
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@0e9acb6e5cd338179ea69a99146ca55f796799e0 # pin@v1
+        uses: github/codeql-action/init@231aa2c8a89117b126725a0e11897209b7118144 # pin@master
         with:
           languages: go
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@0e9acb6e5cd338179ea69a99146ca55f796799e0 # pin@v1
+        uses: github/codeql-action/autobuild@231aa2c8a89117b126725a0e11897209b7118144 # pin@master
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@0e9acb6e5cd338179ea69a99146ca55f796799e0 # pin@v1
+        uses: github/codeql-action/analyze@231aa2c8a89117b126725a0e11897209b7118144 # pin@master

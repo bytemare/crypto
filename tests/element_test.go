@@ -9,6 +9,7 @@
 package group_test
 
 import (
+	"encoding/hex"
 	"testing"
 
 	"github.com/bytemare/crypto"
@@ -119,7 +120,17 @@ func TestElement_WrongInput(t *testing.T) {
 
 func TestElement_EncodedLength(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		encodedElement := group.group.NewElement().Base().Multiply(group.group.NewScalar().Random()).Encode()
+		id := group.id.NewElement().Identity().Encode()
+		if len(id) != group.elementLength {
+			t.Fatalf("Encode() of the identity element is expected to return %d bytes, but returned %d bytes", group.elementLength, len(id))
+		}
+
+		encodedID := hex.EncodeToString(id)
+		if encodedID != group.identity {
+			t.Fatalf("Encode() of the identity element is unexpected.\n\twant: %v\n\tgot : %v", group.identity, encodedID)
+		}
+
+		encodedElement := group.id.NewElement().Base().Multiply(group.id.NewScalar().Random()).Encode()
 		if len(encodedElement) != group.elementLength {
 			t.Fatalf("Encode() is expected to return %d bytes, but returned %d bytes", group.elementLength, encodedElement)
 		}
@@ -128,12 +139,14 @@ func TestElement_EncodedLength(t *testing.T) {
 
 func TestElement_Arithmetic(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		elementTestEqual(t, group.group)
-		elementTestDouble(t, group.group)
-		elementTestAdd(t, group.group)
-		elementTestSubstract(t, group.group)
-		elementTestMultiply(t, group.group)
-		elementTestIdentity(t, group.group)
+		elementTestEqual(t, group.id)
+		elementTestAdd(t, group.id)
+		elementTestDouble(t, group.id)
+		elementTestNegate(t, group.id)
+		elementTestSubstract(t, group.id)
+		elementTestMultiply(t, group.id)
+		elementTestInversion(t, group.id)
+		elementTestIdentity(t, group.id)
 	})
 }
 
@@ -199,6 +212,33 @@ func elementTestAdd(t *testing.T, g crypto.Group) {
 	//if e.Equal(exp) != 1 {
 	//	t.Fatal(errExpectedEquality)
 	//}
+}
+
+func elementTestNegate(t *testing.T, g crypto.Group) {
+	// 0 = -0
+	id := g.NewElement().Identity()
+	negId := g.NewElement().Identity().Negate()
+
+	if id.Equal(negId) != 1 {
+		t.Fatal("expected equality when negating identity element")
+	}
+
+	// b + (-b) = 0
+	b := g.NewElement().Base()
+	negB := g.NewElement().Base().Negate()
+	b.Add(negB)
+
+	if !b.IsIdentity() {
+		t.Fatal("expected identity for b + (-b)")
+	}
+
+	// -(-b) = b
+	b = g.NewElement().Base()
+	negB = g.NewElement().Base().Negate().Negate()
+
+	if b.Equal(negB) != 1 {
+		t.Fatal("expected equality -(-b) = b")
+	}
 }
 
 func elementTestDouble(t *testing.T, g crypto.Group) {

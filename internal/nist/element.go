@@ -15,6 +15,12 @@ import (
 	"github.com/bytemare/crypto/internal"
 )
 
+const (
+	p256CompressedEncodingLength = 33
+	p384CompressedEncodingLength = 49
+	p521CompressedEncodingLength = 67
+)
+
 // Element implements the Element interface for group elements over NIST curves.
 type Element[Point nistECPoint[Point]] struct {
 	p   Point
@@ -63,6 +69,11 @@ func (e *Element[Point]) Double() internal.Element {
 // negateSmall returns the compressed byte encoding of the negated element e with 5 allocs in 13000 ns/op.
 func (e *Element[Point]) negateSmall() []byte {
 	enc := e.p.BytesCompressed()
+
+	if e.IsIdentity() {
+		return enc
+	}
+
 	switch enc[0] {
 	case 2:
 		enc[0] = 0x03
@@ -154,13 +165,34 @@ func (e *Element[P]) Copy() internal.Element {
 
 // Encode returns the compressed byte encoding of the element.
 func (e *Element[P]) Encode() []byte {
+	if e.IsIdentity() {
+		return encodeInfinity(e)
+	}
+
 	return e.p.BytesCompressed()
+}
+
+func encodeInfinity[Point nistECPoint[Point]](element *Element[Point]) []byte {
+	_, err := element.p.BytesX()
+	var encodedLength int
+
+	switch err.Error()[:4] {
+	case "P256":
+		encodedLength = p256CompressedEncodingLength
+	case "P384":
+		encodedLength = p384CompressedEncodingLength
+	case "P521":
+		encodedLength = p521CompressedEncodingLength
+	}
+
+	return make([]byte, encodedLength)
 }
 
 // XCoordinate returns the encoded x coordinate of the element.
 func (e *Element[P]) XCoordinate() []byte {
 	if e.IsIdentity() {
-		return e.new().BytesCompressed()
+		inf := encodeInfinity(e)
+		return inf[:len(inf)-1]
 	}
 
 	b, err := e.p.BytesX()

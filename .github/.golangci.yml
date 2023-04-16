@@ -142,7 +142,7 @@ linters-settings:
   gofmt:
     simplify: true
   goimports:
-    local-prefixes: github.com/bytemare/opaque
+    local-prefixes: github.com/bytemare/crypto
   gomnd:
     checks:
       - argument
