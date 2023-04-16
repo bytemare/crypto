@@ -82,6 +82,8 @@ const (
 	*/
 	frostPubkeyHex    = "02f37c34b66ced1fb51c34a90bdae006901f10625cc06c4f64663b0eae87d87b4f"
 	frostSecretKeyHex = "0d004150d27c3bf2a42f312683d35fac7394b1e9e318249c1bfe7f0795a83114"
+
+	encodedBaseX2 = "02c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5"
 )
 
 func hexToBytes(t *testing.T, in string) []byte {
@@ -137,6 +139,26 @@ func (e *Element) printJacobian() {
 	log.Printf("\ty: %s", hex.EncodeToString(e.y.Bytes()))
 	log.Printf("\tz: %s", hex.EncodeToString(e.z.Bytes()))
 }
+
+func AddAffineBaseX3() {
+	pointA := hexToElement(nil, encodedBaseX2) // 2*base
+	pointB := basePoint()
+
+	pointA.addAffine(pointB) // = 2 * base + base
+	log.Printf("Affine 2*base+base")
+	pointA.printAffine()
+	pointA.printJacobian()
+}
+
+/*
+ Affine coordinates
+2023/04/17 01:42:03 	x: f9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9
+2023/04/17 01:42:03 	y: 388f7b0f632de8140fe337e62a37f3566500a99934c2231b6cb9fd7584b8e672
+2023/04/17 01:42:03 Jacobian coordinates
+2023/04/17 01:42:03 	x: f9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9
+2023/04/17 01:42:03 	y: 388f7b0f632de8140fe337e62a37f3566500a99934c2231b6cb9fd7584b8e672
+2023/04/17 01:42:03 	z: 01
+*/
 
 func Basex3() {
 	base := basePoint()
@@ -204,27 +226,24 @@ func ScalarMultFrost(t *testing.T) {
 }
 
 func AddJacobianComplete() {
-	formulaType = complete
 	base := basePoint()
-	base.add(base)
+	base.addJacobianComplete(base)
 	log.Printf("Base + base with complete formula")
 	base.printAffine()
 	base.printJacobian()
 }
 
 func Double() {
-	formulaType = incomplete
 	base := basePoint()
-	base.double()
+	base.doubleJacobianIncomplete()
 	log.Printf("double(base) with incomplete formula")
 	base.printAffine()
 	base.printJacobian()
 
 	log.Println()
 
-	formulaType = complete
 	base = basePoint()
-	base.double()
+	base.doubleJacobianComplete()
 	log.Printf("double(base) with complete formula")
 	base.printAffine()
 	base.printJacobian()

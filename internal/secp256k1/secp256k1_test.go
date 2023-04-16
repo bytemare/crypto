@@ -9,6 +9,10 @@ import (
 	To trigger these tests, execute `go test` in this directory.
 */
 
+func TestAddAffineBaseX3(t *testing.T) {
+	secp256k1.AddAffineBaseX3()
+}
+
 func TestTest(t *testing.T) {
 	secp256k1.Basex3()
 }
