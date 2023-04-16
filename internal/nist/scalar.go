@@ -70,7 +70,7 @@ func (s *Scalar) Random() internal.Scalar {
 	}
 }
 
-// Add returns s+scalar, and returns s.
+// Add sets the receiver to the sum of the input and the receiver, and returns the receiver.
 func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s
@@ -82,7 +82,7 @@ func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	return s
 }
 
-// Subtract returns s-scalar, and returns s.
+// Subtract subtracts the input from the receiver, and returns the receiver.
 func (s *Scalar) Subtract(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s
@@ -94,7 +94,7 @@ func (s *Scalar) Subtract(scalar internal.Scalar) internal.Scalar {
 	return s
 }
 
-// Multiply sets s to s*scalar, and returns s.
+// Multiply multiplies the receiver with the input, and returns the receiver.
 func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
 		return s.Zero()
@@ -122,13 +122,13 @@ func (s *Scalar) Pow(scalar internal.Scalar) internal.Scalar {
 	return s
 }
 
-// Invert sets s to its modular inverse ( 1 / s ).
+// Invert sets the receiver to its modular inverse ( 1 / s ), and returns it.
 func (s *Scalar) Invert() internal.Scalar {
 	s.field.Inv(&s.scalar, &s.scalar)
 	return s
 }
 
-// Equal returns 1 if the s == scalar are equal, and 0 otherwise.
+// Equal returns 1 if the scalars are equal, and 0 otherwise.
 func (s *Scalar) Equal(scalar internal.Scalar) int {
 	if scalar == nil {
 		return 0

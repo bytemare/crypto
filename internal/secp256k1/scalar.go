@@ -114,7 +114,7 @@ func (s *Scalar) Pow(scalar internal.Scalar) internal.Scalar {
 	return s
 }
 
-// Invert sets the receiver to the scalar's modular inverse ( 1 / scalar ), and returns it.
+// Invert sets the receiver to its modular inverse ( 1 / s ), and returns it.
 func (s *Scalar) Invert() internal.Scalar {
 	fn.Inv(&s.scalar, &s.scalar)
 	return s
