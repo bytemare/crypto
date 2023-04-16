@@ -1,68 +1,60 @@
 // SPDX-License-Identifier: MIT
 //
-// Copyright (C) 2020-2023 Daniel Bourdrez. All Rights Reserved.
+// Copyright (C)2020-2023 Daniel Bourdrez. All Rights Reserved.
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree or at
 // https://spdx.org/licenses/MIT.html
 
-package nist
+package secp256k1
 
 import (
 	"crypto/subtle"
-	"fmt"
 	"math/big"
 
 	"github.com/bytemare/crypto/internal"
-	"github.com/bytemare/crypto/internal/field"
 )
 
-// Scalar implements the Scalar interface for group scalars.
+// Scalar implements the Scalar interface for Edwards25519 group scalars.
 type Scalar struct {
-	field  *field.Field
 	scalar big.Int
 }
 
-func newScalar(field *field.Field) *Scalar {
-	s := &Scalar{
-		field:  field,
-		scalar: big.Int{},
-	}
-	s.scalar.Set(s.field.Zero())
+var (
+	scZero = big.NewInt(0)
+	scOne  = big.NewInt(1)
+)
 
-	return s
+func newScalar() *Scalar {
+	return &Scalar{scalar: big.Int{}}
 }
 
-func (s *Scalar) assert(scalar internal.Scalar) *Scalar {
-	_sc, ok := scalar.(*Scalar)
+func assert(scalar internal.Scalar) *Scalar {
+	sc, ok := scalar.(*Scalar)
 	if !ok {
 		panic(internal.ErrCastScalar)
 	}
 
-	if !s.field.IsEqual(_sc.field) {
-		panic(internal.ErrWrongField)
-	}
-
-	return _sc
+	return sc
 }
 
-// Zero sets s to 0, and returns it.
+// Zero sets the scalar to 0, and returns it.
 func (s *Scalar) Zero() internal.Scalar {
-	s.scalar.Set(s.field.Zero())
+	s.scalar.Set(scZero)
 	return s
 }
 
-// One sets s to 1, and returns it.
+// One sets the scalar to 1, and returns it.
 func (s *Scalar) One() internal.Scalar {
-	s.scalar.Set(s.field.One())
+	s.scalar.Set(scOne)
 	return s
 }
 
-// Random sets s to a new random scalar and returns it.
+// Random sets the current scalar to a new random scalar and returns it.
 // The random source is crypto/rand, and this functions is guaranteed to return a non-zero scalar.
 func (s *Scalar) Random() internal.Scalar {
 	for {
-		s.field.Random(&s.scalar)
+		fn.Random(&s.scalar)
 
 		if !s.IsZero() {
 			return s
@@ -76,8 +68,8 @@ func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 		return s
 	}
 
-	sc := s.assert(scalar)
-	s.field.Add(&s.scalar, &s.scalar, &sc.scalar)
+	sc := assert(scalar)
+	fn.Add(&s.scalar, &s.scalar, &sc.scalar)
 
 	return s
 }
@@ -88,8 +80,8 @@ func (s *Scalar) Subtract(scalar internal.Scalar) internal.Scalar {
 		return s
 	}
 
-	sc := s.assert(scalar)
-	s.field.Sub(&s.scalar, &s.scalar, &sc.scalar)
+	sc := assert(scalar)
+	fn.Sub(&s.scalar, &s.scalar, &sc.scalar)
 
 	return s
 }
@@ -100,8 +92,8 @@ func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
 		return s.Zero()
 	}
 
-	sc := s.assert(scalar)
-	s.field.Mul(&s.scalar, &s.scalar, &sc.scalar)
+	sc := assert(scalar)
+	fn.Mul(&s.scalar, &s.scalar, &sc.scalar)
 
 	return s
 }
@@ -116,15 +108,15 @@ func (s *Scalar) Pow(scalar internal.Scalar) internal.Scalar {
 		return s
 	}
 
-	sc := s.assert(scalar)
-	s.field.Exponent(&s.scalar, &s.scalar, &sc.scalar)
+	sc := assert(scalar)
+	fn.Exponent(&s.scalar, &s.scalar, &sc.scalar)
 
 	return s
 }
 
 // Invert sets the receiver to its modular inverse ( 1 / s ), and returns it.
 func (s *Scalar) Invert() internal.Scalar {
-	s.field.Inv(&s.scalar, &s.scalar)
+	fn.Inv(&s.scalar, &s.scalar)
 	return s
 }
 
@@ -134,14 +126,14 @@ func (s *Scalar) Equal(scalar internal.Scalar) int {
 		return 0
 	}
 
-	sc := s.assert(scalar)
+	sc := assert(scalar)
 
 	return subtle.ConstantTimeCompare(s.scalar.Bytes(), sc.scalar.Bytes())
 }
 
-// LessOrEqual returns 1 if s <= scalar, and 0 otherwise.
+// LessOrEqual returns 1 if s <= scalar and 0 otherwise.
 func (s *Scalar) LessOrEqual(scalar internal.Scalar) int {
-	sc := s.assert(scalar)
+	sc := assert(scalar)
 
 	ienc := s.Encode()
 	jenc := sc.Encode()
@@ -166,7 +158,7 @@ func (s *Scalar) LessOrEqual(scalar internal.Scalar) int {
 
 // IsZero returns whether the scalar is 0.
 func (s *Scalar) IsZero() bool {
-	return s.field.AreEqual(&s.scalar, s.field.Zero())
+	return fn.AreEqual(&s.scalar, scZero)
 }
 
 func (s *Scalar) set(scalar *Scalar) *Scalar {
@@ -180,7 +172,7 @@ func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 		return s.set(nil)
 	}
 
-	ec := s.assert(scalar)
+	ec := assert(scalar)
 	s.scalar.Set(&ec.scalar)
 
 	return s
@@ -189,14 +181,14 @@ func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 // SetInt sets s to i modulo the field order, and returns an error if one occurs.
 func (s *Scalar) SetInt(i *big.Int) error {
 	s.scalar.Set(i)
-	s.field.Mod(&s.scalar)
+	fn.Mod(&s.scalar)
 
 	return nil
 }
 
-// Copy returns a copy of the Scalar.
+// Copy returns a copy of the receiver.
 func (s *Scalar) Copy() internal.Scalar {
-	cpy := newScalar(s.field)
+	cpy := newScalar()
 	cpy.scalar.Set(&s.scalar)
 
 	return cpy
@@ -204,7 +196,7 @@ func (s *Scalar) Copy() internal.Scalar {
 
 // Encode returns the compressed byte encoding of the scalar.
 func (s *Scalar) Encode() []byte {
-	byteLen := (s.field.BitLen() + 7) / 8
+	byteLen := (fn.BitLen() + 7) / 8
 	scalar := make([]byte, byteLen)
 
 	return s.scalar.FillBytes(scalar)
@@ -222,7 +214,7 @@ func (s *Scalar) Decode(in []byte) error {
 		return internal.ErrParamNegScalar
 	}
 
-	if s.field.Order().Cmp(tmp) <= 0 {
+	if fn.Order().Cmp(tmp) <= 0 {
 		return internal.ErrParamScalarTooBig
 	}
 
@@ -232,15 +224,11 @@ func (s *Scalar) Decode(in []byte) error {
 }
 
 // MarshalBinary returns the compressed byte encoding of the scalar.
-func (s *Scalar) MarshalBinary() ([]byte, error) {
+func (s *Scalar) MarshalBinary() (data []byte, err error) {
 	return s.Encode(), nil
 }
 
 // UnmarshalBinary sets e to the decoding of the byte encoded scalar.
 func (s *Scalar) UnmarshalBinary(data []byte) error {
-	if err := s.Decode(data); err != nil {
-		return fmt.Errorf("nist: %w", err)
-	}
-
-	return nil
+	return s.Decode(data)
 }

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 //
-// Copyright (C) 2021 Daniel Bourdrez. All Rights Reserved.
+// Copyright (C) 2020-2023 Daniel Bourdrez. All Rights Reserved.
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree or at
@@ -15,6 +15,8 @@ import (
 	"math/big"
 	"testing"
 )
+
+var errParamNotOnCurve = errors.New("point is not on curve")
 
 // TestNistInvalidCoordinates tests big.Int values that are not valid field elements
 // (negative or bigger than P). They are expected to return false from
@@ -77,8 +79,6 @@ func solveNist(x, b, order *big.Int) *big.Int {
 
 	return x3
 }
-
-var errParamNotOnCurve = errors.New("point is not on curve")
 
 type solver func(x *big.Int) *big.Int
 

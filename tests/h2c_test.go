@@ -1,6 +1,6 @@
 // SPDX-License-Group: MIT
 //
-// Copyright (C) 2021 Daniel Bourdrez. All Rights Reserved.
+// Copyright (C) 2020-2023 Daniel Bourdrez. All Rights Reserved.
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the root directory of this source tree or at
@@ -25,20 +25,31 @@ import (
 	edwards255192 "github.com/bytemare/crypto/internal/edwards25519"
 )
 
-type vectors struct {
-	Ciphersuite string   `json:"ciphersuite"`
-	Dst         string   `json:"dst"`
-	Vectors     []vector `json:"vectors"`
+const hashToCurveVectorsFileLocation = "h2c"
+
+type h2cVectors struct {
+	Ciphersuite string      `json:"ciphersuite"`
+	Dst         string      `json:"dst"`
+	Vectors     []h2cVector `json:"vectors"`
 	group       crypto.Group
 }
 
-type vector struct {
-	*vectors
+type h2cVector struct {
+	*h2cVectors
 	P struct {
 		X string `json:"x"`
 		Y string `json:"y"`
 	} `json:"P"`
-	Msg string `json:"msg"`
+	Q0 struct {
+		X string `json:"x"`
+		Y string `json:"y"`
+	} `json:"Q0"`
+	Q1 struct {
+		X string `json:"x"`
+		Y string `json:"y"`
+	} `json:"Q1"`
+	Msg string   `json:"msg"`
+	U   []string `json:"u"`
 }
 
 func ecFromGroup(g crypto.Group) elliptic.Curve {
@@ -54,7 +65,7 @@ func ecFromGroup(g crypto.Group) elliptic.Curve {
 	}
 }
 
-func vectorToNistBig(x, y string) (*big.Int, *big.Int) {
+func vectorToBig(x, y string) (*big.Int, *big.Int) {
 	xb, ok := new(big.Int).SetString(x, 0)
 	if !ok {
 		panic("invalid x")
@@ -93,17 +104,32 @@ func vectorToEdwards25519(t *testing.T, x, y string) *edwards25519.Point {
 	return edwards255192.AffineToEdwards(u, v)
 }
 
-func (v *vector) run(t *testing.T) {
+func vectorToSecp256k1(x, y string) []byte {
+	var output [33]byte
+
+	yb, _ := hex.DecodeString(y[2:])
+	yint := new(big.Int).SetBytes(yb)
+	output[0] = byte(2 | yint.Bit(0)&1)
+
+	xb, _ := hex.DecodeString(x[2:])
+	copy(output[1:], xb)
+
+	return output[:]
+}
+
+func (v *h2cVector) run(t *testing.T) {
 	var expected string
 
 	switch v.group {
 	case crypto.P256Sha256, crypto.P384Sha384, crypto.P521Sha512:
 		e := ecFromGroup(v.group)
-		x, y := vectorToNistBig(v.P.X, v.P.Y)
+		x, y := vectorToBig(v.P.X, v.P.Y)
 		expected = hex.EncodeToString(elliptic.MarshalCompressed(e, x, y))
 	case crypto.Edwards25519Sha512:
 		p := vectorToEdwards25519(t, v.P.X, v.P.Y)
 		expected = hex.EncodeToString(p.Bytes())
+	case crypto.Secp256k1:
+		expected = hex.EncodeToString(vectorToSecp256k1(v.P.X, v.P.Y))
 	}
 
 	switch v.Ciphersuite[len(v.Ciphersuite)-3:] {
@@ -111,7 +137,7 @@ func (v *vector) run(t *testing.T) {
 		p := v.group.HashToGroup([]byte(v.Msg), []byte(v.Dst))
 
 		if hex.EncodeToString(p.Encode()) != expected {
-			t.Fatalf("Unexpected HashToGroup output.\n\tExpected %q\n\tgot %q", expected, hex.EncodeToString(p.Encode()))
+			t.Fatalf("Unexpected HashToGroup output.\n\tExpected %q\n\tgot  \t%q", expected, hex.EncodeToString(p.Encode()))
 		}
 	case "NU_":
 		p := v.group.EncodeToGroup([]byte(v.Msg), []byte(v.Dst))
@@ -124,24 +150,24 @@ func (v *vector) run(t *testing.T) {
 	}
 }
 
-func (v *vectors) runCiphersuite(t *testing.T) {
+func (v *h2cVectors) runCiphersuite(t *testing.T) {
 	for _, vector := range v.Vectors {
-		vector.vectors = v
+		vector.h2cVectors = v
 		t.Run(v.Ciphersuite, vector.run)
 	}
 }
 
 func TestHashToGroupVectors(t *testing.T) {
-	groups := testGroups()
 	getGroup := func(ciphersuite string) (crypto.Group, bool) {
-		for _, group := range groups {
+		for _, group := range testTable {
 			if group.h2c == ciphersuite || group.e2c == ciphersuite {
-				return group.id, true
+				return group.group, true
 			}
 		}
 		return 0, false
 	}
-	if err := filepath.Walk("vectors",
+
+	if err := filepath.Walk(hashToCurveVectorsFileLocation,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -167,7 +193,7 @@ func TestHashToGroupVectors(t *testing.T) {
 				t.Fatal(errRead)
 			}
 
-			var v vectors
+			var v h2cVectors
 			errJSON := json.Unmarshal(val, &v)
 			if errJSON != nil {
 				t.Fatal(errJSON)
