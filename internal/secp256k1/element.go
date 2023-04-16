@@ -19,9 +19,9 @@ type mode uint8
 const (
 	incomplete mode = 1
 	complete   mode = 2
-
-	formulaType = incomplete
 )
+
+var formulaType = incomplete
 
 // Element implements the Element interface for the Secp256k1 group element.
 type Element struct {
@@ -43,7 +43,7 @@ func newElementWithAffine(x, y *big.Int) *Element {
 
 	e.x.Set(x)
 	e.y.Set(y)
-	e.z.Set(fp.One())
+	e.z.Set(scOne)
 
 	return e
 }
@@ -77,7 +77,7 @@ func (e *Element) affine() (x, y *big.Int) {
 		return fp.Zero(), fp.Zero()
 	}
 
-	if fp.AreEqual(&e.z, fp.One()) {
+	if fp.AreEqual(&e.z, scOne) {
 		return &e.x, &e.y
 	}
 
@@ -130,7 +130,7 @@ func (e *Element) addAffine(element *Element) *Element {
 
 	e.x.Set(&x)
 	e.y.Set(&y)
-	e.z.Set(fp.One())
+	e.z.Set(scOne)
 
 	return e
 }
@@ -351,7 +351,6 @@ func (e *Element) double() *Element {
 }
 
 // Double sets the receiver to its double, and returns it.
-// From https://www.microsoft.com/en-us/research/wp-content/uploads/2016/06/complete-2.pdf.
 func (e *Element) Double() internal.Element {
 	return e.double()
 }
@@ -376,19 +375,16 @@ func (e *Element) Subtract(element internal.Element) internal.Element {
 	return e.addJacobianIncomplete(q)
 }
 
-// Multiply sets the receiver to the scalar multiplication of the receiver with the given Scalar, and returns it.
-func (e *Element) Multiply(scalar internal.Scalar) internal.Element {
-	s := assert(scalar)
-
-	if fp.AreEqual(&s.scalar, scOne) {
+func (e *Element) multiply(scalar *Scalar) *Element {
+	if fp.AreEqual(&scalar.scalar, scOne) {
 		return e
 	}
 
 	r0 := newElement()
 	r1 := e.copy()
 
-	for i := s.scalar.BitLen() - 1; i >= 0; i-- {
-		if s.scalar.Bit(i) == 0 {
+	for i := scalar.scalar.BitLen() - 1; i >= 0; i-- {
+		if scalar.scalar.Bit(i) == 0 {
 			r1.add(r0)
 			r0.double()
 		} else {
@@ -398,6 +394,12 @@ func (e *Element) Multiply(scalar internal.Scalar) internal.Element {
 	}
 
 	return e.set(r0)
+}
+
+// Multiply sets the receiver to the scalar multiplication of the receiver with the given Scalar, and returns it.
+func (e *Element) Multiply(scalar internal.Scalar) internal.Element {
+	s := assert(scalar)
+	return e.multiply(s)
 }
 
 // Equal returns 1 if the elements are equivalent, and 0 otherwise.
@@ -479,8 +481,7 @@ func secp256Polynomial(y, x *big.Int) {
 	fp.Add(y, y, b)
 }
 
-// Decode sets the receiver to a decoding of the input data, and returns an error on failure.
-func (e *Element) Decode(data []byte) error {
+func (e *Element) decode(data []byte) error {
 	/*
 		- check coordinates are in the correct range
 		- check point is on the curve
@@ -509,7 +510,7 @@ func (e *Element) Decode(data []byte) error {
 
 	fp.SquareRoot(&y, &y)
 
-	cond := int(y.Bytes()[0]&1) ^ int(data[0]&1)
+	cond := int(y.Bit(0)&1) ^ int(data[0]&1)
 	fp.CondNeg(&y, &y, cond)
 
 	// Identity Check
@@ -519,8 +520,14 @@ func (e *Element) Decode(data []byte) error {
 
 	e.x.Set(x)
 	e.y.Set(&y)
+	e.z.Set(scOne)
 
 	return nil
+}
+
+// Decode sets the receiver to a decoding of the input data, and returns an error on failure.
+func (e *Element) Decode(data []byte) error {
+	return e.decode(data)
 }
 
 // MarshalBinary returns the compressed byte encoding of the element.
