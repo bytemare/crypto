@@ -19,14 +19,14 @@ import (
 )
 
 type mapping struct {
-	z         *big.Int
+	z         big.Int
 	hash      crypto.Hash
 	secLength int
 }
 
 type curve[point nistECPoint[point]] struct {
 	field    field.Field
-	b        *big.Int
+	b        big.Int
 	NewPoint func() point
 	mapping
 }
@@ -34,12 +34,12 @@ type curve[point nistECPoint[point]] struct {
 func (c *curve[point]) setMapping(hash crypto.Hash, z string, secLength int) {
 	c.mapping.hash = hash
 	c.mapping.secLength = secLength
-	c.mapping.z = field.String2int(z)
+	c.mapping.z = field.String2Int(z)
 }
 
 func (c *curve[point]) setCurveParams(prime *big.Int, b string, newPoint func() point) {
 	c.field = field.NewField(prime)
-	c.b = field.String2int(b)
+	c.b = field.String2Int(b)
 	c.NewPoint = newPoint
 }
 
@@ -59,7 +59,7 @@ func (c *curve[point]) hashXMD(input, dst []byte) point {
 }
 
 func (c *curve[point]) map2curve(fe *big.Int) point {
-	x, y := h2c.MapToCurveSSWU(&c.field, nistWa, c.b, c.z, fe)
+	x, y := h2c.MapToCurveSSWU(&c.field, &nistWa, &c.b, &c.z, fe)
 	return c.affineToPoint(x, y)
 }
 

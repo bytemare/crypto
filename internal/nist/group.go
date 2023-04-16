@@ -159,7 +159,7 @@ var (
 	p384 Group[*nistec.P384Point]
 	p521 Group[*nistec.P521Point]
 
-	nistWa = field.String2int("-3")
+	nistWa = field.String2Int("-3")
 )
 
 func initP256() {
@@ -209,5 +209,6 @@ func initP521() {
 }
 
 func (g *Group[Point]) setScalarField(order string) {
-	g.scalarField = field.NewField(field.String2int(order))
+	prime := field.String2Int(order)
+	g.scalarField = field.NewField(&prime)
 }
