@@ -40,7 +40,7 @@ func (s *Scalar) assert(scalar internal.Scalar) *Scalar {
 	}
 
 	if !s.field.IsEqual(_sc.field) {
-		panic(internal.ErrCastScalar)
+		panic(internal.ErrWrongField)
 	}
 
 	return _sc
