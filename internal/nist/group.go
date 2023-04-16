@@ -67,7 +67,7 @@ type Group[Point nistECPoint[Point]] struct {
 	curve       curve[Point]
 }
 
-// NewScalar returns a new scalar set to 0. set to 0.
+// NewScalar returns a new scalar set to 0.
 func (g Group[P]) NewScalar() internal.Scalar {
 	return newScalar(&g.scalarField)
 }
