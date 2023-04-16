@@ -14,6 +14,15 @@ import (
 	"github.com/bytemare/crypto/internal"
 )
 
+type mode uint8
+
+const (
+	incomplete mode = 1
+	complete   mode = 2
+
+	formulaType = incomplete
+)
+
 // Element implements the Element interface for the Secp256k1 group element.
 type Element struct {
 	x, y, z big.Int
@@ -26,7 +35,12 @@ var identity = Element{
 }
 
 func newElementWithAffine(x, y *big.Int) *Element {
-	e := &Element{}
+	e := &Element{
+		x: big.Int{},
+		y: big.Int{},
+		z: big.Int{},
+	}
+
 	e.x.Set(x)
 	e.y.Set(y)
 	e.z.Set(fp.One())
@@ -36,7 +50,12 @@ func newElementWithAffine(x, y *big.Int) *Element {
 
 // newElement returns a new element set to the point at infinity.
 func newElement() *Element {
-	e := &Element{}
+	e := &Element{
+		x: big.Int{},
+		y: big.Int{},
+		z: big.Int{},
+	}
+
 	return e.set(&identity)
 }
 
@@ -233,7 +252,14 @@ func (e *Element) add(element *Element) *Element {
 		return e.double()
 	}
 
-	return e.addJacobianIncomplete(element)
+	switch formulaType {
+	case incomplete:
+		return e.addJacobianIncomplete(element)
+	case complete:
+		return e.addJacobianComplete(element)
+	}
+
+	panic("invalid formula type")
 }
 
 // Add sets the receiver to the sum of the input and the receiver, and returns the receiver.
@@ -314,7 +340,14 @@ func (e *Element) doubleJacobianComplete() *Element {
 }
 
 func (e *Element) double() *Element {
-	return e.doubleJacobianIncomplete()
+	switch formulaType {
+	case incomplete:
+		return e.doubleJacobianIncomplete()
+	case complete:
+		return e.doubleJacobianComplete()
+	}
+
+	panic("invalid formula type")
 }
 
 // Double sets the receiver to its double, and returns it.
@@ -421,13 +454,13 @@ func (e *Element) Copy() internal.Element {
 
 // Encode returns the compressed byte encoding of the element.
 func (e *Element) Encode() []byte {
+	var output [elementLength]byte
+
 	if e.IsIdentity() {
-		return []byte{0}
+		return output[:]
 	}
 
 	x, y := e.affine()
-
-	var output [elementLength]byte
 	output[0] = byte(2 | y.Bit(0)&1)
 	x.FillBytes(output[1:])
 

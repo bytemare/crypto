@@ -72,7 +72,7 @@ var (
 )
 
 func map2IsoCurve(fe *big.Int) *Element {
-	x, y := h2c.MapToCurveSSWU(fp, secp256k13ISOA, secp256k13ISOB, mapZ, fe)
+	x, y := h2c.MapToCurveSSWU(&fp, secp256k13ISOA, secp256k13ISOB, mapZ, fe)
 	return newElementWithAffine(x, y)
 }
 
@@ -81,7 +81,7 @@ func hashToCurve(input, dst []byte) *Element {
 	q0 := map2IsoCurve(u[0])
 	q1 := map2IsoCurve(u[1])
 	q0.addAffine(q1) // we use a generic affine add here because the others are tailored for a = 0 and b = 7.
-	p, isIdentity := isogeny3map(fp, q0)
+	p, isIdentity := isogeny3map(q0)
 
 	if isIdentity {
 		return newElement()
@@ -94,7 +94,7 @@ func hashToCurve(input, dst []byte) *Element {
 func encodeToCurve(input, dst []byte) *Element {
 	u := hash2curve.HashToFieldXMD(hash, input, dst, 1, 1, secLength, fp.Order())
 	q0 := map2IsoCurve(u[0])
-	p, isIdentity := isogeny3map(fp, q0)
+	p, isIdentity := isogeny3map(q0)
 
 	if isIdentity {
 		return newElement()
@@ -121,53 +121,53 @@ var (
 )
 
 // isogeny3map is a 3-degree isogeny from secp256k1 3-ISO to the secp256k1 elliptic curve.
-func isogeny3map(f *field.Field, e *Element) (*Element, bool) {
+func isogeny3map(e *Element) (*Element, bool) {
 	var isIdentity bool
 	var x2, x3, k11, k12, k13, k21, k31, k32, k33, k41, k42 big.Int
-	f.Mul(&x2, &e.x, &e.x)
-	f.Mul(&x3, &x2, &e.x)
+	fp.Mul(&x2, &e.x, &e.x)
+	fp.Mul(&x3, &x2, &e.x)
 
 	// x_num, x_den
 	var xNum big.Int
-	f.Mul(&k13, _k13, &x3)  // _k(1,3) * x'^3
-	f.Mul(&k12, _k12, &x2)  // _k(1,2) * x'^2
-	f.Mul(&k11, _k11, &e.x) // _k(1,1) * x'
-	f.Add(&xNum, &k13, &k12)
-	f.Add(&xNum, &xNum, &k11)
-	f.Add(&xNum, &xNum, _k10)
+	fp.Mul(&k13, _k13, &x3)  // _k(1,3) * x'^3
+	fp.Mul(&k12, _k12, &x2)  // _k(1,2) * x'^2
+	fp.Mul(&k11, _k11, &e.x) // _k(1,1) * x'
+	fp.Add(&xNum, &k13, &k12)
+	fp.Add(&xNum, &xNum, &k11)
+	fp.Add(&xNum, &xNum, _k10)
 
 	var xDen big.Int
-	f.Mul(&k21, _k21, &e.x) // _k(2,1) * x'
-	f.Add(&xDen, &x2, &k21)
-	f.Add(&xDen, &xDen, _k20)
+	fp.Mul(&k21, _k21, &e.x) // _k(2,1) * x'
+	fp.Add(&xDen, &x2, &k21)
+	fp.Add(&xDen, &xDen, _k20)
 
 	// y_num, y_den
 	var yNum big.Int
-	f.Mul(&k33, _k33, &x3)  // _k(3,3) * x'^3
-	f.Mul(&k32, _k32, &x2)  // _k(3,2) * x'^2
-	f.Mul(&k31, _k31, &e.x) // _k(3,1) * x'
-	f.Add(&yNum, &k33, &k32)
-	f.Add(&yNum, &yNum, &k31)
-	f.Add(&yNum, &yNum, _k30)
+	fp.Mul(&k33, _k33, &x3)  // _k(3,3) * x'^3
+	fp.Mul(&k32, _k32, &x2)  // _k(3,2) * x'^2
+	fp.Mul(&k31, _k31, &e.x) // _k(3,1) * x'
+	fp.Add(&yNum, &k33, &k32)
+	fp.Add(&yNum, &yNum, &k31)
+	fp.Add(&yNum, &yNum, _k30)
 
 	var yDen big.Int
-	f.Mul(&k42, _k42, &x2)  // _k(4,2) * x'^2
-	f.Mul(&k41, _k41, &e.x) // _k(4,1) * x'
-	f.Add(&yDen, &x3, &k42)
-	f.Add(&yDen, &yDen, &k41)
-	f.Add(&yDen, &yDen, _k40)
+	fp.Mul(&k42, _k42, &x2)  // _k(4,2) * x'^2
+	fp.Mul(&k41, _k41, &e.x) // _k(4,1) * x'
+	fp.Add(&yDen, &x3, &k42)
+	fp.Add(&yDen, &yDen, &k41)
+	fp.Add(&yDen, &yDen, _k40)
 
 	// final x, y
 	var resX, resY big.Int
 
-	f.Inv(&resX, &xDen)
-	isIdentity = f.IsZero(&resX)
-	f.Mul(&resX, &resX, &xNum)
+	fp.Inv(&resX, &xDen)
+	isIdentity = fp.IsZero(&resX)
+	fp.Mul(&resX, &resX, &xNum)
 
-	f.Inv(&resY, &yDen)
-	isIdentity = isIdentity || f.IsZero(&resY)
-	f.Mul(&resY, &resY, &yNum)
-	f.Mul(&resY, &resY, &e.y)
+	fp.Inv(&resY, &yDen)
+	isIdentity = isIdentity || fp.IsZero(&resY)
+	fp.Mul(&resY, &resY, &yNum)
+	fp.Mul(&resY, &resY, &e.y)
 
 	return newElementWithAffine(&resX, &resY), isIdentity
 }

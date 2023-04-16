@@ -26,8 +26,8 @@ func BenchmarkPow(b *testing.B) {
 		b.ResetTimer()
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
-			base := group.id.NewScalar().Random()
-			exp := group.id.NewScalar().Random()
+			base := group.group.NewScalar().Random()
+			exp := group.group.NewScalar().Random()
 			res := base.Pow(exp)
 			res.Equal(base)
 		}

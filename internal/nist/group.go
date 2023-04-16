@@ -135,7 +135,7 @@ func (g Group[P]) Ciphersuite() string {
 
 // ScalarLength returns the byte size of an encoded element.
 func (g Group[P]) ScalarLength() int {
-	byteLen := (g.scalarField.bitLen() + 7) / 8
+	byteLen := (g.scalarField.BitLen() + 7) / 8
 	return byteLen
 }
 
@@ -158,6 +158,8 @@ var (
 	p256 Group[*nistec.P256Point]
 	p384 Group[*nistec.P384Point]
 	p521 Group[*nistec.P521Point]
+
+	nistWa = field.String2int("-3")
 )
 
 func initP256() {
@@ -207,5 +209,5 @@ func initP521() {
 }
 
 func (g *Group[Point]) setScalarField(order string) {
-	g.scalarField = *field.NewField(field.String2int(order))
+	g.scalarField = field.NewField(field.String2int(order))
 }

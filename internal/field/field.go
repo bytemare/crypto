@@ -38,7 +38,7 @@ type Field struct {
 }
 
 // NewField returns a newly instantiated field for the given prime order.
-func NewField(prime *big.Int) *Field {
+func NewField(prime *big.Int) Field {
 	// pMinus1div2 is used to determine whether a big Int is a quadratic square.
 	pMinus1div2 := big.NewInt(1)
 	pMinus1div2.Sub(prime, pMinus1div2)
@@ -53,7 +53,7 @@ func NewField(prime *big.Int) *Field {
 	exp.Add(prime, exp)
 	exp.Rsh(exp, 2)
 
-	return &Field{
+	return Field{
 		order:       prime,
 		pMinus1div2: pMinus1div2,
 		pMinus2:     pMinus2,

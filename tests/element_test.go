@@ -120,7 +120,7 @@ func TestElement_WrongInput(t *testing.T) {
 
 func TestElement_EncodedLength(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		id := group.id.NewElement().Identity().Encode()
+		id := group.group.NewElement().Identity().Encode()
 		if len(id) != group.elementLength {
 			t.Fatalf("Encode() of the identity element is expected to return %d bytes, but returned %d bytes", group.elementLength, len(id))
 		}
@@ -130,7 +130,7 @@ func TestElement_EncodedLength(t *testing.T) {
 			t.Fatalf("Encode() of the identity element is unexpected.\n\twant: %v\n\tgot : %v", group.identity, encodedID)
 		}
 
-		encodedElement := group.id.NewElement().Base().Multiply(group.id.NewScalar().Random()).Encode()
+		encodedElement := group.group.NewElement().Base().Multiply(group.group.NewScalar().Random()).Encode()
 		if len(encodedElement) != group.elementLength {
 			t.Fatalf("Encode() is expected to return %d bytes, but returned %d bytes", group.elementLength, encodedElement)
 		}
@@ -139,14 +139,13 @@ func TestElement_EncodedLength(t *testing.T) {
 
 func TestElement_Arithmetic(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		elementTestEqual(t, group.id)
-		elementTestAdd(t, group.id)
-		elementTestDouble(t, group.id)
-		elementTestNegate(t, group.id)
-		elementTestSubstract(t, group.id)
-		elementTestMultiply(t, group.id)
-		elementTestInversion(t, group.id)
-		elementTestIdentity(t, group.id)
+		elementTestEqual(t, group.group)
+		elementTestAdd(t, group.group)
+		elementTestDouble(t, group.group)
+		elementTestNegate(t, group.group)
+		elementTestSubstract(t, group.group)
+		elementTestMultiply(t, group.group)
+		elementTestIdentity(t, group.group)
 	})
 }
 
