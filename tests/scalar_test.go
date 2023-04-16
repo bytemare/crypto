@@ -47,7 +47,7 @@ func TestScalar_WrongInput(t *testing.T) {
 
 			// Add a special test for nist groups, using a different field
 			wrongfield := ((group.group + 1) % 3) + 3
-			if err := testPanic("wrong field", internal.ErrCastScalar, exec(scalar.Add, wrongfield.NewScalar())); err != nil {
+			if err := testPanic("wrong field", internal.ErrWrongField, exec(scalar.Add, wrongfield.NewScalar())); err != nil {
 				t.Fatal(err)
 			}
 		default:
