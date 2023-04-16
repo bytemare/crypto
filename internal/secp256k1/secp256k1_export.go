@@ -84,8 +84,6 @@ const (
 	frostSecretKeyHex = "0d004150d27c3bf2a42f312683d35fac7394b1e9e318249c1bfe7f0795a83114"
 )
 
-var secp256k1 = Group{}
-
 func hexToBytes(t *testing.T, in string) []byte {
 	bytes, err := hex.DecodeString(in)
 	if err != nil {
@@ -140,7 +138,7 @@ func (e *Element) printJacobian() {
 	log.Printf("\tz: %s", hex.EncodeToString(e.z.Bytes()))
 }
 
-func PrintOutputs() {
+func Basex3() {
 	base := basePoint()
 	log.Printf("Base point")
 	base.printAffine()

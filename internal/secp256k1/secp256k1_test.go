@@ -10,7 +10,7 @@ import (
 */
 
 func TestTest(t *testing.T) {
-	secp256k1.PrintOutputs()
+	secp256k1.Basex3()
 }
 
 func TestScalarMult(t *testing.T) {
