@@ -10,6 +10,7 @@ package group_test
 
 import (
 	"encoding/hex"
+	"log"
 	"testing"
 
 	"github.com/bytemare/crypto"
@@ -175,22 +176,23 @@ func elementTestAdd(t *testing.T, g crypto.Group) {
 	// Verify whether add yields the same element when given identity
 	base = g.Base()
 	cpy = base.Copy()
-	if cpy.Add(g.NewElement()).Equal(base) != 1 {
+	cpy.Add(g.NewElement())
+	if cpy.Equal(base) != 1 {
+		t.Fatal(errExpectedEquality)
+	}
+
+	// Verify whether add yields the same when adding to identity
+	base = g.Base()
+	identity := g.NewElement()
+	if identity.Add(base).Equal(base) != 1 {
 		t.Fatal(errExpectedEquality)
 	}
 
 	// Verify whether add yields the identity given the negative
 	base = g.Base()
 	negative := g.Base().Negate()
-	identity := g.NewElement()
-	if base.Add(negative).Equal(identity) != 1 {
-		t.Fatal(errExpectedEquality)
-	}
-
-	// Verify whether add yields the same when adding to identity
-	base = g.Base()
 	identity = g.NewElement()
-	if identity.Add(base).Equal(base) != 1 {
+	if base.Add(negative).Equal(identity) != 1 {
 		t.Fatal(errExpectedEquality)
 	}
 
@@ -259,7 +261,7 @@ func elementTestDouble(t *testing.T, g crypto.Group) {
 func elementTestSubstract(t *testing.T, g crypto.Group) {
 	base := g.Base()
 
-	// Verify whether subtrating yields the same element when given nil.
+	// Verify whether subtracting yields the same element when given nil.
 	if base.Subtract(nil).Equal(base) != 1 {
 		t.Fatal(errExpectedEquality)
 	}
@@ -316,6 +318,8 @@ func elementTestIdentity(t *testing.T, g crypto.Group) {
 
 	base := g.Base()
 	if id.Equal(base.Subtract(base)) != 1 {
+		log.Printf("id : %v", id.Encode())
+		log.Printf("ba : %v", base.Encode())
 		t.Fatal(errExpectedIdentity)
 	}
 
