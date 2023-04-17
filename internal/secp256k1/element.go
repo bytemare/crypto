@@ -14,15 +14,6 @@ import (
 	"github.com/bytemare/crypto/internal"
 )
 
-type mode uint8
-
-const (
-	incomplete mode = 1
-	complete   mode = 2
-)
-
-var formulaType = incomplete
-
 // Element implements the Element interface for the Secp256k1 group element.
 type Element struct {
 	x, y, z big.Int
@@ -72,7 +63,8 @@ func assertElement(element internal.Element) *Element {
 	return ec
 }
 
-func (e *Element) affine() (x, y *big.Int) {
+// affine returns the affine (x,y) coordinates from the inner standard projective representation.
+func (e *Element) affine() (*big.Int, *big.Int) {
 	if e.z.Sign() == 0 {
 		return fp.Zero(), fp.Zero()
 	}
@@ -81,19 +73,13 @@ func (e *Element) affine() (x, y *big.Int) {
 		return &e.x, &e.y
 	}
 
-	var zInv, zInvSq big.Int
+	var zInv, x, y big.Int
 
 	fp.Inv(&zInv, &e.z)
-	fp.Square(&zInvSq, &zInv)
+	fp.Mul(&x, &e.x, &zInv)
+	fp.Mul(&y, &e.y, &zInv)
 
-	x = new(big.Int)
-	fp.Mul(x, &e.x, &zInvSq)
-	fp.Mul(&zInvSq, &zInvSq, &zInv)
-
-	y = new(big.Int)
-	fp.Mul(y, &e.y, &zInvSq)
-
-	return x, y
+	return &x, &y
 }
 
 // Base sets the element to the group's base point a.k.a. canonical generator.
@@ -135,56 +121,8 @@ func (e *Element) addAffine(element *Element) *Element {
 	return e
 }
 
-// From http://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#addition-add-2007-bl.
-func (e *Element) addJacobianIncomplete(element *Element) *Element {
-	var u1, u2, h, i, j, s1, s2, r, v, z1z1, z2z2, x3, y3, z3 big.Int
-
-	fp.Square(&z1z1, &e.z)       // Z1Z1 = Z12
-	fp.Square(&z2z2, &element.z) // Z2Z2 = Z22
-
-	fp.Mul(&u1, &e.x, &z2z2)       // U1 = X1*Z2Z2
-	fp.Mul(&u2, &element.x, &z1z1) // U2 = X2*Z1Z1
-	fp.Sub(&h, &u2, &u1)           // H = U2-U1
-	fp.Lsh(&i, &h, 1)              // I = (2*H)2
-	fp.Square(&i, &i)              //
-	fp.Mul(&j, &h, &i)             // J = H*I
-
-	fp.Mul(&s1, &e.y, &element.z)
-	fp.Mul(&s1, &s1, &z2z2) // S1 = Y1*Z2*Z2Z2
-	fp.Mul(&s2, &element.y, &e.z)
-	fp.Mul(&s2, &s2, &z1z1) // S2 = Y2*Z1*Z1Z1
-	fp.Sub(&r, &s2, &s1)    // r = 2*(S2-S1)
-	fp.Lsh(&r, &r, 1)
-	fp.Mul(&v, &u1, &i) // V = U1*I
-
-	x3.Set(&r)
-	fp.Square(&x3, &x3)
-	fp.Sub(&x3, &x3, &j)
-	fp.Sub(&x3, &x3, &v)
-	fp.Sub(&x3, &x3, &v) // X3 = r2-J-2*V
-
-	y3.Set(&r)
-	fp.Sub(&v, &v, &x3)
-	fp.Mul(&y3, &y3, &v)
-	fp.Mul(&s1, &s1, &j) // S1 = Y1*Z2*Z2Z2
-	fp.Lsh(&s1, &s1, 1)
-	fp.Sub(&y3, &y3, &s1) // Y3 = r*(V-X3)-2*S1*J
-
-	fp.Add(&z3, &e.z, &element.z)
-	fp.Square(&z3, &z3)
-	fp.Sub(&z3, &z3, &z1z1)
-	fp.Sub(&z3, &z3, &z2z2)
-	fp.Mul(&z3, &z3, &h) // Z3 = ((Z1+Z2)2-Z1Z1-Z2Z2)*H
-
-	e.x.Set(&x3)
-	e.y.Set(&y3)
-	e.z.Set(&z3)
-
-	return e
-}
-
 // https://eprint.iacr.org/2015/1060.pdf
-func (e *Element) addJacobianComplete(element *Element) *Element {
+func (e *Element) addProjectiveComplete(element *Element) *Element {
 	var t0, t1, t2, t3, t4, x3, y3, z3 big.Int
 
 	fp.Mul(&t0, &e.x, &element.x) // t0 := X1 * X2
@@ -231,35 +169,26 @@ func (e *Element) addJacobianComplete(element *Element) *Element {
 	fp.Mul(&z3, &z3, &t4) // Z3 := Z3 * t4
 	fp.Add(&z3, &z3, &t0) // Z3 := Z3 + t0
 
-	e.x.Set(&x3)
-	e.y.Set(&y3)
-	e.z.Set(&z3)
+	switch {
+	case element.IsIdentity():
+		e.x.Set(&e.x)
+		e.y.Set(&e.y)
+		e.z.Set(&e.z)
+	case e.IsIdentity():
+		e.x.Set(&element.x)
+		e.y.Set(&element.y)
+		e.z.Set(&element.z)
+	default:
+		e.x.Set(&x3)
+		e.y.Set(&y3)
+		e.z.Set(&z3)
+	}
 
 	return e
 }
 
 func (e *Element) add(element *Element) *Element {
-	if element.IsIdentity() {
-		return e
-	}
-
-	if e.IsIdentity() {
-		e.set(element)
-		return e
-	}
-
-	if e.isEqual(element) == 1 {
-		return e.double()
-	}
-
-	switch formulaType {
-	case incomplete:
-		return e.addJacobianIncomplete(element)
-	case complete:
-		return e.addJacobianComplete(element)
-	}
-
-	panic("invalid formula type")
+	return e.addProjectiveComplete(element)
 }
 
 // Add sets the receiver to the sum of the input and the receiver, and returns the receiver.
@@ -268,44 +197,8 @@ func (e *Element) Add(element internal.Element) internal.Element {
 	return e.add(q)
 }
 
-// Double sets the receiver to its double, and returns it.
-// From http://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html#doubling-dbl-2009-l.
-func (e *Element) doubleJacobianIncomplete() *Element {
-	var a, _b, c, d, e2, f, x3, y3, z3 big.Int
-
-	fp.Square(&a, &e.x)
-	fp.Square(&_b, &e.y)
-	fp.Square(&c, &_b)
-
-	fp.Add(&d, &e.x, &_b)
-	fp.Square(&d, &d)
-	fp.Sub(&d, &d, &a)
-	fp.Sub(&d, &d, &c)
-	fp.Lsh(&d, &d, 1)
-
-	fp.Mul(&e2, &a, big.NewInt(3))
-	fp.Square(&f, &e2)
-
-	fp.Lsh(&x3, &d, 1)
-	fp.Sub(&x3, &f, &x3)
-
-	fp.Sub(&y3, &d, &x3)
-	fp.Mul(&y3, &e2, &y3)
-	fp.Lsh(&c, &c, 3)
-	fp.Sub(&y3, &y3, &c)
-
-	fp.Mul(&z3, &e.y, &e.z)
-	fp.Lsh(&z3, &z3, 1)
-
-	e.x.Set(&x3)
-	e.y.Set(&y3)
-	e.z.Set(&z3)
-
-	return e
-}
-
 // https://eprint.iacr.org/2015/1060.pdf
-func (e *Element) doubleJacobianComplete() *Element {
+func (e *Element) doubleProjectiveComplete() *Element {
 	var t0, t1, t2, x3, y3, z3 big.Int
 
 	fp.Square(&t0, &e.y)  // t0 := Y ^2
@@ -339,20 +232,9 @@ func (e *Element) doubleJacobianComplete() *Element {
 	return e
 }
 
-func (e *Element) double() *Element {
-	switch formulaType {
-	case incomplete:
-		return e.doubleJacobianIncomplete()
-	case complete:
-		return e.doubleJacobianComplete()
-	}
-
-	panic("invalid formula type")
-}
-
 // Double sets the receiver to its double, and returns it.
 func (e *Element) Double() internal.Element {
-	return e.double()
+	return e.doubleProjectiveComplete()
 }
 
 func (e *Element) negate() *Element {
@@ -371,8 +253,8 @@ func (e *Element) Negate() internal.Element {
 
 // Subtract subtracts the input from the receiver, and returns the receiver.
 func (e *Element) Subtract(element internal.Element) internal.Element {
-	q := assertElement(element).negate()
-	return e.addJacobianIncomplete(q)
+	q := assertElement(element).copy().negate()
+	return e.add(q)
 }
 
 func (e *Element) multiply(scalar *Scalar) *Element {
@@ -385,11 +267,11 @@ func (e *Element) multiply(scalar *Scalar) *Element {
 
 	for i := scalar.scalar.BitLen() - 1; i >= 0; i-- {
 		if scalar.scalar.Bit(i) == 0 {
-			r1.add(r0)
-			r0.double()
+			r1.Add(r0)
+			r0.Double()
 		} else {
-			r0.add(r1)
-			r1.double()
+			r0.Add(r1)
+			r1.Double()
 		}
 	}
 
