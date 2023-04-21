@@ -23,9 +23,9 @@ type Scalar struct {
 	scalar big.Int
 }
 
-func newScalar(field *field.Field) *Scalar {
+func newScalar(f *field.Field) *Scalar {
 	s := &Scalar{
-		field:  field,
+		field:  f,
 		scalar: big.Int{},
 	}
 	s.scalar.Set(s.field.Zero())

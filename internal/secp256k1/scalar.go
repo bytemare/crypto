@@ -9,24 +9,21 @@
 package secp256k1
 
 import (
-	"crypto/subtle"
+	"fmt"
 	"math/big"
+
+	"github.com/bytemare/secp256k1"
 
 	"github.com/bytemare/crypto/internal"
 )
 
 // Scalar implements the Scalar interface for Edwards25519 group scalars.
 type Scalar struct {
-	scalar big.Int
+	scalar *secp256k1.Scalar
 }
 
-var (
-	scZero = big.NewInt(0)
-	scOne  = big.NewInt(1)
-)
-
 func newScalar() *Scalar {
-	return &Scalar{scalar: big.Int{}}
+	return &Scalar{scalar: secp256k1.NewScalar()}
 }
 
 func assert(scalar internal.Scalar) *Scalar {
@@ -40,26 +37,21 @@ func assert(scalar internal.Scalar) *Scalar {
 
 // Zero sets the scalar to 0, and returns it.
 func (s *Scalar) Zero() internal.Scalar {
-	s.scalar.Set(scZero)
+	s.scalar.Zero()
 	return s
 }
 
 // One sets the scalar to 1, and returns it.
 func (s *Scalar) One() internal.Scalar {
-	s.scalar.Set(scOne)
+	s.scalar.One()
 	return s
 }
 
 // Random sets the current scalar to a new random scalar and returns it.
 // The random source is crypto/rand, and this functions is guaranteed to return a non-zero scalar.
 func (s *Scalar) Random() internal.Scalar {
-	for {
-		fn.Random(&s.scalar)
-
-		if !s.IsZero() {
-			return s
-		}
-	}
+	s.scalar.Random()
+	return s
 }
 
 // Add sets the receiver to the sum of the input and the receiver, and returns the receiver.
@@ -69,7 +61,7 @@ func (s *Scalar) Add(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := assert(scalar)
-	fn.Add(&s.scalar, &s.scalar, &sc.scalar)
+	s.scalar.Add(sc.scalar)
 
 	return s
 }
@@ -81,7 +73,7 @@ func (s *Scalar) Subtract(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := assert(scalar)
-	fn.Sub(&s.scalar, &s.scalar, &sc.scalar)
+	s.scalar.Subtract(sc.scalar)
 
 	return s
 }
@@ -93,7 +85,7 @@ func (s *Scalar) Multiply(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := assert(scalar)
-	fn.Mul(&s.scalar, &s.scalar, &sc.scalar)
+	s.scalar.Multiply(sc.scalar)
 
 	return s
 }
@@ -109,14 +101,14 @@ func (s *Scalar) Pow(scalar internal.Scalar) internal.Scalar {
 	}
 
 	sc := assert(scalar)
-	fn.Exponent(&s.scalar, &s.scalar, &sc.scalar)
+	s.scalar.Pow(sc.scalar)
 
 	return s
 }
 
 // Invert sets the receiver to its modular inverse ( 1 / s ), and returns it.
 func (s *Scalar) Invert() internal.Scalar {
-	fn.Inv(&s.scalar, &s.scalar)
+	s.scalar.Invert()
 	return s
 }
 
@@ -128,37 +120,18 @@ func (s *Scalar) Equal(scalar internal.Scalar) int {
 
 	sc := assert(scalar)
 
-	return subtle.ConstantTimeCompare(s.scalar.Bytes(), sc.scalar.Bytes())
+	return s.scalar.Equal(sc.scalar)
 }
 
 // LessOrEqual returns 1 if s <= scalar and 0 otherwise.
 func (s *Scalar) LessOrEqual(scalar internal.Scalar) int {
 	sc := assert(scalar)
-
-	ienc := s.Encode()
-	jenc := sc.Encode()
-
-	leni := len(ienc)
-	if leni != len(jenc) {
-		panic(internal.ErrParamScalarLength)
-	}
-
-	var res bool
-
-	for i := 0; i < leni; i++ {
-		res = res || (ienc[i] > jenc[i])
-	}
-
-	if res {
-		return 0
-	}
-
-	return 1
+	return s.scalar.LessOrEqual(sc.scalar)
 }
 
 // IsZero returns whether the scalar is 0.
 func (s *Scalar) IsZero() bool {
-	return fn.AreEqual(&s.scalar, scZero)
+	return s.scalar.IsZero()
 }
 
 func (s *Scalar) set(scalar *Scalar) *Scalar {
@@ -172,59 +145,38 @@ func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 		return s.set(nil)
 	}
 
-	ec := assert(scalar)
-	s.scalar.Set(&ec.scalar)
+	sc := assert(scalar)
+	s.scalar.Set(sc.scalar)
 
 	return s
 }
 
 // SetInt sets s to i modulo the field order, and returns an error if one occurs.
 func (s *Scalar) SetInt(i *big.Int) error {
-	s.scalar.Set(i)
-	fn.Mod(&s.scalar)
+	if err := s.scalar.SetInt(i); err != nil {
+		return fmt.Errorf("secp256k1 SetInt: %w", err)
+	}
 
 	return nil
 }
 
 // Copy returns a copy of the receiver.
 func (s *Scalar) Copy() internal.Scalar {
-	cpy := newScalar()
-	cpy.scalar.Set(&s.scalar)
-
-	return cpy
+	return &Scalar{scalar: s.scalar.Copy()}
 }
 
 // Encode returns the compressed byte encoding of the scalar.
 func (s *Scalar) Encode() []byte {
-	byteLen := (fn.BitLen() + 7) / 8
-	scalar := make([]byte, byteLen)
-
-	return s.scalar.FillBytes(scalar)
-}
-
-func (s *Scalar) decode(in []byte) error {
-	if len(in) == 0 {
-		return internal.ErrParamNilScalar
-	}
-
-	// warning - SetBytes interprets the input as a non-signed integer, so this will always be false
-	tmp := new(big.Int).SetBytes(in)
-	if tmp.Sign() < 0 {
-		return internal.ErrParamNegScalar
-	}
-
-	if fn.Order().Cmp(tmp) <= 0 {
-		return internal.ErrParamScalarTooBig
-	}
-
-	s.scalar.Set(tmp)
-
-	return nil
+	return s.scalar.Encode()
 }
 
 // Decode sets the receiver to a decoding of the input data, and returns an error on failure.
 func (s *Scalar) Decode(in []byte) error {
-	return s.decode(in)
+	if err := s.scalar.Decode(in); err != nil {
+		return fmt.Errorf("secp256k1 decode scalar: %w", err)
+	}
+
+	return nil
 }
 
 // MarshalBinary returns the compressed byte encoding of the scalar.

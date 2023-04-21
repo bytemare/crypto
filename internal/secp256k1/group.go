@@ -10,6 +10,8 @@
 package secp256k1
 
 import (
+	"github.com/bytemare/secp256k1"
+
 	"github.com/bytemare/crypto/internal"
 )
 
@@ -19,7 +21,13 @@ const (
 
 	// E2CSECP256K1 represents the encode-to-curve string identifier for Secp256k1.
 	E2CSECP256K1 = "secp256k1_XMD:SHA-256_SSWU_NU_"
+
+	groupOrder    = "115792089237316195423570985008687907852837564279074904382605163141518161494337"
+	scalarLength  = 32
+	elementLength = 33
 )
+
+var group = secp256k1.New()
 
 // Group represents the Secp256k1 group. It exposes a prime-order group API with hash-to-curve operations.
 type Group struct{}
@@ -47,19 +55,19 @@ func (g Group) Base() internal.Element {
 // HashToScalar returns a safe mapping of the arbitrary input to a Scalar.
 // The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) HashToScalar(input, dst []byte) internal.Scalar {
-	return hashToScalar(input, dst)
+	return &Scalar{scalar: group.HashToScalar(input, dst)}
 }
 
 // HashToGroup returns a safe mapping of the arbitrary input to an Element in the Group.
 // The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) HashToGroup(input, dst []byte) internal.Element {
-	return hashToCurve(input, dst)
+	return &Element{element: group.HashToGroup(input, dst)}
 }
 
 // EncodeToGroup returns a non-uniform mapping of the arbitrary input to an Element in the Group.
 // The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) EncodeToGroup(input, dst []byte) internal.Element {
-	return encodeToCurve(input, dst)
+	return &Element{element: group.EncodeToGroup(input, dst)}
 }
 
 // Ciphersuite returns the hash-to-curve ciphersuite identifier.
