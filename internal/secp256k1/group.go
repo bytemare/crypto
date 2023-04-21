@@ -27,8 +27,6 @@ const (
 	elementLength = 33
 )
 
-var group = secp256k1.New()
-
 // Group represents the Secp256k1 group. It exposes a prime-order group API with hash-to-curve operations.
 type Group struct{}
 
@@ -55,19 +53,19 @@ func (g Group) Base() internal.Element {
 // HashToScalar returns a safe mapping of the arbitrary input to a Scalar.
 // The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) HashToScalar(input, dst []byte) internal.Scalar {
-	return &Scalar{scalar: group.HashToScalar(input, dst)}
+	return &Scalar{scalar: secp256k1.HashToScalar(input, dst)}
 }
 
 // HashToGroup returns a safe mapping of the arbitrary input to an Element in the Group.
 // The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) HashToGroup(input, dst []byte) internal.Element {
-	return &Element{element: group.HashToGroup(input, dst)}
+	return &Element{element: secp256k1.HashToGroup(input, dst)}
 }
 
 // EncodeToGroup returns a non-uniform mapping of the arbitrary input to an Element in the Group.
 // The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) EncodeToGroup(input, dst []byte) internal.Element {
-	return &Element{element: group.EncodeToGroup(input, dst)}
+	return &Element{element: secp256k1.EncodeToGroup(input, dst)}
 }
 
 // Ciphersuite returns the hash-to-curve ciphersuite identifier.
