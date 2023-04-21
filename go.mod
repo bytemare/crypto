@@ -6,7 +6,7 @@ require (
 	filippo.io/edwards25519 v1.0.0
 	filippo.io/nistec v0.0.2
 	github.com/bytemare/hash2curve v0.2.2
-	github.com/bytemare/secp256k1 v0.0.0-20230421210201-f2244bd0effa
+	github.com/bytemare/secp256k1 v0.1.0
 	github.com/gtank/ristretto255 v0.1.2
 )
 

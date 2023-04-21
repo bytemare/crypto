@@ -25,7 +25,7 @@ The following table indexes supported groups with hash-to-curve capability and l
 | 4   | P-384        | filippo.io/nistec             |
 | 5   | P-521        | filippo.io/nistec             |
 | 6   | Edwards25519 | filippo.io/edwards25519       |
-| 7   | Secp256k1    | github.com/bytemare/crypto    |
+| 7   | Secp256k1    | github.com/bytemare/secp256k1 |
 | 8   | Double-Odd   | not yet supported             |
 
 ## Prime-order group interface
