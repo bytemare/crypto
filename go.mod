@@ -5,7 +5,7 @@ go 1.20
 require (
 	filippo.io/edwards25519 v1.0.0
 	filippo.io/nistec v0.0.2
-	github.com/bytemare/hash2curve v0.1.3
+	github.com/bytemare/hash2curve v0.2.1
 	github.com/gtank/ristretto255 v0.1.2
 )
 
