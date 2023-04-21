@@ -18,7 +18,7 @@ linters:
     - errname
     - errorlint
     - execinquery
-    - exhaustive
+    #- exhaustive
     - exhaustruct
     - exportloopref
     - forbidigo
@@ -29,7 +29,7 @@ linters:
     #- gochecknoinits
     - gocognit
     - goconst
-    #- gocritic
+    - gocritic
     - gocyclo
     - godot
     - godox
@@ -130,6 +130,8 @@ linters-settings:
       - opinionated
       - performance
       - style
+    disabled-checks:
+      - commentedOutCode
   gocyclo:
     min-complexity: 15
   godox:

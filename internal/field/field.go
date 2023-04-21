@@ -29,12 +29,12 @@ func String2Int(s string) big.Int {
 	panic("invalid string to convert")
 }
 
-// Field represents a Gaulois Field.
+// Field represents a Galois Field.
 type Field struct {
-	order       big.Int
-	pMinus1div2 big.Int // used in IsSquare
-	pMinus2     big.Int // used for Field big.Int inversion
-	exp         big.Int
+	order       *big.Int
+	pMinus1div2 *big.Int // used in IsSquare
+	pMinus2     *big.Int // used for Field big.Int inversion
+	exp         *big.Int
 }
 
 // NewField returns a newly instantiated field for the given prime order.
@@ -54,10 +54,10 @@ func NewField(prime *big.Int) Field {
 	exp.Rsh(exp, 2)
 
 	return Field{
-		order:       *prime,
-		pMinus1div2: *pMinus1div2,
-		pMinus2:     *pMinus2,
-		exp:         *exp,
+		order:       prime,
+		pMinus1div2: pMinus1div2,
+		pMinus2:     pMinus2,
+		exp:         exp,
 	}
 }
 
@@ -73,7 +73,7 @@ func (f Field) One() *big.Int {
 
 // Random sets res to a random big.Int in the Field.
 func (f Field) Random(res *big.Int) *big.Int {
-	tmp, err := rand.Int(rand.Reader, &f.order)
+	tmp, err := rand.Int(rand.Reader, f.order)
 	if err != nil {
 		// We can as well not panic and try again in a loop
 		panic(fmt.Errorf("unexpected error in generating random bytes : %w", err))
@@ -86,7 +86,7 @@ func (f Field) Random(res *big.Int) *big.Int {
 
 // Order returns the size of the Field.
 func (f Field) Order() *big.Int {
-	return &f.order
+	return f.order
 }
 
 // BitLen of the order.
@@ -106,18 +106,18 @@ func (f Field) IsZero(e *big.Int) bool {
 
 // Inv sets res to the modular inverse of x mod field order.
 func (f Field) Inv(res, x *big.Int) {
-	f.Exponent(res, x, &f.pMinus2)
+	f.Exponent(res, x, f.pMinus2)
 }
 
 // LegendreSymbol applies the Legendre symbole on (a/p) and returns either {-1, 0, 1} mod field order.
 func (f Field) LegendreSymbol(a *big.Int) *big.Int {
 	var res big.Int
-	return f.Exponent(&res, a, &f.pMinus1div2)
+	return f.Exponent(&res, a, f.pMinus1div2)
 }
 
 // Exponent returns x^n mod field order.
 func (f Field) Exponent(res, x, n *big.Int) *big.Int {
-	return res.Exp(x, n, &f.order)
+	return res.Exp(x, n, f.order)
 }
 
 // IsSquare returns whether e is a quadratic square.
@@ -127,12 +127,12 @@ func (f Field) IsSquare(e *big.Int) bool {
 
 // IsEqual returns whether the two fields have the same order.
 func (f Field) IsEqual(f2 *Field) bool {
-	return f.order.Cmp(&f2.order) == 0
+	return f.order.Cmp(f2.order) == 0
 }
 
 // Mod reduces x modulo the field order.
 func (f Field) Mod(x *big.Int) *big.Int {
-	return x.Mod(x, &f.order)
+	return x.Mod(x, f.order)
 }
 
 // Neg sets res to the -x modulo the field order.
@@ -193,7 +193,7 @@ func (f Field) Sgn0(x *big.Int) int {
 }
 
 func (f Field) sqrt3mod4(res, e *big.Int) *big.Int {
-	return f.Exponent(res, e, &f.exp)
+	return f.Exponent(res, e, f.exp)
 }
 
 // SquareRoot sets res to a square root of e mod the field's order, if such a square root exists.
