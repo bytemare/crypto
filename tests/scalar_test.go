@@ -40,7 +40,7 @@ func TestScalar_WrongInput(t *testing.T) {
 
 		switch group.group {
 		// The following is arbitrary, and simply aims at confusing identifiers
-		case crypto.Ristretto255Sha512, crypto.Edwards25519Sha512, crypto.Secp256k1:
+		case crypto.Ristretto255Sha512, crypto.Decaf448Shake256, crypto.Edwards25519Sha512, crypto.Secp256k1, crypto.Curve448, crypto.Edwards448:
 			wrongGroup = crypto.P256Sha256
 		case crypto.P256Sha256, crypto.P384Sha384, crypto.P521Sha512:
 			wrongGroup = crypto.Ristretto255Sha512
@@ -398,7 +398,7 @@ func scalarTestPow(t *testing.T, g crypto.Group) {
 
 	switch g {
 	// These are in little-endian
-	case crypto.Ristretto255Sha512, crypto.Edwards25519Sha512:
+	case crypto.Ristretto255Sha512, crypto.Edwards25519Sha512, crypto.Decaf448Shake256:
 		e := s.Encode()
 		for i, j := 0, len(e)-1; i < j; i++ {
 			e[i], e[j] = e[j], e[i]

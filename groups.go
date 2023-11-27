@@ -15,9 +15,12 @@ package crypto
 import (
 	"errors"
 	"fmt"
+	"github.com/bytemare/crypto/internal/decaf448/d448"
+	"github.com/bytemare/crypto/internal/decaf448/edwards448"
 	"sync"
 
 	"github.com/bytemare/crypto/internal"
+	"github.com/bytemare/crypto/internal/decaf448/curve448"
 	"github.com/bytemare/crypto/internal/edwards25519"
 	"github.com/bytemare/crypto/internal/nist"
 	"github.com/bytemare/crypto/internal/ristretto"
@@ -31,8 +34,8 @@ const (
 	// Ristretto255Sha512 identifies the Ristretto255 group with SHA2-512 hash-to-group hashing.
 	Ristretto255Sha512 Group = 1 + iota
 
-	// decaf448Shake256 is not implemented.
-	decaf448Shake256
+	// Decaf448Shake256 is not implemented.
+	Decaf448Shake256
 
 	// P256Sha256 identifies a group over P256 with SHA2-256 hash-to-group hashing.
 	P256Sha256
@@ -48,6 +51,10 @@ const (
 
 	// Secp256k1 identifies the Secp256k1 group with SHA2-256 hash-to-group hashing.
 	Secp256k1
+
+	Curve448
+
+	Edwards448
 
 	maxID
 
@@ -65,7 +72,7 @@ var (
 
 // Available reports whether the given Group is linked into the binary.
 func (g Group) Available() bool {
-	return 0 < g && g < maxID && g != decaf448Shake256
+	return g > 0 && g < maxID
 }
 
 func (g Group) get() internal.Group {
@@ -157,8 +164,8 @@ func (g Group) init() {
 	switch g {
 	case Ristretto255Sha512:
 		g.initGroup(ristretto.New)
-	case decaf448Shake256:
-		panic("Decaf is not yet supported")
+	case Decaf448Shake256:
+		g.initGroup(d448.New)
 	case P256Sha256:
 		g.initGroup(nist.P256)
 	case P384Sha384:
@@ -169,6 +176,10 @@ func (g Group) init() {
 		g.initGroup(edwards25519.New)
 	case Secp256k1:
 		g.initGroup(secp256k1.New)
+	case Curve448:
+		g.initGroup(curve448.New)
+	case Edwards448:
+		g.initGroup(edwards448.New)
 	default:
 		panic("group not recognized")
 	}

@@ -88,9 +88,9 @@ func TestElement_WrongInput(t *testing.T) {
 
 		switch group.group {
 		// The following is arbitrary, and simply aims at confusing identifiers
-		case crypto.Ristretto255Sha512, crypto.Edwards25519Sha512:
+		case crypto.Ristretto255Sha512, crypto.Decaf448Shake256, crypto.Edwards25519Sha512, crypto.Secp256k1, crypto.Curve448, crypto.Edwards448:
 			alternativeGroup = crypto.P256Sha256
-		case crypto.P256Sha256, crypto.P384Sha384, crypto.P521Sha512, crypto.Secp256k1:
+		case crypto.P256Sha256, crypto.P384Sha384, crypto.P521Sha512:
 			alternativeGroup = crypto.Ristretto255Sha512
 		default:
 			t.Fatalf("Invalid group id %d", group.group)
@@ -318,8 +318,8 @@ func elementTestIdentity(t *testing.T, g crypto.Group) {
 
 	base := g.Base()
 	if id.Equal(base.Subtract(base)) != 1 {
-		log.Printf("id : %v", id.Encode())
-		log.Printf("ba : %v", base.Encode())
+		log.Printf("id : %v", hex.EncodeToString(id.Encode()))
+		log.Printf("ba : %v", hex.EncodeToString(base.Encode()))
 		t.Fatal(errExpectedIdentity)
 	}
 

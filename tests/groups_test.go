@@ -10,6 +10,7 @@ package group_test
 
 import (
 	"encoding/hex"
+	"log"
 	"testing"
 
 	"github.com/bytemare/crypto"
@@ -31,19 +32,53 @@ func TestNonAvailability(t *testing.T) {
 		t.Errorf(consideredAvailableFmt, oob)
 	}
 
-	d := crypto.Group(2) // decaf448
-	if d.Available() {
-		t.Errorf(consideredAvailableFmt, d)
-	}
-
-	oob = crypto.Secp256k1 + 1
+	oob = crypto.Edwards448 + 1
 	if oob.Available() {
 		t.Errorf(consideredAvailableFmt, oob)
 	}
 }
 
+func TestGroup_BaseEncoding(t *testing.T) {
+	baseEncoded := hex.EncodeToString(crypto.Decaf448Shake256.Base().Encode())
+	log.Printf("base: %v", baseEncoded)
+
+	hexEncoded := "6666666666666666666666666666666666666666666666666666666633333333333333333333333333333333333333333333333333333333"
+	encoded, _ := hex.DecodeString(hexEncoded)
+
+	e := crypto.Decaf448Shake256.NewElement()
+	if err := e.Decode(encoded); err != nil {
+		t.Fatal(err)
+	}
+
+	reencoded := hex.EncodeToString(e.Encode())
+	log.Printf("reencoded: %v", reencoded)
+	if reencoded != hexEncoded {
+		t.Fatal("expected equality")
+	}
+
+	base := crypto.Decaf448Shake256.Base()
+	if base.Equal(e) != 1 {
+		t.Fatal("expected equality")
+	}
+}
+
 func TestGroup_Base(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
+
+		encoded, err := hex.DecodeString(group.basePoint)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		base := group.group.NewElement()
+		if err = base.Decode(encoded); err != nil {
+			t.Fatal(err)
+		}
+
+		if base.Equal(group.group.Base()) != 1 {
+			t.Fatal(errExpectedEquality)
+		}
+
 		if hex.EncodeToString(group.group.Base().Encode()) != group.basePoint {
 			t.Fatalf("Got wrong base element\n\tgot : %s\n\twant: %s",
 				hex.EncodeToString(group.group.Base().Encode()),
@@ -57,18 +92,21 @@ func TestDST(t *testing.T) {
 	version := uint8(1)
 	tests := map[crypto.Group]string{
 		crypto.Ristretto255Sha512: app + "-V01-CS01-",
+		crypto.Decaf448Shake256:   app + "-V01-CS02-",
 		crypto.P256Sha256:         app + "-V01-CS03-",
 		crypto.P384Sha384:         app + "-V01-CS04-",
 		crypto.P521Sha512:         app + "-V01-CS05-",
 		crypto.Edwards25519Sha512: app + "-V01-CS06-",
 		crypto.Secp256k1:          app + "-V01-CS07-",
+		crypto.Curve448:           app + "-V01-CS08-",
+		crypto.Edwards448:         app + "-V01-CS09-",
 	}
 
 	testAll(t, func(t2 *testing.T, group *testGroup) {
 		res := string(group.group.MakeDST(app, version))
 		test := tests[group.group] + group.h2c
 		if res != test {
-			t.Errorf("Wrong DST. want %q, got %q", res, test)
+			t.Errorf("Wrong DST %v. want %q, got %q", group.name, res, test)
 		}
 	})
 }
@@ -78,6 +116,7 @@ func TestGroup_String(t *testing.T) {
 		res := group.group.String()
 		ref := group.h2c
 		if res != ref {
+			log.Printf("Group %v", group.group)
 			t.Errorf("Wrong DST. want %q, got %q", ref, res)
 		}
 	})
@@ -107,7 +146,7 @@ func TestGroup_NewElement(t *testing.T) {
 
 func TestGroup_ScalarLength(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		if int(group.group.ScalarLength()) != group.scalarLength {
+		if group.group.ScalarLength() != group.scalarLength {
 			t.Fatalf("expected encoded scalar length %d, but got %d", group.scalarLength, group.group.ScalarLength())
 		}
 	})
@@ -115,8 +154,8 @@ func TestGroup_ScalarLength(t *testing.T) {
 
 func TestGroup_ElementLength(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
-		if int(group.group.ElementLength()) != group.elementLength {
-			t.Fatalf("expected encoded element length %d, but got %d", group.elementLength, group.group.ElementLength())
+		if group.group.ElementLength() != group.elementLength {
+			t.Fatalf("%d / %v : expected encoded element length %d, but got %d", group.group, group.group, group.elementLength, group.group.ElementLength())
 		}
 	})
 }

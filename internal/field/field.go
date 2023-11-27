@@ -96,7 +96,8 @@ func (f Field) BitLen() int {
 
 // AreEqual returns whether both elements are equal.
 func (f Field) AreEqual(f1, f2 *big.Int) bool {
-	return f.IsZero(f.Sub(&big.Int{}, f1, f2))
+	//return f.IsZero(f.Sub(&big.Int{}, f1, f2))
+	return f1.Cmp(f2) == 0
 }
 
 // IsZero returns whether the big.Int is equivalent to zero.
