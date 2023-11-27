@@ -96,25 +96,30 @@ func TestElement_WrongInput(t *testing.T) {
 			t.Fatalf("Invalid group id %d", group.group)
 		}
 
-		if err := testPanic(errWrongGroup, internal.ErrCastElement, exec(element.Add, alternativeGroup.NewElement())); err != nil {
+		if err := testPanic(errWrongGroup, internal.ErrCastElement,
+			exec(element.Add, alternativeGroup.NewElement())); err != nil {
 			t.Fatal(err)
 		}
 
-		if err := testPanic(errWrongGroup, internal.ErrCastElement, exec(element.Subtract, alternativeGroup.NewElement())); err != nil {
+		if err := testPanic(errWrongGroup, internal.ErrCastElement,
+			exec(element.Subtract, alternativeGroup.NewElement())); err != nil {
 			t.Fatal(err)
 		}
 
-		if err := testPanic(errWrongGroup, internal.ErrCastElement, exec(element.Set, alternativeGroup.NewElement())); err != nil {
+		if err := testPanic(errWrongGroup, internal.ErrCastElement,
+			exec(element.Set, alternativeGroup.NewElement())); err != nil {
 			t.Fatal(err)
 		}
 
-		if err := testPanic(errWrongGroup, internal.ErrCastElement, equal(element.Equal, alternativeGroup.NewElement())); err != nil {
+		if err := testPanic(errWrongGroup, internal.ErrCastElement,
+			equal(element.Equal, alternativeGroup.NewElement())); err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	// Specifically test Ristretto
-	if err := testPanic(errWrongGroup, internal.ErrCastScalar, mult(crypto.Ristretto255Sha512.NewElement().Multiply, crypto.P384Sha384.NewScalar())); err != nil {
+	if err := testPanic(errWrongGroup, internal.ErrCastScalar,
+		mult(crypto.Ristretto255Sha512.NewElement().Multiply, crypto.P384Sha384.NewScalar())); err != nil {
 		t.Fatal(err)
 	}
 }

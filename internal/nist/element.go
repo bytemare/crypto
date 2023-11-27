@@ -194,6 +194,8 @@ func encodeInfinity[Point nistECPoint[Point]](element *Element[Point]) []byte {
 		encodedLength = p384CompressedEncodingLength
 	case "P521":
 		encodedLength = p521CompressedEncodingLength
+	default:
+		panic("could not infer nist curve")
 	}
 
 	return make([]byte, encodedLength)
