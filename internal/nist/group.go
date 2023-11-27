@@ -172,7 +172,7 @@ func initP256() {
 		nistec.NewP256Point,
 	)
 	p256.curve.setMapping(crypto.SHA256, "-10", 48)
-	p256.setScalarField("0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551")
+	setScalarField(&p256, "0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551")
 }
 
 func initP384() {
@@ -185,7 +185,7 @@ func initP384() {
 		nistec.NewP384Point,
 	)
 	p384.curve.setMapping(crypto.SHA384, "-12", 72)
-	p384.setScalarField(
+	setScalarField(&p384,
 		"0xffffffffffffffffffffffffffffffffffffffffffffffffc7634d81f4372ddf581a0db248b0a77aecec196accc52973",
 	)
 }
@@ -202,13 +202,13 @@ func initP521() {
 		nistec.NewP521Point,
 	)
 	p521.curve.setMapping(crypto.SHA512, "-4", 98)
-	p521.setScalarField(
-		"0x1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" +
+	setScalarField(&p521,
+		"0x1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"+
 			"a51868783bf2f966b7fcc0148f709a5d03bb5c9b8899c47aebb6fb71e91386409",
 	)
 }
 
-func (g *Group[Point]) setScalarField(order string) {
+func setScalarField[Point nistECPoint[Point]](g *Group[Point], order string) {
 	prime := field.String2Int(order)
 	g.scalarField = field.NewField(&prime)
 }

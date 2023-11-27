@@ -169,6 +169,8 @@ func (g Group) init() {
 		g.initGroup(edwards25519.New)
 	case Secp256k1:
 		g.initGroup(secp256k1.New)
+	case maxID:
+		panic("group not recognized")
 	default:
 		panic("group not recognized")
 	}

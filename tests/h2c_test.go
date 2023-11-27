@@ -137,13 +137,21 @@ func (v *h2cVector) run(t *testing.T) {
 		p := v.group.HashToGroup([]byte(v.Msg), []byte(v.Dst))
 
 		if hex.EncodeToString(p.Encode()) != expected {
-			t.Fatalf("Unexpected HashToGroup output.\n\tExpected %q\n\tgot  \t%q", expected, hex.EncodeToString(p.Encode()))
+			t.Fatalf(
+				"Unexpected HashToGroup output.\n\tExpected %q\n\tgot  \t%q",
+				expected,
+				hex.EncodeToString(p.Encode()),
+			)
 		}
 	case "NU_":
 		p := v.group.EncodeToGroup([]byte(v.Msg), []byte(v.Dst))
 
 		if hex.EncodeToString(p.Encode()) != expected {
-			t.Fatalf("Unexpected EncodeToGroup output.\n\tExpected %q\n\tgot %q", expected, hex.EncodeToString(p.Encode()))
+			t.Fatalf(
+				"Unexpected EncodeToGroup output.\n\tExpected %q\n\tgot %q",
+				expected,
+				hex.EncodeToString(p.Encode()),
+			)
 		}
 	default:
 		t.Fatal("ciphersuite not recognized")
