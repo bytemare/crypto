@@ -170,7 +170,7 @@ func (g Group) init() {
 	case Secp256k1:
 		g.initGroup(secp256k1.New)
 	case maxID:
-		panic("group not recognized")
+		fallthrough
 	default:
 		panic("group not recognized")
 	}
