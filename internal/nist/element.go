@@ -110,10 +110,21 @@ func (e *Element[P]) Subtract(element internal.Element) internal.Element {
 	return e
 }
 
+func (e *Element[P]) isGenerator() bool {
+	b := e.new().SetGenerator().BytesCompressed()
+	return subtle.ConstantTimeCompare(b, e.Encode()) == 1
+}
+
 // Multiply sets the receiver to the scalar multiplication of the receiver with the given Scalar, and returns it.
 func (e *Element[P]) Multiply(scalar internal.Scalar) internal.Element {
-	if _, err := e.p.ScalarMult(e.p, scalar.Encode()); err != nil {
-		panic(err)
+	if e.isGenerator() {
+		if _, err := e.p.ScalarBaseMult(scalar.Encode()); err != nil {
+			panic(err)
+		}
+	} else {
+		if _, err := e.p.ScalarMult(e.p, scalar.Encode()); err != nil {
+			panic(err)
+		}
 	}
 
 	return e
@@ -183,6 +194,8 @@ func encodeInfinity[Point nistECPoint[Point]](element *Element[Point]) []byte {
 		encodedLength = p384CompressedEncodingLength
 	case "P521":
 		encodedLength = p521CompressedEncodingLength
+	default:
+		panic("could not infer nist curve")
 	}
 
 	return make([]byte, encodedLength)

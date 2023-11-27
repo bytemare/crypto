@@ -147,7 +147,11 @@ func TestScalar_EncodedLength(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
 		encodedScalar := group.group.NewScalar().Random().Encode()
 		if len(encodedScalar) != group.scalarLength {
-			t.Fatalf("Encode() is expected to return %d bytes, but returned %d bytes", group.scalarLength, encodedScalar)
+			t.Fatalf(
+				"Encode() is expected to return %d bytes, but returned %d bytes",
+				group.scalarLength,
+				encodedScalar,
+			)
 		}
 	})
 }
@@ -368,7 +372,10 @@ func scalarTestPow(t *testing.T, g crypto.Group) {
 	}
 	res = s.Pow(exp)
 	if res.Equal(result) != 1 {
-		t.Fatal("expected 3**255 = 11F1B08E87EC42C5D83C3218FC83C41DCFD9F4428F4F92AF1AAA80AA46162B1F71E981273601F4AD1DD4709B5ACA650265A6AB")
+		t.Fatal(
+			"expected 3**255 = " +
+				"11F1B08E87EC42C5D83C3218FC83C41DCFD9F4428F4F92AF1AAA80AA46162B1F71E981273601F4AD1DD4709B5ACA650265A6AB",
+		)
 	}
 
 	// 7945232487465**513

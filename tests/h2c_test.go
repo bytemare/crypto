@@ -12,6 +12,7 @@ import (
 	"crypto/elliptic"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"math/big"
 	"os"
@@ -135,19 +136,29 @@ func (v *h2cVector) run(t *testing.T) {
 	switch v.Ciphersuite[len(v.Ciphersuite)-3:] {
 	case "RO_":
 		p := v.group.HashToGroup([]byte(v.Msg), []byte(v.Dst))
-
-		if hex.EncodeToString(p.Encode()) != expected {
-			t.Fatalf("Unexpected HashToGroup output.\n\tExpected %q\n\tgot  \t%q", expected, hex.EncodeToString(p.Encode()))
+		if err := verifyEncoding(p, "HashToGroup", expected); err != nil {
+			t.Fatal(err)
 		}
 	case "NU_":
 		p := v.group.EncodeToGroup([]byte(v.Msg), []byte(v.Dst))
-
-		if hex.EncodeToString(p.Encode()) != expected {
-			t.Fatalf("Unexpected EncodeToGroup output.\n\tExpected %q\n\tgot %q", expected, hex.EncodeToString(p.Encode()))
+		if err := verifyEncoding(p, "EncodeToGroup", expected); err != nil {
+			t.Fatal(err)
 		}
 	default:
 		t.Fatal("ciphersuite not recognized")
 	}
+}
+
+func verifyEncoding(p *crypto.Element, function, expected string) error {
+	if hex.EncodeToString(p.Encode()) != expected {
+		return fmt.Errorf("Unexpected %s output.\n\tExpected %q\n\tgot %q",
+			function,
+			expected,
+			hex.EncodeToString(p.Encode()),
+		)
+	}
+
+	return nil
 }
 
 func (v *h2cVectors) runCiphersuite(t *testing.T) {

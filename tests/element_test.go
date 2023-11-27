@@ -96,25 +96,30 @@ func TestElement_WrongInput(t *testing.T) {
 			t.Fatalf("Invalid group id %d", group.group)
 		}
 
-		if err := testPanic(errWrongGroup, internal.ErrCastElement, exec(element.Add, alternativeGroup.NewElement())); err != nil {
+		if err := testPanic(errWrongGroup, internal.ErrCastElement,
+			exec(element.Add, alternativeGroup.NewElement())); err != nil {
 			t.Fatal(err)
 		}
 
-		if err := testPanic(errWrongGroup, internal.ErrCastElement, exec(element.Subtract, alternativeGroup.NewElement())); err != nil {
+		if err := testPanic(errWrongGroup, internal.ErrCastElement,
+			exec(element.Subtract, alternativeGroup.NewElement())); err != nil {
 			t.Fatal(err)
 		}
 
-		if err := testPanic(errWrongGroup, internal.ErrCastElement, exec(element.Set, alternativeGroup.NewElement())); err != nil {
+		if err := testPanic(errWrongGroup, internal.ErrCastElement,
+			exec(element.Set, alternativeGroup.NewElement())); err != nil {
 			t.Fatal(err)
 		}
 
-		if err := testPanic(errWrongGroup, internal.ErrCastElement, equal(element.Equal, alternativeGroup.NewElement())); err != nil {
+		if err := testPanic(errWrongGroup, internal.ErrCastElement,
+			equal(element.Equal, alternativeGroup.NewElement())); err != nil {
 			t.Fatal(err)
 		}
 	})
 
 	// Specifically test Ristretto
-	if err := testPanic(errWrongGroup, internal.ErrCastScalar, mult(crypto.Ristretto255Sha512.NewElement().Multiply, crypto.P384Sha384.NewScalar())); err != nil {
+	if err := testPanic(errWrongGroup, internal.ErrCastScalar,
+		mult(crypto.Ristretto255Sha512.NewElement().Multiply, crypto.P384Sha384.NewScalar())); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -123,17 +128,29 @@ func TestElement_EncodedLength(t *testing.T) {
 	testAll(t, func(t2 *testing.T, group *testGroup) {
 		id := group.group.NewElement().Identity().Encode()
 		if len(id) != group.elementLength {
-			t.Fatalf("Encode() of the identity element is expected to return %d bytes, but returned %d bytes", group.elementLength, len(id))
+			t.Fatalf(
+				"Encode() of the identity element is expected to return %d bytes, but returned %d bytes",
+				group.elementLength,
+				len(id),
+			)
 		}
 
 		encodedID := hex.EncodeToString(id)
 		if encodedID != group.identity {
-			t.Fatalf("Encode() of the identity element is unexpected.\n\twant: %v\n\tgot : %v", group.identity, encodedID)
+			t.Fatalf(
+				"Encode() of the identity element is unexpected.\n\twant: %v\n\tgot : %v",
+				group.identity,
+				encodedID,
+			)
 		}
 
 		encodedElement := group.group.NewElement().Base().Multiply(group.group.NewScalar().Random()).Encode()
 		if len(encodedElement) != group.elementLength {
-			t.Fatalf("Encode() is expected to return %d bytes, but returned %d bytes", group.elementLength, encodedElement)
+			t.Fatalf(
+				"Encode() is expected to return %d bytes, but returned %d bytes",
+				group.elementLength,
+				encodedElement,
+			)
 		}
 	})
 }

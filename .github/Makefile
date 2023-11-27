@@ -9,6 +9,7 @@ update:
 .PHONY: update-linters
 update-linters:
 	@echo "Updating linters..."
+	@go install golang.org/x/tools/cmd/goimports@latest
 	@go install mvdan.cc/gofumpt@latest
 	@go install github.com/daixiang0/gci@latest
 	@go install github.com/segmentio/golines@latest
@@ -20,7 +21,7 @@ fmt:
 	@echo "Formatting ..."
 	@go mod tidy
 	@go fmt ../...
-	#@golines -m 120 -t 4 -w ../
+	@golines -m 120 -t 4 -w ../
 	@gofumpt -w -extra ../
 	@gci write -s Standard -s Default -s "Prefix($(shell go list -m))" ../
 	@fieldalignment -fix ../...
