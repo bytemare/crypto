@@ -158,7 +158,7 @@ func (g Group) init() {
 	case Ristretto255Sha512:
 		g.initGroup(ristretto.New)
 	case decaf448Shake256:
-		panic("Decaf is not yet supported")
+		panic("decaf is not yet supported")
 	case P256Sha256:
 		g.initGroup(nist.P256)
 	case P384Sha384:
@@ -170,7 +170,7 @@ func (g Group) init() {
 	case Secp256k1:
 		g.initGroup(secp256k1.New)
 	case maxID:
-		fallthrough
+		panic("group not recognized")
 	default:
 		panic("group not recognized")
 	}

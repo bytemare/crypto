@@ -10,6 +10,7 @@ package group_test
 
 import (
 	"encoding/hex"
+	"errors"
 	"testing"
 
 	"github.com/bytemare/crypto"
@@ -26,6 +27,8 @@ func TestAvailability(t *testing.T) {
 }
 
 func TestNonAvailability(t *testing.T) {
+	errInvalidID := errors.New("invalid group identifier")
+
 	oob := crypto.Group(0)
 	if oob.Available() {
 		t.Errorf(consideredAvailableFmt, oob)
@@ -36,9 +39,25 @@ func TestNonAvailability(t *testing.T) {
 		t.Errorf(consideredAvailableFmt, d)
 	}
 
+	if err := testPanic("decaf availability", errInvalidID,
+		func() { _ = d.String() }); err != nil {
+		t.Fatal(err)
+	}
+
 	oob = crypto.Secp256k1 + 1
 	if oob.Available() {
 		t.Errorf(consideredAvailableFmt, oob)
+	}
+
+	if err := testPanic("oob availability", errInvalidID,
+		func() { _ = oob.String() }); err != nil {
+		t.Fatal(err)
+	}
+
+	oob++
+	if err := testPanic("oob availability", errInvalidID,
+		func() { _ = oob.String() }); err != nil {
+		t.Fatal(err)
 	}
 }
 
