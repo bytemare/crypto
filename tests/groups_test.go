@@ -157,17 +157,17 @@ func TestHashToScalar_NoDST(t *testing.T) {
 		data := []byte("input data")
 
 		// Nil DST
-		if err := testPanic("nil dst", errors.New("zero-length DST"), func() {
+		if err := testPanic("nil dst", errZeroLenDST, func() {
 			_ = group.group.HashToScalar(data, nil)
 		}); err != nil {
-			t.Error(fmt.Errorf("%s: %w)", errNoPanic, err))
+			t.Error(fmt.Errorf(errWrapGroup, errNoPanic, err))
 		}
 
 		// Zero length DST
-		if err := testPanic("zero-length dst", errors.New("zero-length DST"), func() {
+		if err := testPanic("zero-length dst", errZeroLenDST, func() {
 			_ = group.group.HashToScalar(data, []byte{})
 		}); err != nil {
-			t.Error(fmt.Errorf("%s: %w)", errNoPanic, err))
+			t.Error(fmt.Errorf(errWrapGroup, errNoPanic, err))
 		}
 	})
 }
@@ -188,17 +188,17 @@ func TestHashToGroup_NoDST(t *testing.T) {
 		data := []byte("input data")
 
 		// Nil DST
-		if err := testPanic("nil dst", errors.New("zero-length DST"), func() {
+		if err := testPanic("nil dst", errZeroLenDST, func() {
 			_ = group.group.HashToGroup(data, nil)
 		}); err != nil {
-			t.Error(fmt.Errorf("%s: %w)", errNoPanic, err))
+			t.Error(fmt.Errorf(errWrapGroup, errNoPanic, err))
 		}
 
 		// Zero length DST
-		if err := testPanic("zero-length dst", errors.New("zero-length DST"), func() {
+		if err := testPanic("zero-length dst", errZeroLenDST, func() {
 			_ = group.group.HashToGroup(data, []byte{})
 		}); err != nil {
-			t.Error(fmt.Errorf("%s: %w)", errNoPanic, err))
+			t.Error(fmt.Errorf(errWrapGroup, errNoPanic, err))
 		}
 	})
 }

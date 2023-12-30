@@ -22,6 +22,8 @@ import (
 var (
 	errNoPanic        = errors.New("no panic")
 	errNoPanicMessage = errors.New("panic but no message")
+	errZeroLenDST     = errors.New("zero-length DST")
+	errWrapGroup      = "%s: %w"
 )
 
 func hasPanic(f func()) (has bool, err error) {
