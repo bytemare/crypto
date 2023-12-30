@@ -8,25 +8,24 @@
 ```
 
 This package exposes abstract operations over opaque prime-order elliptic curve groups and their scalars and elements,
-and implements the latest [hash-to-curve](https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve) specification
-to date.
+and support hash-to-curve as per [RFC 9380](https://datatracker.ietf.org/doc/rfc9380).
 
-It is made so you can swap between primitives with no code change. The only changing parameter is the Group identifier.
-The package serves as an interface to optimized and secured implementations that serve as backends, and to which you
+It is made so you can swap between primitives with no code change and only the Group identifier.
+The package serves as an interface to optimized and secure implementations that serve as backends, and to which you
 don't need to adapt.
 
 The following table indexes supported groups with hash-to-curve capability and links each one to the underlying implementations:
 
-| ID  | Name         | Backend                       |
-|-----|--------------|-------------------------------|
-| 1   | Ristretto255 | github.com/gtank/ristretto255 |
-| 2   | Decaf448     | not yet supported             |
-| 3   | P-256        | filippo.io/nistec             |
-| 4   | P-384        | filippo.io/nistec             |
-| 5   | P-521        | filippo.io/nistec             |
-| 6   | Edwards25519 | filippo.io/edwards25519       |
-| 7   | Secp256k1    | github.com/bytemare/secp256k1 |
-| 8   | Double-Odd   | not yet supported             |
+| ID | Name         | Backend                       |
+|----|--------------|-------------------------------|
+| 1  | Ristretto255 | github.com/gtank/ristretto255 |
+| 2  | Decaf448     | not supported                 |
+| 3  | P-256        | filippo.io/nistec             |
+| 4  | P-384        | filippo.io/nistec             |
+| 5  | P-521        | filippo.io/nistec             |
+| 6  | Edwards25519 | filippo.io/edwards25519       |
+| 7  | Secp256k1    | github.com/bytemare/secp256k1 |
+| 8  | Double-Odd   | not yet supported             |
 
 ## Prime-order group interface
 

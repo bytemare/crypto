@@ -100,6 +100,10 @@ func (e *Element) IsIdentity() bool {
 
 // Set sets the receiver to the value of the argument, and returns the receiver.
 func (e *Element) Set(element internal.Element) internal.Element {
+	if element == nil {
+		return e.Identity()
+	}
+
 	q := assertElement(element)
 	e.element.Set(q.element)
 
@@ -124,7 +128,7 @@ func (e *Element) XCoordinate() []byte {
 // Decode sets the receiver to a decoding of the input data, and returns an error on failure.
 func (e *Element) Decode(data []byte) error {
 	if err := e.element.Decode(data); err != nil {
-		return fmt.Errorf("secp256k1 decode element: %w", err)
+		return fmt.Errorf("%w", err)
 	}
 
 	return nil

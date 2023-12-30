@@ -248,7 +248,7 @@ func (s *Scalar) IsZero() bool {
 // Set sets the receiver to the value of the argument scalar, and returns the receiver.
 func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
-		s.set(nil)
+		s.Zero()
 		return s
 	}
 
@@ -297,7 +297,7 @@ func decodeScalar(scalar []byte) (*ristretto255.Scalar, error) {
 
 	s := ristretto255.NewScalar()
 	if err := s.Decode(scalar); err != nil {
-		return nil, fmt.Errorf("ristretto scalar Decode: %w", err)
+		return nil, fmt.Errorf("%w", err)
 	}
 
 	return s, nil

@@ -18,11 +18,12 @@ import (
 
 // Scalar represents a scalar in the prime-order group.
 type Scalar struct {
+	_ disallowEqual
 	internal.Scalar
 }
 
 func newScalar(s internal.Scalar) *Scalar {
-	return &Scalar{s}
+	return &Scalar{Scalar: s}
 }
 
 // Zero sets the scalar to 0, and returns it.
@@ -119,7 +120,12 @@ func (s *Scalar) IsZero() bool {
 
 // Set sets the receiver to the value of the argument scalar, and returns the receiver.
 func (s *Scalar) Set(scalar *Scalar) *Scalar {
+	if scalar == nil {
+		return s.Zero()
+	}
+
 	s.Scalar.Set(scalar.Scalar)
+
 	return s
 }
 
@@ -134,7 +140,7 @@ func (s *Scalar) SetInt(i *big.Int) error {
 
 // Copy returns a copy of the receiver.
 func (s *Scalar) Copy() *Scalar {
-	return &Scalar{s.Scalar.Copy()}
+	return &Scalar{Scalar: s.Scalar.Copy()}
 }
 
 // Encode returns the compressed byte encoding of the scalar.

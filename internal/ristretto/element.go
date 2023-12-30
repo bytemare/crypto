@@ -108,7 +108,7 @@ func (e *Element) set(element *Element) *Element {
 // Set sets the receiver to the value of the argument, and returns the receiver.
 func (e *Element) Set(element internal.Element) internal.Element {
 	if element == nil {
-		return e.set(nil)
+		return e.Identity()
 	}
 
 	ec, ok := element.(*Element)
@@ -146,7 +146,7 @@ func decodeElement(element []byte) (*ristretto255.Element, error) {
 
 	e := ristretto255.NewElement()
 	if err := e.Decode(element); err != nil {
-		return nil, fmt.Errorf("ristretto element Decode: %w", err)
+		return nil, fmt.Errorf("%w", err)
 	}
 
 	return e, nil

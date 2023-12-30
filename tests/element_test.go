@@ -10,8 +10,12 @@ package group_test
 
 import (
 	"encoding/hex"
+	"errors"
 	"log"
+	"math/big"
 	"testing"
+
+	"github.com/bytemare/secp256k1"
 
 	"github.com/bytemare/crypto"
 	"github.com/bytemare/crypto/internal"
@@ -44,10 +48,15 @@ func testElementCopySet(t *testing.T, element, other *crypto.Element) {
 	if element.Equal(other) == 1 {
 		t.Fatalf("Unexpected equality")
 	}
+
+	// Verify setting to nil sets to identity
+	if element.Set(nil).Equal(other.Identity()) != 1 {
+		t.Error(errExpectedEquality)
+	}
 }
 
 func TestElementCopy(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		base := group.group.Base()
 		cpy := base.Copy()
 		testElementCopySet(t, base, cpy)
@@ -55,7 +64,7 @@ func TestElementCopy(t *testing.T) {
 }
 
 func TestElementSet(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		base := group.group.Base()
 		other := group.group.NewElement()
 		other.Set(base)
@@ -82,7 +91,7 @@ func TestElement_WrongInput(t *testing.T) {
 		}
 	}
 
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		element := group.group.NewElement()
 		var alternativeGroup crypto.Group
 
@@ -125,7 +134,7 @@ func TestElement_WrongInput(t *testing.T) {
 }
 
 func TestElement_EncodedLength(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		id := group.group.NewElement().Identity().Encode()
 		if len(id) != group.elementLength {
 			t.Fatalf(
@@ -155,8 +164,125 @@ func TestElement_EncodedLength(t *testing.T) {
 	})
 }
 
+func TestElement_Decode_OutOfBounds(t *testing.T) {
+	testAll(t, func(group *testGroup) {
+		expected := errors.New("invalid point encoding")
+		encoded := make([]byte, group.group.ElementLength())
+
+		y := big.NewInt(0)
+
+		x, ok := new(big.Int).SetString(group.fieldOrder, 0)
+		if !ok {
+			t.Fatalf("setting int in base %d failed: %v", 0, group.fieldOrder)
+		}
+
+		// x exceeds the order
+		x.Add(x, big.NewInt(1))
+
+		switch group.group {
+		case crypto.Ristretto255Sha512, crypto.Edwards25519Sha512:
+			x.FillBytes(encoded)
+		case crypto.P256Sha256, crypto.P384Sha384, crypto.P521Sha512, crypto.Secp256k1:
+			encoded[0] = byte(2 | y.Bit(0)&1)
+			x.FillBytes(encoded[1:])
+		default:
+			t.Fatalf("non registered group %s", group.group)
+		}
+
+		if err := secp256k1.NewElement().Decode(encoded[:]); err == nil || err.Error() != expected.Error() {
+			t.Errorf("expected error %q, got %v", expected, err)
+		}
+	})
+}
+
+func TestElement_XCoordinate(t *testing.T) {
+	testAll(t, func(group *testGroup) {
+		baseX := hex.EncodeToString(group.group.Base().XCoordinate())
+		refLen := len(baseX) / 2 // hexadecimal length is 2 times byt length
+
+		if baseX != group.basePointX {
+			t.Error(errExpectedEquality)
+		}
+
+		zero := hex.EncodeToString(make([]byte, refLen))
+		id := hex.EncodeToString(group.group.NewElement().XCoordinate())
+
+		if zero != id {
+			t.Error(errExpectedEquality)
+		}
+	})
+}
+
+func TestElement_Vectors_Add(t *testing.T) {
+	testAll(t, func(group *testGroup) {
+		base := group.group.Base()
+		acc := group.group.Base()
+
+		for _, mult := range group.multBase {
+			e := decodeElement(t, group.group, mult)
+			if e.Equal(acc) != 1 {
+				t.Fatal("expected equality")
+			}
+
+			acc.Add(base)
+		}
+
+		base.Add(group.group.NewElement())
+		if base.Equal(group.group.Base()) != 1 {
+			t.Fatal(errExpectedEquality)
+		}
+
+		if group.group.NewElement().Add(base).Equal(base) != 1 {
+			t.Fatal(errExpectedEquality)
+		}
+	})
+}
+
+func TestElement_Vectors_Double(t *testing.T) {
+	testAll(t, func(group *testGroup) {
+		tables := [][]int{
+			{1, 2, 4, 8},
+			{3, 6, 12},
+			{5, 10},
+			{7, 14},
+		}
+
+		for _, table := range tables {
+			e := decodeElement(t, group.group, group.multBase[table[0]-1])
+			for _, multiple := range table[1:] {
+				e.Double()
+
+				v := decodeElement(t, group.group, group.multBase[multiple-1])
+				if v.Equal(e) != 1 {
+					t.Fatalf("expected equality for %d", multiple)
+				}
+			}
+		}
+	})
+}
+
+func TestElement_Vectors_Mult(t *testing.T) {
+	testAll(t, func(group *testGroup) {
+		s := group.group.NewScalar()
+		base := group.group.Base()
+
+		for i, mult := range group.multBase {
+			e := decodeElement(t, group.group, mult)
+			if e.Equal(base) != 1 {
+				t.Fatalf("expected equality for %d", i)
+			}
+
+			if err := s.SetInt(big.NewInt(int64(i + 2))); err != nil {
+				t.Fatal(err)
+			}
+
+			base.Base().Multiply(s)
+		}
+	})
+}
+
 func TestElement_Arithmetic(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		elementTestEqual(t, group.group)
 		elementTestAdd(t, group.group)
 		elementTestDouble(t, group.group)

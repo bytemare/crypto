@@ -175,3 +175,8 @@ func (g Group) init() {
 		panic("group not recognized")
 	}
 }
+
+// disallowEqual is an incomparable type.
+// If you place it first in your struct, you prevent == from
+// working on your struct without growing its size.
+type disallowEqual [0]func()

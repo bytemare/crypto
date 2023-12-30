@@ -47,6 +47,9 @@ var (
 
 	// ErrParamScalarTooBig reports an error when the input scalar is too big.
 	ErrParamScalarTooBig = errors.New("scalar too big")
+
+	// ErrParamScalarInvalidEncoding indicates an invalid scalar encoding has been provided, or that it's too big.
+	ErrParamScalarInvalidEncoding = errors.New("invalid scalar encoding")
 )
 
 // RandomBytes returns random bytes of length len (wrapper for crypto/rand).

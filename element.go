@@ -17,21 +17,22 @@ import (
 
 // Element represents an element on the curve of the prime-order group.
 type Element struct {
+	_ disallowEqual
 	internal.Element
 }
 
 func newPoint(p internal.Element) *Element {
-	return &Element{p}
+	return &Element{Element: p}
 }
 
 // Base sets the element to the group's base point a.k.a. canonical generator.
 func (e *Element) Base() *Element {
-	return &Element{e.Element.Base()}
+	return &Element{Element: e.Element.Base()}
 }
 
 // Identity sets the element to the point at infinity of the Group's underlying curve.
 func (e *Element) Identity() *Element {
-	return &Element{e.Element.Identity()}
+	return &Element{Element: e.Element.Identity()}
 }
 
 // Add sets the receiver to the sum of the input and the receiver, and returns the receiver.
@@ -96,13 +97,20 @@ func (e *Element) IsIdentity() bool {
 
 // Set sets the receiver to the argument, and returns the receiver.
 func (e *Element) Set(element *Element) *Element {
+	if element == nil {
+		e.Element.Set(nil)
+
+		return e
+	}
+
 	e.Element.Set(element.Element)
+
 	return e
 }
 
 // Copy returns a copy of the receiver.
 func (e *Element) Copy() *Element {
-	return &Element{e.Element.Copy()}
+	return &Element{Element: e.Element.Copy()}
 }
 
 // Encode returns the compressed byte encoding of the element.
@@ -118,7 +126,7 @@ func (e *Element) XCoordinate() []byte {
 // Decode sets the receiver to a decoding of the input data, and returns an error on failure.
 func (e *Element) Decode(data []byte) error {
 	if err := e.Element.Decode(data); err != nil {
-		return fmt.Errorf("element decoding: %w", err)
+		return fmt.Errorf("element Decode: %w", err)
 	}
 
 	return nil
