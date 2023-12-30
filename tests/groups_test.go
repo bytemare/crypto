@@ -11,6 +11,7 @@ package group_test
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/bytemare/crypto"
@@ -19,7 +20,7 @@ import (
 const consideredAvailableFmt = "%v is considered available when it must not"
 
 func TestAvailability(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		if !group.group.Available() {
 			t.Errorf("'%s' is not available, but should be", group.group.String())
 		}
@@ -62,7 +63,7 @@ func TestNonAvailability(t *testing.T) {
 }
 
 func TestGroup_Base(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		if hex.EncodeToString(group.group.Base().Encode()) != group.basePoint {
 			t.Fatalf("Got wrong base element\n\tgot : %s\n\twant: %s",
 				hex.EncodeToString(group.group.Base().Encode()),
@@ -83,7 +84,7 @@ func TestDST(t *testing.T) {
 		crypto.Secp256k1:          app + "-V01-CS07-",
 	}
 
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		res := string(group.group.MakeDST(app, version))
 		test := tests[group.group] + group.h2c
 		if res != test {
@@ -93,7 +94,7 @@ func TestDST(t *testing.T) {
 }
 
 func TestGroup_String(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		res := group.group.String()
 		ref := group.h2c
 		if res != ref {
@@ -103,7 +104,7 @@ func TestGroup_String(t *testing.T) {
 }
 
 func TestGroup_NewScalar(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		s := group.group.NewScalar().Encode()
 		for _, b := range s {
 			if b != 0 {
@@ -114,7 +115,7 @@ func TestGroup_NewScalar(t *testing.T) {
 }
 
 func TestGroup_NewElement(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		e := hex.EncodeToString(group.group.NewElement().Encode())
 		ref := group.identity
 
@@ -125,7 +126,7 @@ func TestGroup_NewElement(t *testing.T) {
 }
 
 func TestGroup_ScalarLength(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		if int(group.group.ScalarLength()) != group.scalarLength {
 			t.Fatalf("expected encoded scalar length %d, but got %d", group.scalarLength, group.group.ScalarLength())
 		}
@@ -133,9 +134,71 @@ func TestGroup_ScalarLength(t *testing.T) {
 }
 
 func TestGroup_ElementLength(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *testGroup) {
-		if int(group.group.ElementLength()) != group.elementLength {
+	testAll(t, func(group *testGroup) {
+		if group.group.ElementLength() != group.elementLength {
 			t.Fatalf("expected encoded element length %d, but got %d", group.elementLength, group.group.ElementLength())
+		}
+	})
+}
+
+func TestHashToScalar(t *testing.T) {
+	testAll(t, func(group *testGroup) {
+		sv := decodeScalar(t, group.group, group.hashToCurve.hashToScalar)
+
+		s := group.group.HashToScalar(group.hashToCurve.input, group.hashToCurve.dst)
+		if s.Equal(sv) != 1 {
+			t.Error(errExpectedEquality)
+		}
+	})
+}
+
+func TestHashToScalar_NoDST(t *testing.T) {
+	testAll(t, func(group *testGroup) {
+		data := []byte("input data")
+
+		// Nil DST
+		if err := testPanic("nil dst", errZeroLenDST, func() {
+			_ = group.group.HashToScalar(data, nil)
+		}); err != nil {
+			t.Error(fmt.Errorf(errWrapGroup, errNoPanic, err))
+		}
+
+		// Zero length DST
+		if err := testPanic("zero-length dst", errZeroLenDST, func() {
+			_ = group.group.HashToScalar(data, []byte{})
+		}); err != nil {
+			t.Error(fmt.Errorf(errWrapGroup, errNoPanic, err))
+		}
+	})
+}
+
+func TestHashToGroup(t *testing.T) {
+	testAll(t, func(group *testGroup) {
+		ev := decodeElement(t, group.group, group.hashToCurve.hashToGroup)
+
+		e := group.group.HashToGroup(group.hashToCurve.input, group.hashToCurve.dst)
+		if e.Equal(ev) != 1 {
+			t.Error(errExpectedEquality)
+		}
+	})
+}
+
+func TestHashToGroup_NoDST(t *testing.T) {
+	testAll(t, func(group *testGroup) {
+		data := []byte("input data")
+
+		// Nil DST
+		if err := testPanic("nil dst", errZeroLenDST, func() {
+			_ = group.group.HashToGroup(data, nil)
+		}); err != nil {
+			t.Error(fmt.Errorf(errWrapGroup, errNoPanic, err))
+		}
+
+		// Zero length DST
+		if err := testPanic("zero-length dst", errZeroLenDST, func() {
+			_ = group.group.HashToGroup(data, []byte{})
+		}); err != nil {
+			t.Error(fmt.Errorf(errWrapGroup, errNoPanic, err))
 		}
 	})
 }

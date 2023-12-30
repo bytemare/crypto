@@ -109,20 +109,9 @@ func (f Field) Inv(res, x *big.Int) {
 	f.Exponent(res, x, f.pMinus2)
 }
 
-// LegendreSymbol applies the Legendre symbole on (a/p) and returns either {-1, 0, 1} mod field order.
-func (f Field) LegendreSymbol(a *big.Int) *big.Int {
-	var res big.Int
-	return f.Exponent(&res, a, f.pMinus1div2)
-}
-
 // Exponent returns x^n mod field order.
 func (f Field) Exponent(res, x, n *big.Int) *big.Int {
 	return res.Exp(x, n, f.order)
-}
-
-// IsSquare returns whether e is a quadratic square.
-func (f Field) IsSquare(e *big.Int) bool {
-	return f.AreEqual(f.LegendreSymbol(e), f.One())
 }
 
 // IsEqual returns whether the two fields have the same order.
@@ -135,24 +124,6 @@ func (f Field) Mod(x *big.Int) *big.Int {
 	return x.Mod(x, f.order)
 }
 
-// Neg sets res to the -x modulo the field order.
-func (f Field) Neg(res, x *big.Int) *big.Int {
-	return f.Mod(res.Neg(x))
-}
-
-// CondNeg sets res to -x if cond == 1.
-func (f Field) CondNeg(res, x *big.Int, cond int) {
-	var neg, cpy big.Int
-	cpy.Set(x)
-	f.Neg(&neg, x)
-
-	if cond == 1 {
-		res.Set(&neg)
-	} else {
-		res.Set(&cpy)
-	}
-}
-
 // Add sets res to x + y modulo the field order.
 func (f Field) Add(res, x, y *big.Int) {
 	f.Mod(res.Add(x, y))
@@ -163,55 +134,7 @@ func (f Field) Sub(res, x, y *big.Int) *big.Int {
 	return f.Mod(res.Sub(x, y))
 }
 
-// Lsh sets res to the left shift of n bits on x modulo the field order.
-func (f Field) Lsh(res, x *big.Int, n uint) {
-	f.Mod(res.Lsh(x, n))
-}
-
 // Mul sets res to the multiplication of x and y modulo the field order.
 func (f Field) Mul(res, x, y *big.Int) {
 	f.Mod(res.Mul(x, y))
-}
-
-// Square sets res to the square of x modulo the field order.
-func (f Field) Square(res, x *big.Int) {
-	f.Mod(res.Mul(x, x))
-}
-
-// CondMov sets res to y if b true, and to x otherwise.
-func (f Field) CondMov(res, x, y *big.Int, b bool) {
-	if b {
-		res.Set(y)
-	} else {
-		res.Set(x)
-	}
-}
-
-// Sgn0 returns the first bit in the big-endian representation.
-func (f Field) Sgn0(x *big.Int) int {
-	return int(x.Bit(0))
-}
-
-func (f Field) sqrt3mod4(res, e *big.Int) *big.Int {
-	return f.Exponent(res, e, f.exp)
-}
-
-// SquareRoot sets res to a square root of e mod the field's order, if such a square root exists.
-func (f Field) SquareRoot(res, e *big.Int) *big.Int {
-	return f.sqrt3mod4(res, e)
-}
-
-// SqrtRatio res result to the square root of (e/v), and indicates whether (e/v) is a square.
-func (f Field) SqrtRatio(res, zMapConstant, e, v *big.Int) bool {
-	f.Inv(res, v)
-	f.Mul(res, res, e)
-
-	square := f.IsSquare(res)
-	if !square {
-		f.Mul(res, res, zMapConstant)
-	}
-
-	f.SquareRoot(res, res)
-
-	return square
 }

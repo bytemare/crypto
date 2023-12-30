@@ -63,9 +63,8 @@ func assert(scalar internal.Scalar) *Scalar {
 	return &Scalar{*ed.NewScalar().Set(&sc.scalar)}
 }
 
-func (s *Scalar) set(scalar *ed.Scalar) *Scalar {
+func (s *Scalar) set(scalar *ed.Scalar) {
 	s.scalar = *scalar
-	return s
 }
 
 // Zero sets the scalar to 0, and returns it.
@@ -260,7 +259,7 @@ func (s *Scalar) IsZero() bool {
 // Set sets the receiver to the value of the argument scalar, and returns the receiver.
 func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
-		return s.set(nil)
+		return s.Zero()
 	}
 
 	ec := assert(scalar)
@@ -308,7 +307,7 @@ func decodeScalar(scalar []byte) (*ed.Scalar, error) {
 
 	s := ed.NewScalar()
 	if _, err := s.SetCanonicalBytes(scalar); err != nil {
-		return nil, fmt.Errorf("ristretto scalar Decode: %w", err)
+		return nil, fmt.Errorf("%w", err)
 	}
 
 	return s, nil

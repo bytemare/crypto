@@ -145,15 +145,10 @@ func (e *Element[P]) IsIdentity() bool {
 	return subtle.ConstantTimeCompare(b, i) == 1
 }
 
-func (e *Element[P]) set(element *Element[P]) *Element[P] {
-	*e = *element
-	return e
-}
-
 // Set sets the receiver to the value of the argument, and returns the receiver.
 func (e *Element[P]) Set(element internal.Element) internal.Element {
 	if element == nil {
-		return e.set(nil)
+		return e.Identity()
 	}
 
 	ec, ok := element.(*Element[P])

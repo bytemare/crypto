@@ -19,7 +19,7 @@ linters:
     - errorlint
     - execinquery
     #- exhaustive
-    - exhaustruct
+    #- exhaustruct
     - exportloopref
     - forbidigo
     - forcetypeassert

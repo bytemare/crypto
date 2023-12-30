@@ -134,15 +134,10 @@ func (s *Scalar) IsZero() bool {
 	return s.scalar.IsZero()
 }
 
-func (s *Scalar) set(scalar *Scalar) *Scalar {
-	*s = *scalar
-	return s
-}
-
 // Set sets the receiver to the value of the argument scalar, and returns the receiver.
 func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
-		return s.set(nil)
+		return s.Zero()
 	}
 
 	sc := assert(scalar)
@@ -154,7 +149,7 @@ func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 // SetInt sets s to i modulo the field order, and returns an error if one occurs.
 func (s *Scalar) SetInt(i *big.Int) error {
 	if err := s.scalar.SetInt(i); err != nil {
-		return fmt.Errorf("secp256k1 SetInt: %w", err)
+		return fmt.Errorf("%w", err)
 	}
 
 	return nil
@@ -173,7 +168,11 @@ func (s *Scalar) Encode() []byte {
 // Decode sets the receiver to a decoding of the input data, and returns an error on failure.
 func (s *Scalar) Decode(in []byte) error {
 	if err := s.scalar.Decode(in); err != nil {
-		return fmt.Errorf("secp256k1 decode scalar: %w", err)
+		if err.Error() == "scalar too big" {
+			return internal.ErrParamScalarInvalidEncoding
+		}
+
+		return fmt.Errorf("%w", err)
 	}
 
 	return nil

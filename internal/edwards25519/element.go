@@ -106,7 +106,7 @@ func (e *Element) set(element *Element) *Element {
 // Set sets the receiver to the value of the argument, and returns the receiver.
 func (e *Element) Set(element internal.Element) internal.Element {
 	if element == nil {
-		return e.set(nil)
+		return e.Identity()
 	}
 
 	ec, ok := element.(*Element)
@@ -127,7 +127,8 @@ func (e *Element) Encode() []byte {
 	return e.element.Bytes()
 }
 
-// XCoordinate returns the encoded x coordinate of the element, which is the same as Encode().
+// XCoordinate returns the encoded u coordinate of the element. Note that there's no inverse function for this, and
+// that decoding this output might result in another point.
 func (e *Element) XCoordinate() []byte {
 	return e.element.BytesMontgomery()
 }
@@ -139,7 +140,7 @@ func decodeElement(element []byte) (*ed.Point, error) {
 
 	e := ed.NewIdentityPoint()
 	if _, err := e.SetBytes(element); err != nil {
-		return nil, fmt.Errorf("edwards25519 element Decode: %w", err)
+		return nil, fmt.Errorf("%w", err)
 	}
 
 	return e, nil

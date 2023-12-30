@@ -15,11 +15,15 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+
+	"github.com/bytemare/crypto"
 )
 
 var (
 	errNoPanic        = errors.New("no panic")
 	errNoPanicMessage = errors.New("panic but no message")
+	errZeroLenDST     = errors.New("zero-length DST")
+	errWrapGroup      = "%s: %w"
 )
 
 func hasPanic(f func()) (has bool, err error) {
@@ -64,6 +68,34 @@ func testPanic(s string, expectedError error, f func()) error {
 	return nil
 }
 
+func decodeScalar(t *testing.T, g crypto.Group, input string) *crypto.Scalar {
+	b, err := hex.DecodeString(input)
+	if err != nil {
+		t.Error(err)
+	}
+
+	s := g.NewScalar()
+	if err := s.Decode(b); err != nil {
+		t.Error(err)
+	}
+
+	return s
+}
+
+func decodeElement(t *testing.T, g crypto.Group, input string) *crypto.Element {
+	b, err := hex.DecodeString(input)
+	if err != nil {
+		t.Error(err)
+	}
+
+	e := g.NewElement()
+	if err := e.Decode(b); err != nil {
+		t.Error(err)
+	}
+
+	return e
+}
+
 type serde interface {
 	Encode() []byte
 	Decode(data []byte) error
@@ -94,7 +126,7 @@ func testEncoding(t *testing.T, thing1, thing2 serde) {
 }
 
 func TestEncoding(t *testing.T) {
-	testAll(t, func(t *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		g := group.group
 		scalar := g.NewScalar().Random()
 		testEncoding(t, scalar, g.NewScalar())

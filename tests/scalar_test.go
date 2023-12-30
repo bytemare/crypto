@@ -10,6 +10,7 @@ package group_test
 
 import (
 	"encoding/hex"
+	"errors"
 	"math/big"
 	"testing"
 
@@ -30,7 +31,7 @@ func TestScalar_WrongInput(t *testing.T) {
 		}
 	}
 
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		scalar := group.group.NewScalar()
 		methods := []func(arg *crypto.Scalar) *crypto.Scalar{
 			scalar.Add, scalar.Subtract, scalar.Multiply, scalar.Set,
@@ -87,10 +88,15 @@ func testScalarCopySet(t *testing.T, scalar, other *crypto.Scalar) {
 	if scalar.Equal(other) == 1 {
 		t.Fatalf("Unexpected equality")
 	}
+
+	// Verify setting to nil sets to 0
+	if scalar.Set(nil).Equal(other.Zero()) != 1 {
+		t.Error(errExpectedEquality)
+	}
 }
 
 func TestScalarCopy(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		random := group.group.NewScalar().Random()
 		cpy := random.Copy()
 		testScalarCopySet(t, random, cpy)
@@ -98,7 +104,7 @@ func TestScalarCopy(t *testing.T) {
 }
 
 func TestScalarSet(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		random := group.group.NewScalar().Random()
 		other := group.group.NewScalar()
 		other.Set(random)
@@ -107,7 +113,7 @@ func TestScalarSet(t *testing.T) {
 }
 
 func TestScalarSetInt(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		i := big.NewInt(0)
 
 		s := group.group.NewScalar()
@@ -144,7 +150,7 @@ func TestScalarSetInt(t *testing.T) {
 }
 
 func TestScalar_EncodedLength(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		encodedScalar := group.group.NewScalar().Random().Encode()
 		if len(encodedScalar) != group.scalarLength {
 			t.Fatalf(
@@ -156,8 +162,37 @@ func TestScalar_EncodedLength(t *testing.T) {
 	})
 }
 
+func TestScalar_Decode_OutOfBounds(t *testing.T) {
+	testAll(t, func(group *testGroup) {
+		// Decode invalid length
+		encoded := make([]byte, 2)
+		big.NewInt(1).FillBytes(encoded)
+
+		expected := errors.New("scalar Decode: invalid scalar length")
+		if err := group.group.NewScalar().Decode(encoded); err == nil || err.Error() != expected.Error() {
+			t.Errorf("expected error %q, got %v", expected, err)
+		}
+
+		// Decode a scalar higher than order
+		encoded = make([]byte, group.group.ScalarLength())
+
+		order, ok := new(big.Int).SetString(group.group.Order(), 0)
+		if !ok {
+			t.Errorf("setting int in base %d failed: %v", 0, group.group.Order())
+		}
+
+		order.Add(order, big.NewInt(1))
+		order.FillBytes(encoded)
+
+		expected = errors.New("scalar Decode: invalid scalar encoding")
+		if err := group.group.NewScalar().Decode(encoded); err == nil || err.Error() != expected.Error() {
+			t.Errorf("expected error %q, got %v", expected, err)
+		}
+	})
+}
+
 func TestScalar_Arithmetic(t *testing.T) {
-	testAll(t, func(t2 *testing.T, group *testGroup) {
+	testAll(t, func(group *testGroup) {
 		scalarTestZero(t, group.group)
 		scalarTestOne(t, group.group)
 		scalarTestEqual(t, group.group)

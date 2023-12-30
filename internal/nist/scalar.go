@@ -169,15 +169,10 @@ func (s *Scalar) IsZero() bool {
 	return s.field.AreEqual(&s.scalar, s.field.Zero())
 }
 
-func (s *Scalar) set(scalar *Scalar) *Scalar {
-	*s = *scalar
-	return s
-}
-
 // Set sets the receiver to the value of the argument scalar, and returns the receiver.
 func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 	if scalar == nil {
-		return s.set(nil)
+		return s.Zero()
 	}
 
 	ec := s.assert(scalar)
@@ -212,18 +207,25 @@ func (s *Scalar) Encode() []byte {
 
 // Decode sets the receiver to a decoding of the input data, and returns an error on failure.
 func (s *Scalar) Decode(in []byte) error {
-	if len(in) == 0 {
+	expectedLength := (s.field.BitLen() + 7) / 8
+
+	switch len(in) {
+	case 0:
 		return internal.ErrParamNilScalar
+	case expectedLength:
+		break
+	default:
+		return internal.ErrParamScalarLength
 	}
 
 	// warning - SetBytes interprets the input as a non-signed integer, so this will always be false
+	// 	if tmp.Sign() < 0 {
+	//		return internal.ErrParamNegScalar
+	//	}
 	tmp := new(big.Int).SetBytes(in)
-	if tmp.Sign() < 0 {
-		return internal.ErrParamNegScalar
-	}
 
 	if s.field.Order().Cmp(tmp) <= 0 {
-		return internal.ErrParamScalarTooBig
+		return internal.ErrParamScalarInvalidEncoding
 	}
 
 	s.scalar.Set(tmp)
