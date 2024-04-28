@@ -22,12 +22,12 @@ jobs:
 
     steps:
       - name: "Checkout code"
-        uses: actions/checkout@8459bc0c7e3759cdf591f513d9f141a95fef0a8f # pin@master
+        uses: actions/checkout@8459bc0c7e3759cdf591f513d9f141a95fef0a8f
         with:
           persist-credentials: false
 
       - name: "Run analysis"
-        uses: ossf/scorecard-action@fad9a3cc533bb069b1f01f272f1f630895cd690a # pin@master
+        uses: ossf/scorecard-action@fad9a3cc533bb069b1f01f272f1f630895cd690a
         with:
           results_file: results.sarif
           results_format: sarif
@@ -42,7 +42,7 @@ jobs:
 
       # Upload the results as artifacts (optional).
       - name: "Upload artifact"
-        uses: actions/upload-artifact@552bf3722c16e81001aea7db72d8cedf64eb5f68 # pin@master
+        uses: actions/upload-artifact@552bf3722c16e81001aea7db72d8cedf64eb5f68
         with:
           name: SARIF file
           path: results.sarif
