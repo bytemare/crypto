@@ -17,7 +17,7 @@ jobs:
     name: Snyk
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@61b9e3751b92087fd0b06925ba6dd6314e06f089 # pin@master
+      - uses: actions/checkout@8459bc0c7e3759cdf591f513d9f141a95fef0a8f # pin@master
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/golang@3e2680e8df93a24b52d119b1305fb7cedc60ceae # pin@master
         env:
