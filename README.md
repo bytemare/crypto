@@ -29,8 +29,9 @@ The following table indexes supported groups with hash-to-curve capability and l
 
 ## Prime-order group interface
 
-This package defines an interface to the group and its scalars and elements, but exposes a type that handles that for
-you. You don't need to instantiate or implement anything.
+This package exposes types that can handle different implementations under the hood, internally using an interface
+to the group and its scalars and elements, but you don't need to instantiate or implement anything. Just use the type in
+the top package.
 
 ### Group interface
 
@@ -105,7 +106,7 @@ You can find the documentation and usage examples in [the package doc](https://p
 
 ## Versioning
 
-[SemVer](http://semver.org) is used for versioning. For the versions available, see the [tags on the repository](https://github.com/bytemare/crypto/tags).
+[SemVer](https://semver.org) is used for versioning. For the versions available, see the [tags on the repository](https://github.com/bytemare/crypto/tags).
 
 ## Contributing
 

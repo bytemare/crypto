@@ -1,7 +1,7 @@
 .PHONY: update
 update:
 	@echo "Updating dependencies..."
-	@cd ../ && go get -u
+	@cd ../ && go get -u ./...
 	@go mod tidy
 	@echo "Updating Github Actions pins..."
 	@$(foreach file, $(wildcard workflows/*.yml), pin-github-action $(file);)
@@ -9,10 +9,10 @@ update:
 .PHONY: update-linters
 update-linters:
 	@echo "Updating linters..."
-	@go install golang.org/x/tools/cmd/goimports@latest
 	@go install mvdan.cc/gofumpt@latest
 	@go install github.com/daixiang0/gci@latest
 	@go install github.com/segmentio/golines@latest
+	@go install golang.org/x/tools/cmd/goimports@latest
 	@go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest
 	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
 
