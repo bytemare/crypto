@@ -20,7 +20,7 @@ import (
 type mapping struct {
 	z         big.Int
 	hash      crypto.Hash
-	secLength int
+	secLength uint
 }
 
 type curve[point nistECPoint[point]] struct {
@@ -30,7 +30,7 @@ type curve[point nistECPoint[point]] struct {
 	mapping
 }
 
-func (c *curve[point]) setMapping(hash crypto.Hash, z string, secLength int) {
+func (c *curve[point]) setMapping(hash crypto.Hash, z string, secLength uint) {
 	c.mapping.hash = hash
 	c.mapping.secLength = secLength
 	c.mapping.z = field.String2Int(z)
