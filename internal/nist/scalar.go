@@ -10,6 +10,7 @@ package nist
 
 import (
 	"crypto/subtle"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 
@@ -112,7 +113,7 @@ func (s *Scalar) Pow(scalar internal.Scalar) internal.Scalar {
 		return s.One()
 	}
 
-	if scalar.Equal(scalar.Copy().One()) == 1 {
+	if scalar.Equal(newScalar(s.field).One()) == 1 {
 		return s
 	}
 
@@ -181,12 +182,10 @@ func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 	return s
 }
 
-// SetInt sets s to i modulo the field order, and returns an error if one occurs.
-func (s *Scalar) SetInt(i *big.Int) error {
-	s.scalar.Set(i)
-	s.field.Mod(&s.scalar)
-
-	return nil
+// SetUInt64 sets s to i modulo the field order, and returns an error if one occurs.
+func (s *Scalar) SetUInt64(i uint64) internal.Scalar {
+	s.scalar.SetUint64(i)
+	return s
 }
 
 // Copy returns a copy of the Scalar.
@@ -231,6 +230,21 @@ func (s *Scalar) Decode(in []byte) error {
 	s.scalar.Set(tmp)
 
 	return nil
+}
+
+// Hex returns the fixed-sized hexadecimal encoding of s.
+func (s *Scalar) Hex() string {
+	return hex.EncodeToString(s.Encode())
+}
+
+// DecodeHex sets s to the decoding of the hex encoded scalar.
+func (s *Scalar) DecodeHex(h string) error {
+	b, err := hex.DecodeString(h)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	return s.Decode(b)
 }
 
 // MarshalBinary returns the compressed byte encoding of the scalar.

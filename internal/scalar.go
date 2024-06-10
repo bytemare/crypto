@@ -11,7 +11,6 @@ package internal
 
 import (
 	"encoding"
-	"math/big"
 )
 
 // Scalar interface abstracts common operations on scalars in a prime-order Group.
@@ -53,8 +52,8 @@ type Scalar interface {
 	// Set sets the receiver to the value of the argument scalar, and returns the receiver.
 	Set(Scalar) Scalar
 
-	// SetInt sets s to i modulo the field order, and returns an error if one occurs.
-	SetInt(i *big.Int) error
+	// SetUInt64 sets s to i modulo the field order, and returns an error if one occurs.
+	SetUInt64(i uint64) Scalar
 
 	// Copy returns a copy of the receiver.
 	Copy() Scalar
@@ -64,6 +63,12 @@ type Scalar interface {
 
 	// Decode sets the receiver to a decoding of the input data, and returns an error on failure.
 	Decode(in []byte) error
+
+	// Hex returns the fixed-sized hexadecimal encoding of s.
+	Hex() string
+
+	// DecodeHex sets s to the decoding of the hex encoded scalar.
+	DecodeHex(h string) error
 
 	// BinaryMarshaler returns a byte representation of the element.
 	encoding.BinaryMarshaler

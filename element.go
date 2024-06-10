@@ -132,6 +132,20 @@ func (e *Element) Decode(data []byte) error {
 	return nil
 }
 
+// Hex returns the fixed-sized hexadecimal encoding of e.
+func (e *Element) Hex() string {
+	return e.Element.Hex()
+}
+
+// DecodeHex sets e to the decoding of the hex encoded element.
+func (e *Element) DecodeHex(h string) error {
+	if err := e.Element.DecodeHex(h); err != nil {
+		return fmt.Errorf("element DecodeHex: %w", err)
+	}
+
+	return nil
+}
+
 // MarshalBinary returns the compressed byte encoding of the element.
 func (e *Element) MarshalBinary() ([]byte, error) {
 	dec, err := e.Element.MarshalBinary()

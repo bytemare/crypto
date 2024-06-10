@@ -10,6 +10,7 @@ package nist
 
 import (
 	"crypto/subtle"
+	"encoding/hex"
 	"fmt"
 
 	"github.com/bytemare/crypto/internal"
@@ -214,10 +215,25 @@ func (e *Element[P]) XCoordinate() []byte {
 // Decode sets the receiver to a decoding of the input data, and returns an error on failure.
 func (e *Element[P]) Decode(data []byte) error {
 	if _, err := e.p.SetBytes(data); err != nil {
-		return fmt.Errorf("nist element Decode: %w", err)
+		return fmt.Errorf("%w", err)
 	}
 
 	return nil
+}
+
+// Hex returns the fixed-sized hexadecimal encoding of e.
+func (e *Element[P]) Hex() string {
+	return hex.EncodeToString(e.Encode())
+}
+
+// DecodeHex sets e to the decoding of the hex encoded element.
+func (e *Element[P]) DecodeHex(h string) error {
+	b, err := hex.DecodeString(h)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	return e.Decode(b)
 }
 
 // MarshalBinary returns the compressed byte encoding of the element.

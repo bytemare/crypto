@@ -150,11 +150,11 @@ func (v *h2cVector) run(t *testing.T) {
 }
 
 func verifyEncoding(p *crypto.Element, function, expected string) error {
-	if hex.EncodeToString(p.Encode()) != expected {
+	if p.Hex() != expected {
 		return fmt.Errorf("Unexpected %s output.\n\tExpected %q\n\tgot %q",
 			function,
 			expected,
-			hex.EncodeToString(p.Encode()),
+			p.Hex(),
 		)
 	}
 

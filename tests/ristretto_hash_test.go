@@ -76,7 +76,7 @@ func TestRistretto_HashToGroup(t *testing.T) {
 				t.Fatalf(
 					"Mappings do not match.\n\tExpected: %v\n\tActual: %v\n",
 					hex.EncodeToString(v.encodedElement),
-					hex.EncodeToString(e.Encode()),
+					e.Hex(),
 				)
 			}
 		})

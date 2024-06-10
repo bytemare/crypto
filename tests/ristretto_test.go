@@ -103,13 +103,8 @@ func TestRistrettoScalar(t *testing.T) {
 	for _, tt := range ristrettoTests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Grab the bytes of the encoding
-			encoding, err := hex.DecodeString(tt.scalar)
-			if err != nil {
-				t.Fatalf("#%s: bad hex encoding in test vector: %v", tt.name, err)
-			}
-
 			s := ristretto.Group{}.NewScalar()
-			err = s.Decode(encoding)
+			err := s.DecodeHex(tt.scalar)
 
 			if tt.scal == false {
 				if err == nil {
@@ -160,15 +155,9 @@ func TestRistrettoElement(t *testing.T) {
 
 	for _, tt := range ristrettoTests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Grab the bytes of the encoding
-			encoding, err := hex.DecodeString(tt.element)
-			if err != nil {
-				t.Fatalf("%s: bad hex encoding in test vector: %v", tt.name, err)
-			}
-
 			// Test decoding
 			e := ristretto.Group{}.NewElement()
-			err = e.Decode(encoding)
+			err = e.DecodeHex(tt.element)
 
 			if tt.elem == false {
 				if err == nil {
