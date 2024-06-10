@@ -9,6 +9,8 @@
 package edwards25519
 
 import (
+	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 
@@ -268,18 +270,20 @@ func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 	return s
 }
 
-// SetInt sets s to i modulo the field order, and returns an error if one occurs.
-func (s *Scalar) SetInt(i *big.Int) error {
-	a := new(big.Int).Set(i)
+// SetUInt64 sets s to i modulo the field order, and returns an error if one occurs.
+func (s *Scalar) SetUInt64(i uint64) internal.Scalar {
+	encoded := make([]byte, canonicalEncodingLength)
+	binary.LittleEndian.PutUint64(encoded, i)
 
-	bytes := make([]byte, 32)
-	bytes = a.Mod(a, &order).FillBytes(bytes)
-
-	for j, k := 0, len(bytes)-1; j < k; j, k = j+1, k-1 {
-		bytes[j], bytes[k] = bytes[k], bytes[j]
+	sc, err := decodeScalar(encoded)
+	if err != nil {
+		// This cannot happen, since any uint64 is smaller than the order.
+		panic(fmt.Sprintf("unexpected decoding of uint64 scalar: %s", err))
 	}
 
-	return s.Decode(bytes)
+	s.set(sc)
+
+	return s
 }
 
 func (s *Scalar) copy() *Scalar {
@@ -323,6 +327,21 @@ func (s *Scalar) Decode(in []byte) error {
 	s.scalar = *sc
 
 	return nil
+}
+
+// Hex returns the fixed-sized hexadecimal encoding of s.
+func (s *Scalar) Hex() string {
+	return hex.EncodeToString(s.Encode())
+}
+
+// DecodeHex sets s to the decoding of the hex encoded scalar.
+func (s *Scalar) DecodeHex(h string) error {
+	b, err := hex.DecodeString(h)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	return s.Decode(b)
 }
 
 // MarshalBinary returns the compressed byte encoding of the scalar.

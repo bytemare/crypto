@@ -9,7 +9,9 @@
 // Package internal defines simple and abstract APIs to group Elements and Scalars.
 package internal
 
-import "encoding"
+import (
+	"encoding"
+)
 
 // Element interface abstracts common operations on an Element in a prime-order Group.
 type Element interface {
@@ -54,6 +56,12 @@ type Element interface {
 
 	// Decode sets the receiver to a decoding of the input data, and returns an error on failure.
 	Decode(data []byte) error
+
+	// Hex returns the fixed-sized hexadecimal encoding of e.
+	Hex() string
+
+	// DecodeHex sets e to the decoding of the hex encoded element.
+	DecodeHex(h string) error
 
 	// BinaryMarshaler implementation.
 	encoding.BinaryMarshaler

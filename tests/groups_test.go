@@ -64,9 +64,9 @@ func TestNonAvailability(t *testing.T) {
 
 func TestGroup_Base(t *testing.T) {
 	testAll(t, func(group *testGroup) {
-		if hex.EncodeToString(group.group.Base().Encode()) != group.basePoint {
+		if group.group.Base().Hex() != group.basePoint {
 			t.Fatalf("Got wrong base element\n\tgot : %s\n\twant: %s",
-				hex.EncodeToString(group.group.Base().Encode()),
+				group.group.Base().Hex(),
 				group.basePoint)
 		}
 	})

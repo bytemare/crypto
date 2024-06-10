@@ -10,6 +10,7 @@ package internal
 
 import (
 	cryptorand "crypto/rand"
+	"encoding"
 	"errors"
 	"fmt"
 )
@@ -51,6 +52,30 @@ var (
 	// ErrParamScalarInvalidEncoding indicates an invalid scalar encoding has been provided, or that it's too big.
 	ErrParamScalarInvalidEncoding = errors.New("invalid scalar encoding")
 )
+
+// An Encoder can encode itself to machine or human-readable forms.
+type Encoder interface {
+	// Encode returns the compressed byte encoding.
+	Encode() []byte
+
+	// Hex returns the fixed-sized hexadecimal encoding.
+	Hex() string
+
+	// BinaryMarshaler implementation.
+	encoding.BinaryMarshaler
+}
+
+// A Decoder can encode itself to machine or human-readable forms.
+type Decoder interface {
+	// Decode sets the receiver to a decoding of the input data, and returns an error on failure.
+	Decode(data []byte) error
+
+	// DecodeHex sets the receiver to the decoding of the hex encoded input.
+	DecodeHex(h string) error
+
+	// BinaryUnmarshaler implementation.
+	encoding.BinaryUnmarshaler
+}
 
 // RandomBytes returns random bytes of length len (wrapper for crypto/rand).
 func RandomBytes(length int) []byte {

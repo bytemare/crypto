@@ -69,13 +69,8 @@ func testPanic(s string, expectedError error, f func()) error {
 }
 
 func decodeScalar(t *testing.T, g crypto.Group, input string) *crypto.Scalar {
-	b, err := hex.DecodeString(input)
-	if err != nil {
-		t.Error(err)
-	}
-
 	s := g.NewScalar()
-	if err := s.Decode(b); err != nil {
+	if err := s.DecodeHex(input); err != nil {
 		t.Error(err)
 	}
 
@@ -83,13 +78,8 @@ func decodeScalar(t *testing.T, g crypto.Group, input string) *crypto.Scalar {
 }
 
 func decodeElement(t *testing.T, g crypto.Group, input string) *crypto.Element {
-	b, err := hex.DecodeString(input)
-	if err != nil {
-		t.Error(err)
-	}
-
 	e := g.NewElement()
-	if err := e.Decode(b); err != nil {
+	if err := e.DecodeHex(input); err != nil {
 		t.Error(err)
 	}
 

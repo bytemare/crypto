@@ -15,16 +15,15 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/bytemare/secp256k1"
-
 	"github.com/bytemare/crypto"
 	"github.com/bytemare/crypto/internal"
 )
 
 const (
-	errExpectedEquality = "expected equality"
-	errExpectedIdentity = "expected identity"
-	errWrongGroup       = "wrong group"
+	errUnExpectedEquality = "unexpected equality"
+	errExpectedEquality   = "expected equality"
+	errExpectedIdentity   = "expected identity"
+	errWrongGroup         = "wrong group"
 )
 
 func testElementCopySet(t *testing.T, element, other *crypto.Element) {
@@ -41,12 +40,12 @@ func testElementCopySet(t *testing.T, element, other *crypto.Element) {
 	// Verify than operations on one don't affect the other
 	element.Add(element)
 	if element.Equal(other) == 1 {
-		t.Fatalf("Unexpected equality")
+		t.Fatalf(errUnExpectedEquality)
 	}
 
 	other.Double().Double()
 	if element.Equal(other) == 1 {
-		t.Fatalf("Unexpected equality")
+		t.Fatalf(errUnExpectedEquality)
 	}
 
 	// Verify setting to nil sets to identity
@@ -166,7 +165,27 @@ func TestElement_EncodedLength(t *testing.T) {
 
 func TestElement_Decode_OutOfBounds(t *testing.T) {
 	testAll(t, func(group *testGroup) {
-		expected := errors.New("invalid point encoding")
+		decodeErr := "element Decode: "
+		unmarshallBinaryErr := "element UnmarshalBinary: "
+		errMessage := ""
+		switch group.group {
+		case crypto.Ristretto255Sha512:
+			errMessage = "invalid Ristretto encoding"
+		case crypto.P256Sha256:
+			errMessage = "invalid P256 element encoding"
+		case crypto.P384Sha384:
+			errMessage = "invalid P384Element encoding"
+		case crypto.P521Sha512:
+			errMessage = "invalid P521Element encoding"
+		case crypto.Edwards25519Sha512:
+			errMessage = "edwards25519: invalid point encoding"
+		case crypto.Secp256k1:
+			errMessage = "invalid point encoding"
+		}
+
+		decodeErr += errMessage
+		unmarshallBinaryErr += errMessage
+
 		encoded := make([]byte, group.group.ElementLength())
 
 		y := big.NewInt(0)
@@ -189,7 +208,13 @@ func TestElement_Decode_OutOfBounds(t *testing.T) {
 			t.Fatalf("non registered group %s", group.group)
 		}
 
-		if err := secp256k1.NewElement().Decode(encoded[:]); err == nil || err.Error() != expected.Error() {
+		expected := errors.New(decodeErr)
+		if err := group.group.NewElement().Decode(encoded[:]); err == nil || err.Error() != expected.Error() {
+			t.Errorf("expected error %q, got %v", expected, err)
+		}
+
+		expected = errors.New(unmarshallBinaryErr)
+		if err := group.group.NewElement().UnmarshalBinary(encoded[:]); err == nil || err.Error() != expected.Error() {
 			t.Errorf("expected error %q, got %v", expected, err)
 		}
 	})
@@ -272,10 +297,7 @@ func TestElement_Vectors_Mult(t *testing.T) {
 				t.Fatalf("expected equality for %d", i)
 			}
 
-			if err := s.SetInt(big.NewInt(int64(i + 2))); err != nil {
-				t.Fatal(err)
-			}
-
+			s.SetUInt64(uint64(i + 2))
 			base.Base().Multiply(s)
 		}
 	})
@@ -296,6 +318,10 @@ func TestElement_Arithmetic(t *testing.T) {
 func elementTestEqual(t *testing.T, g crypto.Group) {
 	base := g.Base()
 	base2 := g.Base()
+
+	if base.Equal(nil) != 0 {
+		t.Fatal(errUnExpectedEquality)
+	}
 
 	if base.Equal(base2) != 1 {
 		t.Fatal(errExpectedEquality)

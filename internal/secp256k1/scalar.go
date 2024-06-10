@@ -10,7 +10,6 @@ package secp256k1
 
 import (
 	"fmt"
-	"math/big"
 
 	"github.com/bytemare/secp256k1"
 
@@ -96,7 +95,7 @@ func (s *Scalar) Pow(scalar internal.Scalar) internal.Scalar {
 		return s.One()
 	}
 
-	if scalar.Equal(scalar.Copy().One()) == 1 {
+	if scalar.Equal(newScalar().One()) == 1 {
 		return s
 	}
 
@@ -146,13 +145,10 @@ func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 	return s
 }
 
-// SetInt sets s to i modulo the field order, and returns an error if one occurs.
-func (s *Scalar) SetInt(i *big.Int) error {
-	if err := s.scalar.SetInt(i); err != nil {
-		return fmt.Errorf("%w", err)
-	}
-
-	return nil
+// SetUInt64 sets s to i modulo the field order, and returns an error if one occurs.
+func (s *Scalar) SetUInt64(i uint64) internal.Scalar {
+	s.scalar.SetUInt64(i)
+	return s
 }
 
 // Copy returns a copy of the receiver.
@@ -172,6 +168,20 @@ func (s *Scalar) Decode(in []byte) error {
 			return internal.ErrParamScalarInvalidEncoding
 		}
 
+		return fmt.Errorf("%w", err)
+	}
+
+	return nil
+}
+
+// Hex returns the fixed-sized hexadecimal encoding of s.
+func (s *Scalar) Hex() string {
+	return s.scalar.Hex()
+}
+
+// DecodeHex sets s to the decoding of the hex encoded scalar.
+func (s *Scalar) DecodeHex(h string) error {
+	if err := s.scalar.DecodeHex(h); err != nil {
 		return fmt.Errorf("%w", err)
 	}
 

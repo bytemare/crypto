@@ -9,9 +9,13 @@
 package group_test
 
 import (
+	"bytes"
+	"encoding/binary"
 	"encoding/hex"
 	"errors"
+	"math"
 	"math/big"
+	"slices"
 	"testing"
 
 	"github.com/bytemare/crypto"
@@ -81,12 +85,12 @@ func testScalarCopySet(t *testing.T, scalar, other *crypto.Scalar) {
 	// Verify than operations on one don't affect the other
 	scalar.Add(scalar)
 	if scalar.Equal(other) == 1 {
-		t.Fatalf("Unexpected equality")
+		t.Fatalf(errUnExpectedEquality)
 	}
 
 	other.Invert()
 	if scalar.Equal(other) == 1 {
-		t.Fatalf("Unexpected equality")
+		t.Fatalf(errUnExpectedEquality)
 	}
 
 	// Verify setting to nil sets to 0
@@ -112,39 +116,31 @@ func TestScalarSet(t *testing.T) {
 	})
 }
 
-func TestScalarSetInt(t *testing.T) {
+func TestScalar_SetUInt64(t *testing.T) {
 	testAll(t, func(group *testGroup) {
-		i := big.NewInt(0)
-
-		s := group.group.NewScalar()
-		if err := s.SetInt(i); err != nil {
-			t.Fatal(err)
-		}
-
+		s := group.group.NewScalar().SetUInt64(0)
 		if !s.IsZero() {
 			t.Fatal("expected 0")
 		}
 
-		i = big.NewInt(1)
-		if err := s.SetInt(i); err != nil {
-			t.Fatal(err)
-		}
-
+		s.SetUInt64(1)
 		if s.Equal(group.group.NewScalar().One()) != 1 {
 			t.Fatal("expected 1")
 		}
 
-		order, ok := new(big.Int).SetString(group.group.Order(), 10)
-		if !ok {
-			t.Fatal("conversion error")
+		// uint64 max value is 18,446,744,073,709,551,615
+		s.SetUInt64(math.MaxUint64)
+		ref := make([]byte, group.group.ScalarLength())
+
+		switch group.group {
+		case crypto.Ristretto255Sha512, crypto.Edwards25519Sha512:
+			binary.LittleEndian.PutUint64(ref, math.MaxUint64)
+		default:
+			binary.BigEndian.PutUint64(ref[group.group.ScalarLength()-8:], math.MaxUint64)
 		}
 
-		if err := s.SetInt(order); err != nil {
-			t.Fatal(err)
-		}
-
-		if !s.IsZero() {
-			t.Fatalf("expected 0, got %v\n%v", s.Encode(), order)
+		if bytes.Compare(ref, s.Encode()) != 0 {
+			t.Fatalf("expected %q, got %q", hex.EncodeToString(ref), s.Hex())
 		}
 	})
 }
@@ -164,16 +160,36 @@ func TestScalar_EncodedLength(t *testing.T) {
 
 func TestScalar_Decode_OutOfBounds(t *testing.T) {
 	testAll(t, func(group *testGroup) {
+		decodeErrPrefix := "scalar Decode: "
+		unmarshallBinaryErrPrefix := "scalar UnmarshalBinary: "
+		switch group.group {
+		case crypto.Ristretto255Sha512:
+			unmarshallBinaryErrPrefix += "ristretto: "
+		case crypto.P256Sha256, crypto.P384Sha384, crypto.P521Sha512:
+			unmarshallBinaryErrPrefix += "nist: "
+		case crypto.Edwards25519Sha512:
+			unmarshallBinaryErrPrefix += "edwards25519: "
+		case crypto.Secp256k1:
+			break
+		}
+
 		// Decode invalid length
+		errMessage := "invalid scalar length"
 		encoded := make([]byte, 2)
 		big.NewInt(1).FillBytes(encoded)
 
-		expected := errors.New("scalar Decode: invalid scalar length")
+		expected := errors.New(decodeErrPrefix + errMessage)
 		if err := group.group.NewScalar().Decode(encoded); err == nil || err.Error() != expected.Error() {
 			t.Errorf("expected error %q, got %v", expected, err)
 		}
 
+		expected = errors.New(unmarshallBinaryErrPrefix + errMessage)
+		if err := group.group.NewScalar().UnmarshalBinary(encoded); err == nil || err.Error() != expected.Error() {
+			t.Errorf("expected error %q, got %v", expected, err)
+		}
+
 		// Decode a scalar higher than order
+		errMessage = "invalid scalar encoding"
 		encoded = make([]byte, group.group.ScalarLength())
 
 		order, ok := new(big.Int).SetString(group.group.Order(), 0)
@@ -184,8 +200,13 @@ func TestScalar_Decode_OutOfBounds(t *testing.T) {
 		order.Add(order, big.NewInt(1))
 		order.FillBytes(encoded)
 
-		expected = errors.New("scalar Decode: invalid scalar encoding")
+		expected = errors.New(decodeErrPrefix + errMessage)
 		if err := group.group.NewScalar().Decode(encoded); err == nil || err.Error() != expected.Error() {
+			t.Errorf("expected error %q, got %v", expected, err)
+		}
+
+		expected = errors.New(unmarshallBinaryErrPrefix + errMessage)
+		if err := group.group.NewScalar().UnmarshalBinary(encoded); err == nil || err.Error() != expected.Error() {
 			t.Errorf("expected error %q, got %v", expected, err)
 		}
 	})
@@ -239,13 +260,17 @@ func scalarTestOne(t *testing.T, g crypto.Group) {
 func scalarTestRandom(t *testing.T, g crypto.Group) {
 	r := g.NewScalar().Random()
 	if r.Equal(g.NewScalar().Zero()) == 1 {
-		t.Fatalf("random scalar is zero: %v", hex.EncodeToString(r.Encode()))
+		t.Fatalf("random scalar is zero: %v", r.Hex())
 	}
 }
 
 func scalarTestEqual(t *testing.T, g crypto.Group) {
 	zero := g.NewScalar().Zero()
 	zero2 := g.NewScalar().Zero()
+
+	if g.NewScalar().Random().Equal(nil) != 0 {
+		t.Fatal(errUnExpectedEquality)
+	}
 
 	if zero.Equal(zero2) != 1 {
 		t.Fatal(errExpectedEquality)
@@ -259,7 +284,7 @@ func scalarTestEqual(t *testing.T, g crypto.Group) {
 
 	random2 := g.NewScalar().Random()
 	if random.Equal(random2) == 1 {
-		t.Fatal("unexpected equality")
+		t.Fatal(errUnExpectedEquality)
 	}
 }
 
@@ -267,6 +292,10 @@ func scalarTestLessOrEqual(t *testing.T, g crypto.Group) {
 	zero := g.NewScalar().Zero()
 	one := g.NewScalar().One()
 	two := g.NewScalar().One().Add(one)
+
+	if g.NewScalar().Random().LessOrEqual(nil) != 0 {
+		t.Fatal(errUnExpectedEquality)
+	}
 
 	if zero.LessOrEqual(one) != 1 {
 		t.Fatal("expected 0 < 1")
@@ -344,9 +373,7 @@ func scalarTestPow(t *testing.T, g crypto.Group) {
 	s = g.NewScalar().One()
 	s.Add(s.Copy().One())
 	s2 := s.Copy().Multiply(s)
-	if err := exp.SetInt(big.NewInt(2)); err != nil {
-		t.Fatal(err)
-	}
+	exp.SetUInt64(2)
 
 	if s.Pow(exp).Equal(s2) != 1 {
 		t.Fatal("expected s**2 = s*s")
@@ -356,55 +383,30 @@ func scalarTestPow(t *testing.T, g crypto.Group) {
 	s = g.NewScalar().Random()
 	s3 := s.Copy().Multiply(s)
 	s3.Multiply(s)
-	_ = exp.SetInt(big.NewInt(3))
+	exp.SetUInt64(3)
 
 	if s.Pow(exp).Equal(s3) != 1 {
 		t.Fatal("expected s**3 = s*s*s")
 	}
 
 	// 5**7 = 78125 = 00000000 00000001 00110001 00101101 = 1 49 45
-	iBase := big.NewInt(5)
-	iExp := big.NewInt(7)
-	order, ok := new(big.Int).SetString(g.Order(), 0)
-	if !ok {
-		t.Fatal(ok)
-	}
-	iResult := new(big.Int).Exp(iBase, iExp, order)
-	result := g.NewScalar()
-	if err := result.SetInt(iResult); err != nil {
-		t.Fatal(err)
-	}
+	result := g.NewScalar().SetUInt64(uint64(math.Pow(5, 7)))
+	s.SetUInt64(5)
+	exp.SetUInt64(7)
 
-	if err := s.SetInt(iBase); err != nil {
-		t.Fatal(err)
-	}
-	if err := exp.SetInt(iExp); err != nil {
-		t.Fatal(err)
-	}
 	res := s.Pow(exp)
 	if res.Equal(result) != 1 {
 		t.Fatal("expected 5**7 = 78125")
 	}
 
 	// 3**255 = 11F1B08E87EC42C5D83C3218FC83C41DCFD9F4428F4F92AF1AAA80AA46162B1F71E981273601F4AD1DD4709B5ACA650265A6AB
-	iBase = big.NewInt(3)
-	iExp = big.NewInt(255)
-	order, ok = new(big.Int).SetString(g.Order(), 0)
-	if !ok {
-		t.Fatal(ok)
-	}
-	iResult = new(big.Int).Exp(iBase, iExp, order)
-	result = g.NewScalar()
-	if err := result.SetInt(iResult); err != nil {
-		t.Fatal(err)
-	}
+	iBase := big.NewInt(3)
+	iExp := big.NewInt(255)
+	result = bigIntExp(t, g, iBase, iExp)
 
-	if err := s.SetInt(iBase); err != nil {
-		t.Fatal(err)
-	}
-	if err := exp.SetInt(iExp); err != nil {
-		t.Fatal(err)
-	}
+	s.SetUInt64(3)
+	exp.SetUInt64(255)
+
 	res = s.Pow(exp)
 	if res.Equal(result) != 1 {
 		t.Fatal(
@@ -416,18 +418,10 @@ func scalarTestPow(t *testing.T, g crypto.Group) {
 	// 7945232487465**513
 	iBase.SetInt64(7945232487465)
 	iExp.SetInt64(513)
-	iResult = iResult.Exp(iBase, iExp, order)
-	if err := result.SetInt(iResult); err != nil {
-		t.Fatal(err)
-	}
+	result = bigIntExp(t, g, iBase, iExp)
 
-	if err := s.SetInt(iBase); err != nil {
-		t.Fatal(err)
-	}
-
-	if err := exp.SetInt(iExp); err != nil {
-		t.Fatal(err)
-	}
+	s.SetUInt64(7945232487465)
+	exp.SetUInt64(513)
 
 	res = s.Pow(exp)
 	if res.Equal(result) != 1 {
@@ -460,15 +454,34 @@ func scalarTestPow(t *testing.T, g crypto.Group) {
 		iExp.SetBytes(exp.Encode())
 	}
 
-	iResult.Exp(iBase, iExp, order)
-
-	if err := result.SetInt(iResult); err != nil {
-		t.Fatal(err)
-	}
+	result = bigIntExp(t, g, iBase, iExp)
 
 	if s.Pow(exp).Equal(result) != 1 {
 		t.Fatal("expected equality on random numbers")
 	}
+}
+
+func bigIntExp(t *testing.T, g crypto.Group, base, exp *big.Int) *crypto.Scalar {
+	order, ok := new(big.Int).SetString(g.Order(), 0)
+	if !ok {
+		t.Fatal(ok)
+	}
+
+	r := new(big.Int).Exp(base, exp, order)
+
+	b := make([]byte, g.ScalarLength())
+	r.FillBytes(b)
+
+	if g == crypto.Ristretto255Sha512 || g == crypto.Edwards25519Sha512 {
+		slices.Reverse(b)
+	}
+
+	result := g.NewScalar()
+	if err := result.Decode(b); err != nil {
+		t.Fatal(err)
+	}
+
+	return result
 }
 
 func scalarTestInvert(t *testing.T, g crypto.Group) {

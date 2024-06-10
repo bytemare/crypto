@@ -68,10 +68,12 @@ type Scalar interface {
     LessOrEqual(Scalar) int
     IsZero() bool
     Set(Scalar) Scalar
-    SetInt(big.Int) error
+    SetUInt64(uint64) Scalar
     Copy() Scalar
     Encode() []byte
     Decode(in []byte) error
+	Hex() string
+	HexDecode([]byte) error
     encoding.BinaryMarshaler
     encoding.BinaryUnmarshaler
 }
@@ -95,6 +97,8 @@ type Element interface {
     Encode() []byte
     XCoordinate() []byte
     Decode(data []byte) error
+    Hex() string
+    HexDecode([]byte) error
     encoding.BinaryMarshaler
     encoding.BinaryUnmarshaler
 }

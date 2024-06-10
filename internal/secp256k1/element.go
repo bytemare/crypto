@@ -9,6 +9,7 @@
 package secp256k1
 
 import (
+	"encoding/hex"
 	"fmt"
 
 	"github.com/bytemare/secp256k1"
@@ -132,6 +133,21 @@ func (e *Element) Decode(data []byte) error {
 	}
 
 	return nil
+}
+
+// Hex returns the fixed-sized hexadecimal encoding of e.
+func (e *Element) Hex() string {
+	return hex.EncodeToString(e.Encode())
+}
+
+// DecodeHex sets e to the decoding of the hex encoded element.
+func (e *Element) DecodeHex(h string) error {
+	b, err := hex.DecodeString(h)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
+
+	return e.Decode(b)
 }
 
 // MarshalBinary returns the compressed byte encoding of the element.

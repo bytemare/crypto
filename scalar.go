@@ -11,7 +11,6 @@ package crypto
 
 import (
 	"fmt"
-	"math/big"
 
 	"github.com/bytemare/crypto/internal"
 )
@@ -129,13 +128,10 @@ func (s *Scalar) Set(scalar *Scalar) *Scalar {
 	return s
 }
 
-// SetInt sets s to i modulo the field order, and returns an error if one occurs.
-func (s *Scalar) SetInt(i *big.Int) error {
-	if err := s.Scalar.SetInt(i); err != nil {
-		return fmt.Errorf("scalar: %w", err)
-	}
-
-	return nil
+// SetUInt64 sets s to i modulo the field order, and returns an error if one occurs.
+func (s *Scalar) SetUInt64(i uint64) *Scalar {
+	s.Scalar.SetUInt64(i)
+	return s
 }
 
 // Copy returns a copy of the receiver.
@@ -152,6 +148,20 @@ func (s *Scalar) Encode() []byte {
 func (s *Scalar) Decode(data []byte) error {
 	if err := s.Scalar.Decode(data); err != nil {
 		return fmt.Errorf("scalar Decode: %w", err)
+	}
+
+	return nil
+}
+
+// Hex returns the fixed-sized hexadecimal encoding of s.
+func (s *Scalar) Hex() string {
+	return s.Scalar.Hex()
+}
+
+// DecodeHex sets s to the decoding of the hex encoded scalar.
+func (s *Scalar) DecodeHex(h string) error {
+	if err := s.Scalar.DecodeHex(h); err != nil {
+		return fmt.Errorf("scalar DecodeHex: %w", err)
 	}
 
 	return nil
