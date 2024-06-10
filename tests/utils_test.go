@@ -69,8 +69,13 @@ func testPanic(s string, expectedError error, f func()) error {
 }
 
 func decodeScalar(t *testing.T, g crypto.Group, input string) *crypto.Scalar {
+	b, err := hex.DecodeString(input)
+	if err != nil {
+		t.Error(err)
+	}
+
 	s := g.NewScalar()
-	if err := s.DecodeHex(input); err != nil {
+	if err := s.Decode(b); err != nil {
 		t.Error(err)
 	}
 
@@ -78,8 +83,13 @@ func decodeScalar(t *testing.T, g crypto.Group, input string) *crypto.Scalar {
 }
 
 func decodeElement(t *testing.T, g crypto.Group, input string) *crypto.Element {
+	b, err := hex.DecodeString(input)
+	if err != nil {
+		t.Error(err)
+	}
+
 	e := g.NewElement()
-	if err := e.DecodeHex(input); err != nil {
+	if err := e.Decode(b); err != nil {
 		t.Error(err)
 	}
 
@@ -89,17 +99,29 @@ func decodeElement(t *testing.T, g crypto.Group, input string) *crypto.Element {
 type serde interface {
 	Encode() []byte
 	Decode(data []byte) error
+	Hex() string
+	DecodeHex(h string) error
 	encoding.BinaryMarshaler
 	encoding.BinaryUnmarshaler
 }
 
 func testEncoding(t *testing.T, thing1, thing2 serde) {
+	// empty string
+	if err := thing2.DecodeHex(""); err == nil {
+		t.Fatal("expected error on empty string")
+	}
+
 	encoded := thing1.Encode()
 	marshalled, _ := thing1.MarshalBinary()
+	hexed := thing1.Hex()
 
 	if !bytes.Equal(encoded, marshalled) {
 		t.Fatalf("Encode() and MarshalBinary() are expected to have the same output."+
 			"\twant: %v\tgot : %v", encoded, marshalled)
+	}
+
+	if hex.EncodeToString(encoded) != hexed {
+		t.Fatalf("Failed hex encoding, want %q, got %q", hex.EncodeToString(encoded), hexed)
 	}
 
 	if err := thing2.Decode(nil); err == nil {
@@ -113,6 +135,10 @@ func testEncoding(t *testing.T, thing1, thing2 serde) {
 	if err := thing2.UnmarshalBinary(encoded); err != nil {
 		t.Fatalf("UnmarshalBinary() failed on a valid encoding: %v", err)
 	}
+
+	if err := thing2.DecodeHex(hexed); err != nil {
+		t.Fatalf("DecodeHex() failed on valid hex encoding: %v", err)
+	}
 }
 
 func TestEncoding(t *testing.T) {
@@ -124,5 +150,60 @@ func TestEncoding(t *testing.T) {
 		scalar = g.NewScalar().Random()
 		element := g.Base().Multiply(scalar)
 		testEncoding(t, element, g.NewElement())
+	})
+}
+
+func testDecodingHexFails(t *testing.T, thing1, thing2 serde) {
+	// empty string
+	if err := thing2.DecodeHex(""); err == nil {
+		t.Fatal("expected error on empty string")
+	}
+
+	// malformed string
+	hexed := thing1.Hex()
+	malformed := []rune(hexed)
+	malformed[0] = []rune("_")[0]
+
+	if err := thing2.DecodeHex(string(malformed)); err == nil {
+		t.Fatal("expected error on malformed string")
+	} else {
+		t.Log(err)
+	}
+}
+
+func TestEncoding_Hex_Fails(t *testing.T) {
+	testAll(t, func(group *testGroup) {
+		g := group.group
+		scalar := g.NewScalar().Random()
+		testEncoding(t, scalar, g.NewScalar())
+
+		scalar = g.NewScalar().Random()
+		element := g.Base().Multiply(scalar)
+		testEncoding(t, element, g.NewElement())
+
+		// Hex fails
+		testDecodingHexFails(t, scalar, g.NewScalar())
+		testDecodingHexFails(t, element, g.NewElement())
+
+		// Doesn't yield the same decoded result
+		scalar = g.NewScalar().Random()
+		s := g.NewScalar()
+		if err := s.DecodeHex(scalar.Hex()); err != nil {
+			t.Fatalf("unexpected error on valid encoding: %s", err)
+		}
+
+		if s.Equal(scalar) != 1 {
+			t.Fatal(errExpectedEquality)
+		}
+
+		element = g.Base().Multiply(scalar)
+		e := g.NewElement()
+		if err := e.DecodeHex(element.Hex()); err != nil {
+			t.Fatalf("unexpected error on valid encoding: %s", err)
+		}
+
+		if e.Equal(element) != 1 {
+			t.Fatal(errExpectedEquality)
+		}
 	})
 }
