@@ -10,6 +10,8 @@
 package secp256k1
 
 import (
+	"crypto"
+
 	"github.com/bytemare/secp256k1"
 
 	"github.com/bytemare/crypto/internal"
@@ -48,6 +50,11 @@ func (g Group) NewElement() internal.Element {
 // Base returns the group's base point a.k.a. canonical generator.
 func (g Group) Base() internal.Element {
 	return newElement().Base()
+}
+
+// HashFunc returns the RFC9380 associated hash function of the group.
+func (g Group) HashFunc() crypto.Hash {
+	return crypto.SHA256
 }
 
 // HashToScalar returns a safe mapping of the arbitrary input to a Scalar.

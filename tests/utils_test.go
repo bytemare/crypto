@@ -14,6 +14,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/bytemare/crypto"
@@ -166,8 +167,8 @@ func testDecodingHexFails(t *testing.T, thing1, thing2 serde) {
 
 	if err := thing2.DecodeHex(string(malformed)); err == nil {
 		t.Fatal("expected error on malformed string")
-	} else {
-		t.Log(err)
+	} else if !strings.HasSuffix(err.Error(), "DecodeHex: encoding/hex: invalid byte: U+005F '_'") {
+		t.Fatalf("unexpected error: %q", err)
 	}
 }
 

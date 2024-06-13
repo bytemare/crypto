@@ -95,6 +95,11 @@ func (g Group[P]) newPoint(p P) *Element[P] {
 	}
 }
 
+// HashFunc returns the RFC9380 associated hash function of the group.
+func (g Group[P]) HashFunc() crypto.Hash {
+	return g.curve.hash
+}
+
 // HashToScalar returns a safe mapping of the arbitrary input to a Scalar.
 // The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group[P]) HashToScalar(input, dst []byte) internal.Scalar {

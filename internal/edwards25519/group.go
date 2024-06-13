@@ -10,6 +10,8 @@
 package edwards25519
 
 import (
+	"crypto"
+
 	ed "filippo.io/edwards25519"
 
 	"github.com/bytemare/crypto/internal"
@@ -41,6 +43,11 @@ func (g Group) NewElement() internal.Element {
 // Base returns group's base point a.k.a. canonical generator.
 func (g Group) Base() internal.Element {
 	return &Element{*ed.NewGeneratorPoint()}
+}
+
+// HashFunc returns the RFC9380 associated hash function of the group.
+func (g Group) HashFunc() crypto.Hash {
+	return crypto.SHA512
 }
 
 // HashToScalar returns a safe mapping of the arbitrary input to a Scalar.

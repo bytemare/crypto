@@ -54,6 +54,11 @@ func (g Group) Base() internal.Element {
 	return &Element{*ristretto255.NewElement().Base()}
 }
 
+// HashFunc returns the RFC9380 associated hash function of the group.
+func (g Group) HashFunc() crypto.Hash {
+	return crypto.SHA512
+}
+
 // HashToScalar returns a safe mapping of the arbitrary input to a Scalar.
 // The DST must not be empty or nil, and is recommended to be longer than 16 bytes.
 func (g Group) HashToScalar(input, dst []byte) internal.Scalar {
