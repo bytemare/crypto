@@ -69,6 +69,7 @@ type Scalar interface {
     IsZero() bool
     Set(Scalar) Scalar
     SetUInt64(uint64) Scalar
+    UInt64() (uint64, error)
     Copy() Scalar
     Encode() []byte
     Decode(in []byte) error
