@@ -116,6 +116,58 @@ func TestScalarSet(t *testing.T) {
 	})
 }
 
+func parseScalar(s *crypto.Scalar) ([]byte, bool) {
+	b := s.Encode()
+	b3 := b[8:]
+	b4 := byte(0)
+	for _, bx := range b3 {
+		b4 |= bx
+	}
+	return b[:8], b4 == 0
+}
+
+func testScalarUInt64(t *testing.T, s *crypto.Scalar, expectedValue uint64, expectedError error) {
+	i, err := s.UInt64()
+
+	if err == nil {
+		if expectedError != nil {
+			t.Fatalf("expected error %q", expectedError)
+		}
+	} else {
+		if expectedError == nil {
+			t.Fatalf("unexpected error %q", err)
+		} else if err.Error() != expectedError.Error() {
+			t.Fatalf("expected error %q, got %q", expectedError, err)
+		}
+	}
+
+	if expectedError == nil && i != expectedValue {
+		t.Fatalf("expected %d, got %d", expectedValue, i)
+	}
+}
+
+func TestScalar_UInt64(t *testing.T) {
+	expectedError := errors.New("scalar is too big to be uint64")
+	testAll(t, func(group *testGroup) {
+		// 0
+		testScalarUInt64(t, group.group.NewScalar(), 0, nil)
+
+		// 1
+		testScalarUInt64(t, group.group.NewScalar().One(), 1, nil)
+
+		// Max Uint64
+		testScalarUInt64(t, group.group.NewScalar().SetUInt64(math.MaxUint64), math.MaxUint64, nil)
+
+		// Max Uint64+1 fails
+		s := group.group.NewScalar().SetUInt64(math.MaxUint64).Add(group.group.NewScalar().One())
+		testScalarUInt64(t, s, 0, expectedError)
+
+		// Order - 1 fails
+		s = group.group.NewScalar().Subtract(group.group.NewScalar().One())
+		testScalarUInt64(t, s, 0, expectedError)
+	})
+}
+
 func TestScalar_SetUInt64(t *testing.T) {
 	testAll(t, func(group *testGroup) {
 		s := group.group.NewScalar().SetUInt64(0)

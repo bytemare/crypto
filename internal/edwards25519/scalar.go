@@ -286,6 +286,23 @@ func (s *Scalar) SetUInt64(i uint64) internal.Scalar {
 	return s
 }
 
+// UInt64 returns the uint64 representation of the scalar,
+// or an error if its value is higher than the authorized limit for uint64.
+func (s *Scalar) UInt64() (uint64, error) {
+	b := s.scalar.Bytes()
+	overflows := byte(0)
+
+	for _, bx := range b[8:] {
+		overflows |= bx
+	}
+
+	if overflows != 0 {
+		return 0, internal.ErrUInt64TooBig
+	}
+
+	return binary.LittleEndian.Uint64(b[:8]), nil
+}
+
 func (s *Scalar) copy() *Scalar {
 	return &Scalar{*ed.NewScalar().Set(&s.scalar)}
 }

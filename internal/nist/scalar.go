@@ -10,6 +10,7 @@ package nist
 
 import (
 	"crypto/subtle"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"math/big"
@@ -186,6 +187,24 @@ func (s *Scalar) Set(scalar internal.Scalar) internal.Scalar {
 func (s *Scalar) SetUInt64(i uint64) internal.Scalar {
 	s.scalar.SetUint64(i)
 	return s
+}
+
+// UInt64 returns the uint64 representation of the scalar,
+// or an error if its value is higher than the authorized limit for uint64.
+func (s *Scalar) UInt64() (uint64, error) {
+	b := s.Encode()
+	overflows := byte(0)
+	scalarLength := (s.field.BitLen() + 7) / 8
+
+	for _, bx := range b[:scalarLength-8] {
+		overflows |= bx
+	}
+
+	if overflows != 0 {
+		return 0, internal.ErrUInt64TooBig
+	}
+
+	return binary.BigEndian.Uint64(b[scalarLength-8:]), nil
 }
 
 // Copy returns a copy of the Scalar.

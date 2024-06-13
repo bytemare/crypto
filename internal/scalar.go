@@ -55,6 +55,10 @@ type Scalar interface {
 	// SetUInt64 sets s to i modulo the field order, and returns an error if one occurs.
 	SetUInt64(i uint64) Scalar
 
+	// UInt64 returns the uint64 representation of the scalar,
+	// or an error if its value is higher than the authorized limit for uint64.
+	UInt64() (uint64, error)
+
 	// Copy returns a copy of the receiver.
 	Copy() Scalar
 
