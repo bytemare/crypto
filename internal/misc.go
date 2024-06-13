@@ -51,6 +51,9 @@ var (
 
 	// ErrParamScalarInvalidEncoding indicates an invalid scalar encoding has been provided, or that it's too big.
 	ErrParamScalarInvalidEncoding = errors.New("invalid scalar encoding")
+
+	// ErrUInt64TooBig indicates that the scalar is higher than the allowed values for uint64.
+	ErrUInt64TooBig = errors.New("scalar is too big to be uint64")
 )
 
 // An Encoder can encode itself to machine or human-readable forms.

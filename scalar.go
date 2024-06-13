@@ -134,6 +134,17 @@ func (s *Scalar) SetUInt64(i uint64) *Scalar {
 	return s
 }
 
+// UInt64 returns the uint64 representation of the scalar,
+// or an error if its value is higher than the authorized limit for uint64.
+func (s *Scalar) UInt64() (uint64, error) {
+	i, err := s.Scalar.UInt64()
+	if err != nil {
+		return 0, fmt.Errorf("%w", err)
+	}
+
+	return i, nil
+}
+
 // Copy returns a copy of the receiver.
 func (s *Scalar) Copy() *Scalar {
 	return &Scalar{Scalar: s.Scalar.Copy()}
