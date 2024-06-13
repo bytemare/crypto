@@ -9,6 +9,8 @@
 // Package internal defines simple and abstract APIs to group Elements and Scalars.
 package internal
 
+import "crypto"
+
 // Group abstracts operations in a prime-order group.
 type Group interface {
 	// NewScalar returns a new scalar set to 0.
@@ -19,6 +21,9 @@ type Group interface {
 
 	// Base returns the group's base point a.k.a. canonical generator.
 	Base() Element
+
+	// HashFunc returns the RFC9380 associated hash function of the group.
+	HashFunc() crypto.Hash
 
 	// HashToScalar returns a safe mapping of the arbitrary input to a Scalar.
 	// The DST must not be empty or nil, and is recommended to be longer than 16 bytes.

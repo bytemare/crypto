@@ -141,6 +141,14 @@ func TestGroup_ElementLength(t *testing.T) {
 	})
 }
 
+func TestHashFunc(t *testing.T) {
+	testAll(t, func(group *testGroup) {
+		if group.group.HashFunc() != group.hash {
+			t.Error(errExpectedEquality)
+		}
+	})
+}
+
 func TestHashToScalar(t *testing.T) {
 	testAll(t, func(group *testGroup) {
 		sv := decodeScalar(t, group.group, group.hashToCurve.hashToScalar)

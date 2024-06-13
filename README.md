@@ -41,6 +41,7 @@ type Group interface {
     NewScalar() Scalar
     NewElement() Element
     Base() Element
+	HashFunc() crypto.Hash
     HashToScalar(input, dst []byte) Scalar
     HashToGroup(input, dst []byte) Element
     EncodeToGroup(input, dst []byte) Element

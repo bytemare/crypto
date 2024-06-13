@@ -9,9 +9,10 @@
 package group_test
 
 import (
+	"crypto"
 	"testing"
 
-	"github.com/bytemare/crypto"
+	group "github.com/bytemare/crypto"
 )
 
 func testAll(t *testing.T, f func(*testGroup)) {
@@ -47,7 +48,8 @@ type testGroup struct {
 	hashToCurve   testHashToCurve
 	elementLength int
 	scalarLength  int
-	group         crypto.Group
+	group         group.Group
+	hash          crypto.Hash
 }
 
 var testTable = []*testGroup{
@@ -85,6 +87,7 @@ var testTable = []*testGroup{
 		32,
 		32,
 		1,
+		crypto.SHA512,
 	},
 	{
 		[15]string{
@@ -120,6 +123,7 @@ var testTable = []*testGroup{
 		33,
 		32,
 		3,
+		crypto.SHA256,
 	},
 	{
 		[15]string{
@@ -155,6 +159,7 @@ var testTable = []*testGroup{
 		49,
 		48,
 		4,
+		crypto.SHA384,
 	},
 	{
 		[15]string{
@@ -190,6 +195,7 @@ var testTable = []*testGroup{
 		67,
 		66,
 		5,
+		crypto.SHA512,
 	},
 	{
 		[15]string{
@@ -225,6 +231,7 @@ var testTable = []*testGroup{
 		32,
 		32,
 		6,
+		crypto.SHA512,
 	},
 	{
 		[15]string{
@@ -260,5 +267,6 @@ var testTable = []*testGroup{
 		33,
 		32,
 		7,
+		crypto.SHA256,
 	},
 }

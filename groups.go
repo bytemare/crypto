@@ -13,6 +13,7 @@
 package crypto
 
 import (
+	"crypto"
 	"errors"
 	"fmt"
 	"sync"
@@ -111,6 +112,11 @@ func checkDST(dst []byte) {
 			panic(errZeroLenDST)
 		}
 	}
+}
+
+// HashFunc returns the RFC9380 associated hash function of the group.
+func (g Group) HashFunc() crypto.Hash {
+	return g.get().HashFunc()
 }
 
 // HashToScalar returns a safe mapping of the arbitrary input to a Scalar.
