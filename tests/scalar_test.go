@@ -359,11 +359,17 @@ func scalarTestLessOrEqual(t *testing.T, g crypto.Group) {
 		t.Fatal("expected 2 == 2")
 	}
 
-	s := g.NewScalar().Random()
-	r := s.Copy().Add(g.NewScalar().One())
+	var r, s *crypto.Scalar
+	for {
+		s = g.NewScalar().Random()
+		r = s.Add(g.NewScalar().One())
+		if !r.IsZero() { // detect the case we are reduced to 0
+			break
+		}
+	}
 
 	if s.LessOrEqual(r) != 1 {
-		t.Fatal("expected s < s + 1")
+		t.Fatalf("expected s < s + 1:")
 	}
 }
 
