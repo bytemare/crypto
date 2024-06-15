@@ -178,6 +178,16 @@ func (s *Scalar) DecodeHex(h string) error {
 	return nil
 }
 
+// MarshalJSON marshals the scalar into valid JSON.
+func (s *Scalar) MarshalJSON() ([]byte, error) {
+	return s.Encode(), nil
+}
+
+// UnmarshalJSON unmarshals the input into the scalar.
+func (s *Scalar) UnmarshalJSON(data []byte) error {
+	return s.Decode(data)
+}
+
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
 func (s *Scalar) MarshalBinary() ([]byte, error) {
 	dec, err := s.Scalar.MarshalBinary()
