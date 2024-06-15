@@ -12,8 +12,13 @@ import (
 	"bytes"
 	"encoding"
 	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/bytemare/crypto"
 )
 
 type serde interface {
@@ -27,61 +32,185 @@ type serde interface {
 	encoding.BinaryUnmarshaler
 }
 
-func testEncoding(t *testing.T, thing1, thing2 serde) {
-	// empty string
-	if err := thing2.DecodeHex(""); err == nil {
-		t.Fatal("expected error on empty string")
-	}
+type (
+	byteEncoder    func() ([]byte, error)
+	byteDecoder    func([]byte) error
+	makeEncodeTest func(t *encodingTest) *encodingTest
+)
 
-	encoded := thing1.Encode()
-	marshalled, _ := thing1.MarshalBinary()
-	hexed := thing1.Hex()
+var encodeTesters = []makeEncodeTest{
+	encodeTest,
+	binaryTest,
+	hexTest,
+	jsonTest,
+}
 
-	jsoned, err := thing1.MarshalJSON()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !bytes.Equal(encoded, marshalled) {
-		t.Fatalf("Encode() and MarshalBinary() are expected to have the same output."+
-			"\twant: %v\tgot : %v", encoded, marshalled)
-	}
-
-	if hex.EncodeToString(encoded) != hexed {
-		t.Fatalf("Failed hex encoding, want %q, got %q", hex.EncodeToString(encoded), hexed)
-	}
-
-	if err := thing2.Decode(nil); err == nil {
-		t.Fatal("expected error on Decode() with nil input")
-	}
-
-	if err := thing2.Decode(encoded); err != nil {
-		t.Fatalf("Decode() failed on a valid encoding: %v. Value: %v", err, hex.EncodeToString(encoded))
-	}
-
-	if err := thing2.UnmarshalJSON(jsoned); err != nil {
-		t.Fatalf("UnmarshalJSON() failed on a valid encoding: %v", err)
-	}
-
-	if err := thing2.UnmarshalBinary(encoded); err != nil {
-		t.Fatalf("UnmarshalBinary() failed on a valid encoding: %v", err)
-	}
-
-	if err := thing2.DecodeHex(hexed); err != nil {
-		t.Fatalf("DecodeHex() failed on valid hex encoding: %v", err)
+func toEncoder(s serde) byteEncoder {
+	return func() ([]byte, error) {
+		return s.Encode(), nil
 	}
 }
 
-func TestEncoding(t *testing.T) {
-	testAll(t, func(group *testGroup) {
-		g := group.group
-		scalar := g.NewScalar().Random()
-		testEncoding(t, scalar, g.NewScalar())
+func hexToEncoder(s serde) byteEncoder {
+	return func() ([]byte, error) {
+		return []byte(s.Hex()), nil
+	}
+}
 
-		scalar = g.NewScalar().Random()
-		element := g.Base().Multiply(scalar)
-		testEncoding(t, element, g.NewElement())
+func hexToDecoder(s serde) byteDecoder {
+	return func(d []byte) error {
+		return s.DecodeHex(string(d))
+	}
+}
+
+type encodingTest struct {
+	source, receiver serde
+	sourceEncoder    byteEncoder
+	receiverDecoder  byteDecoder
+	receiverEncoder  byteEncoder
+}
+
+func newEncodingTest(source, receiver serde) *encodingTest {
+	return &encodingTest{source: source, receiver: receiver}
+}
+
+func encodeTest(t *encodingTest) *encodingTest {
+	t.sourceEncoder = toEncoder(t.source)
+	t.receiverDecoder = t.receiver.Decode
+	t.receiverEncoder = toEncoder(t.receiver)
+
+	return t
+}
+
+func binaryTest(t *encodingTest) *encodingTest {
+	t.sourceEncoder = t.source.MarshalBinary
+	t.receiverDecoder = t.receiver.UnmarshalBinary
+	t.receiverEncoder = t.receiver.MarshalBinary
+
+	return t
+}
+
+func hexTest(t *encodingTest) *encodingTest {
+	t.sourceEncoder = hexToEncoder(t.source)
+	t.receiverDecoder = hexToDecoder(t.receiver)
+	t.receiverEncoder = hexToEncoder(t.receiver)
+
+	return t
+}
+
+func jsonTest(t *encodingTest) *encodingTest {
+	t.sourceEncoder = t.source.MarshalJSON
+	t.receiverDecoder = t.receiver.UnmarshalJSON
+	t.receiverEncoder = t.receiver.MarshalJSON
+
+	return t
+}
+
+func (t *encodingTest) run() error {
+	encoded, err := t.sourceEncoder()
+	if err != nil {
+		return err
+	}
+
+	if err = t.receiverDecoder(encoded); err != nil {
+		return fmt.Errorf("%v. Value: %v", err, hex.EncodeToString(encoded))
+	}
+
+	encoded2, err := t.receiverEncoder()
+	if err != nil {
+		return err
+	}
+
+	if !bytes.Equal(encoded, encoded2) {
+		return fmt.Errorf("re-decoding of same source does not yield the same results.\n\twant: %v\n\tgot : %s\n",
+			encoded, encoded2)
+	}
+
+	return nil
+}
+
+func testScalarEncodings(g crypto.Group, f makeEncodeTest) error {
+	source, receiver := g.NewScalar().Random(), g.NewScalar()
+	t := newEncodingTest(source, receiver)
+
+	if err := f(t).run(); err != nil {
+		return err
+	}
+
+	if source.Equal(receiver) != 1 {
+		return errors.New(errExpectedEquality)
+	}
+
+	return nil
+}
+
+func testElementEncodings(g crypto.Group, f makeEncodeTest) error {
+	source, receiver := g.Base(), g.NewElement()
+	t := newEncodingTest(source, receiver)
+
+	if err := f(t).run(); err != nil {
+		return err
+	}
+
+	if source.Equal(receiver) != 1 {
+		return errors.New(errExpectedEquality)
+	}
+
+	return nil
+}
+
+func TestEncoding(t *testing.T) {
+	testAllGroups(t, func(group *testGroup) {
+		g := group.group
+		testDecodeEmpty(t, group.group.NewScalar().Random())
+		for _, tester := range encodeTesters {
+			if err := testScalarEncodings(g, tester); err != nil {
+				t.Fatal()
+			}
+		}
 	})
+}
+
+func TestEncoding_Element(t *testing.T) {
+	testAllGroups(t, func(group *testGroup) {
+		g := group.group
+		testDecodeEmpty(t, group.group.Base())
+		for _, tester := range encodeTesters {
+			if err := testElementEncodings(g, tester); err != nil {
+				t.Fatal()
+			}
+		}
+	})
+}
+
+func testDecodeEmpty(t *testing.T, s serde) {
+	if err := s.Decode(nil); err == nil {
+		t.Fatal("expected error on Decode() with nil input")
+	}
+
+	if err := s.Decode([]byte{}); err == nil {
+		t.Fatal("expected error on Decode() with empty input")
+	}
+
+	if err := s.(encoding.BinaryUnmarshaler).UnmarshalBinary(nil); err == nil {
+		t.Fatal("expected error on UnmarshalBinary() with nil input")
+	}
+
+	if err := s.(encoding.BinaryUnmarshaler).UnmarshalBinary([]byte{}); err == nil {
+		t.Fatal("expected error on UnmarshalBinary() with empty input")
+	}
+
+	if err := s.DecodeHex(""); err == nil {
+		t.Fatal("expected error on empty string")
+	}
+
+	if err := json.Unmarshal(nil, s); err == nil {
+		t.Fatal("expected error")
+	}
+
+	if err := json.Unmarshal([]byte{}, s); err == nil {
+		t.Fatal("expected error")
+	}
 }
 
 func testDecodingHexFails(t *testing.T, thing1, thing2 serde) {
@@ -103,14 +232,10 @@ func testDecodingHexFails(t *testing.T, thing1, thing2 serde) {
 }
 
 func TestEncoding_Hex_Fails(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		g := group.group
 		scalar := g.NewScalar().Random()
-		testEncoding(t, scalar, g.NewScalar())
-
-		scalar = g.NewScalar().Random()
 		element := g.Base().Multiply(scalar)
-		testEncoding(t, element, g.NewElement())
 
 		// Hex fails
 		testDecodingHexFails(t, scalar, g.NewScalar())

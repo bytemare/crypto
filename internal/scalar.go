@@ -9,10 +9,6 @@
 // Package internal defines simple and abstract APIs to group Elements and Scalars.
 package internal
 
-import (
-	"encoding"
-)
-
 // Scalar interface abstracts common operations on scalars in a prime-order Group.
 type Scalar interface {
 	// Zero sets the scalar to 0, and returns it.
@@ -73,11 +69,4 @@ type Scalar interface {
 
 	// DecodeHex sets s to the decoding of the hex encoded scalar.
 	DecodeHex(h string) error
-
-	// BinaryMarshaler returns a byte representation of the element.
-	encoding.BinaryMarshaler
-
-	// BinaryUnmarshaler recovers an element from a byte representation
-	// produced either by encoding.BinaryMarshaler or MarshalBinaryCompress.
-	encoding.BinaryUnmarshaler
 }

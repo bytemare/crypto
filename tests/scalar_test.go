@@ -35,7 +35,7 @@ func TestScalar_WrongInput(t *testing.T) {
 		}
 	}
 
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		scalar := group.group.NewScalar()
 		methods := []func(arg *crypto.Scalar) *crypto.Scalar{
 			scalar.Add, scalar.Subtract, scalar.Multiply, scalar.Set,
@@ -100,7 +100,7 @@ func testScalarCopySet(t *testing.T, scalar, other *crypto.Scalar) {
 }
 
 func TestScalarCopy(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		random := group.group.NewScalar().Random()
 		cpy := random.Copy()
 		testScalarCopySet(t, random, cpy)
@@ -108,7 +108,7 @@ func TestScalarCopy(t *testing.T) {
 }
 
 func TestScalarSet(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		random := group.group.NewScalar().Random()
 		other := group.group.NewScalar()
 		other.Set(random)
@@ -148,7 +148,7 @@ func testScalarUInt64(t *testing.T, s *crypto.Scalar, expectedValue uint64, expe
 
 func TestScalar_UInt64(t *testing.T) {
 	expectedError := errors.New("scalar is too big to be uint64")
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		// 0
 		testScalarUInt64(t, group.group.NewScalar(), 0, nil)
 
@@ -169,7 +169,7 @@ func TestScalar_UInt64(t *testing.T) {
 }
 
 func TestScalar_SetUInt64(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		s := group.group.NewScalar().SetUInt64(0)
 		if !s.IsZero() {
 			t.Fatal("expected 0")
@@ -198,7 +198,7 @@ func TestScalar_SetUInt64(t *testing.T) {
 }
 
 func TestScalar_EncodedLength(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		encodedScalar := group.group.NewScalar().Random().Encode()
 		if len(encodedScalar) != group.scalarLength {
 			t.Fatalf(
@@ -211,19 +211,9 @@ func TestScalar_EncodedLength(t *testing.T) {
 }
 
 func TestScalar_Decode_OutOfBounds(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		decodeErrPrefix := "scalar Decode: "
 		unmarshallBinaryErrPrefix := "scalar UnmarshalBinary: "
-		switch group.group {
-		case crypto.Ristretto255Sha512:
-			unmarshallBinaryErrPrefix += "ristretto: "
-		case crypto.P256Sha256, crypto.P384Sha384, crypto.P521Sha512:
-			unmarshallBinaryErrPrefix += "nist: "
-		case crypto.Edwards25519Sha512:
-			unmarshallBinaryErrPrefix += "edwards25519: "
-		case crypto.Secp256k1:
-			break
-		}
 
 		// Decode invalid length
 		errMessage := "invalid scalar length"
@@ -265,7 +255,7 @@ func TestScalar_Decode_OutOfBounds(t *testing.T) {
 }
 
 func TestScalar_Arithmetic(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		scalarTestZero(t, group.group)
 		scalarTestOne(t, group.group)
 		scalarTestEqual(t, group.group)
@@ -369,11 +359,17 @@ func scalarTestLessOrEqual(t *testing.T, g crypto.Group) {
 		t.Fatal("expected 2 == 2")
 	}
 
-	s := g.NewScalar().Random()
-	r := s.Copy().Add(g.NewScalar().One())
+	var r, s *crypto.Scalar
+	for {
+		s = g.NewScalar().Random()
+		r = s.Add(g.NewScalar().One())
+		if !r.IsZero() { // detect the case we are reduced to 0
+			break
+		}
+	}
 
 	if s.LessOrEqual(r) != 1 {
-		t.Fatal("expected s < s + 1")
+		t.Fatalf("expected s < s + 1:")
 	}
 }
 

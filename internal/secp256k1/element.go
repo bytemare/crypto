@@ -149,13 +149,3 @@ func (e *Element) DecodeHex(h string) error {
 
 	return e.Decode(b)
 }
-
-// MarshalBinary returns the compressed byte encoding of the element.
-func (e *Element) MarshalBinary() (data []byte, err error) {
-	return e.Encode(), nil
-}
-
-// UnmarshalBinary sets e to the decoding of the byte encoded element.
-func (e *Element) UnmarshalBinary(data []byte) error {
-	return e.Decode(data)
-}

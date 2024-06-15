@@ -55,7 +55,7 @@ func testElementCopySet(t *testing.T, element, other *crypto.Element) {
 }
 
 func TestElementCopy(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		base := group.group.Base()
 		cpy := base.Copy()
 		testElementCopySet(t, base, cpy)
@@ -63,7 +63,7 @@ func TestElementCopy(t *testing.T) {
 }
 
 func TestElementSet(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		base := group.group.Base()
 		other := group.group.NewElement()
 		other.Set(base)
@@ -90,7 +90,7 @@ func TestElement_WrongInput(t *testing.T) {
 		}
 	}
 
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		element := group.group.NewElement()
 		var alternativeGroup crypto.Group
 
@@ -133,7 +133,7 @@ func TestElement_WrongInput(t *testing.T) {
 }
 
 func TestElement_EncodedLength(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		id := group.group.NewElement().Identity().Encode()
 		if len(id) != group.elementLength {
 			t.Fatalf(
@@ -164,7 +164,7 @@ func TestElement_EncodedLength(t *testing.T) {
 }
 
 func TestElement_Decode_OutOfBounds(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		decodeErr := "element Decode: "
 		unmarshallBinaryErr := "element UnmarshalBinary: "
 		errMessage := ""
@@ -221,7 +221,7 @@ func TestElement_Decode_OutOfBounds(t *testing.T) {
 }
 
 func TestElement_XCoordinate(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		baseX := hex.EncodeToString(group.group.Base().XCoordinate())
 		refLen := len(baseX) / 2 // hexadecimal length is 2 times byt length
 
@@ -239,7 +239,7 @@ func TestElement_XCoordinate(t *testing.T) {
 }
 
 func TestElement_Vectors_Add(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		base := group.group.Base()
 		acc := group.group.Base()
 
@@ -264,7 +264,7 @@ func TestElement_Vectors_Add(t *testing.T) {
 }
 
 func TestElement_Vectors_Double(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		tables := [][]int{
 			{1, 2, 4, 8},
 			{3, 6, 12},
@@ -287,7 +287,7 @@ func TestElement_Vectors_Double(t *testing.T) {
 }
 
 func TestElement_Vectors_Mult(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		s := group.group.NewScalar()
 		base := group.group.Base()
 
@@ -304,7 +304,7 @@ func TestElement_Vectors_Mult(t *testing.T) {
 }
 
 func TestElement_Arithmetic(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		elementTestEqual(t, group.group)
 		elementTestAdd(t, group.group)
 		elementTestDouble(t, group.group)
