@@ -148,12 +148,12 @@ func (e *Element) DecodeHex(h string) error {
 
 // MarshalJSON marshals the element into valid JSON.
 func (e *Element) MarshalJSON() ([]byte, error) {
-	return e.Encode(), nil
+	return []byte(e.Hex()), nil
 }
 
 // UnmarshalJSON unmarshals the input into the element.
 func (e *Element) UnmarshalJSON(data []byte) error {
-	return e.Decode(data)
+	return e.DecodeHex(string(data))
 }
 
 // MarshalBinary returns the compressed byte encoding of the element.
