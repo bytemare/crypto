@@ -74,8 +74,8 @@ type Scalar interface {
 	// DecodeHex sets s to the decoding of the hex encoded scalar.
 	DecodeHex(h string) error
 
-	// BinaryMarshaler returns a byte representation of the element.
-	encoding.BinaryMarshaler
+	// MarshalBinary returns a byte representation of the scalar.
+	MarshalBinary() []byte
 
 	// BinaryUnmarshaler recovers an element from a byte representation
 	// produced either by encoding.BinaryMarshaler or MarshalBinaryCompress.

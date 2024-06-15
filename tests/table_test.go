@@ -15,7 +15,7 @@ import (
 	group "github.com/bytemare/crypto"
 )
 
-func testAll(t *testing.T, f func(*testGroup)) {
+func testAllGroups(t *testing.T, f func(*testGroup)) {
 	for _, test := range testTable {
 		t.Run(test.name, func(t *testing.T) {
 			f(test)

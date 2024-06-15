@@ -13,17 +13,17 @@ linters:
     - dogsled
     - dupl
     - durationcheck
+    - err113
     - errcheck
     - errchkjson
     - errname
     - errorlint
-    - execinquery
     #- exhaustive
     #- exhaustruct
     - exportloopref
     - forbidigo
     - forcetypeassert
-    - funlen
+    - funlencd
     - gci
     #- gochecknoglobals
     #- gochecknoinits
@@ -33,7 +33,6 @@ linters:
     - gocyclo
     - godot
     - godox
-    - goerr113
     - gofmt
     - gofumpt
     - goheader
@@ -51,7 +50,7 @@ linters:
     #- interfacebloat
     #- ireturn
     - lll
-    - logrlint
+    - loggercheck
     - maintidx
     - makezero
     - misspell
@@ -101,7 +100,9 @@ linters-settings:
   errcheck:
     check-type-assertions: true
     check-blank: true
-    #exclude-functions:
+    exclude-functions:
+      - (*crypto/Element).MarshalBinary
+      - (*crypto/Scalar).MarshalBinary
     #  - io/ioutil.ReadFile
     #  - io.Copy(*bytes.Buffer)
     #  - io.Copy(os.Stdout)
@@ -145,16 +146,6 @@ linters-settings:
     simplify: true
   goimports:
     local-prefixes: github.com/bytemare/crypto
-  gomnd:
-    checks:
-      - argument
-      - condition
-      - return
-      - assign
-    ignored-functions:
-      - 'nist.setMapping'
-      - 'big.NewInt'
-      - 'hash2curve.HashToFieldXMD'
   gosimple:
     checks: [ "all" ]
   govet:
@@ -203,6 +194,16 @@ linters-settings:
     tab-width: 4
   misspell:
     locale: US
+  mnd:
+    checks:
+      - argument
+      - condition
+      - return
+      - assign
+    ignored-functions:
+      - 'nist.setMapping'
+      - 'big.NewInt'
+      - 'hash2curve.HashToFieldXMD'
   nlreturn:
     block-size: 2
   prealloc:

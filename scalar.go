@@ -11,6 +11,7 @@ package crypto
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/bytemare/crypto/internal"
 )
@@ -180,22 +181,18 @@ func (s *Scalar) DecodeHex(h string) error {
 
 // MarshalJSON marshals the scalar into valid JSON.
 func (s *Scalar) MarshalJSON() ([]byte, error) {
-	return []byte(s.Hex()), nil
+	return []byte(fmt.Sprintf("%q", s.Hex())), nil
 }
 
 // UnmarshalJSON unmarshals the input into the scalar.
 func (s *Scalar) UnmarshalJSON(data []byte) error {
-	return s.DecodeHex(string(data))
+	j := strings.ReplaceAll(string(data), "\"", "")
+	return s.DecodeHex(j)
 }
 
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
 func (s *Scalar) MarshalBinary() ([]byte, error) {
-	dec, err := s.Scalar.MarshalBinary()
-	if err != nil {
-		return nil, fmt.Errorf("scalar MarshalBinary: %w", err)
-	}
-
-	return dec, nil
+	return s.Scalar.MarshalBinary(), nil
 }
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.

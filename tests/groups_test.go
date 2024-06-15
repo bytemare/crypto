@@ -20,7 +20,7 @@ import (
 const consideredAvailableFmt = "%v is considered available when it must not"
 
 func TestAvailability(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		if !group.group.Available() {
 			t.Errorf("'%s' is not available, but should be", group.group.String())
 		}
@@ -63,7 +63,7 @@ func TestNonAvailability(t *testing.T) {
 }
 
 func TestGroup_Base(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		if group.group.Base().Hex() != group.basePoint {
 			t.Fatalf("Got wrong base element\n\tgot : %s\n\twant: %s",
 				group.group.Base().Hex(),
@@ -84,7 +84,7 @@ func TestDST(t *testing.T) {
 		crypto.Secp256k1:          app + "-V01-CS07-",
 	}
 
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		res := string(group.group.MakeDST(app, version))
 		test := tests[group.group] + group.h2c
 		if res != test {
@@ -94,7 +94,7 @@ func TestDST(t *testing.T) {
 }
 
 func TestGroup_String(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		res := group.group.String()
 		ref := group.h2c
 		if res != ref {
@@ -104,7 +104,7 @@ func TestGroup_String(t *testing.T) {
 }
 
 func TestGroup_NewScalar(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		s := group.group.NewScalar().Encode()
 		for _, b := range s {
 			if b != 0 {
@@ -115,7 +115,7 @@ func TestGroup_NewScalar(t *testing.T) {
 }
 
 func TestGroup_NewElement(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		e := hex.EncodeToString(group.group.NewElement().Encode())
 		ref := group.identity
 
@@ -126,7 +126,7 @@ func TestGroup_NewElement(t *testing.T) {
 }
 
 func TestGroup_ScalarLength(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		if int(group.group.ScalarLength()) != group.scalarLength {
 			t.Fatalf("expected encoded scalar length %d, but got %d", group.scalarLength, group.group.ScalarLength())
 		}
@@ -134,7 +134,7 @@ func TestGroup_ScalarLength(t *testing.T) {
 }
 
 func TestGroup_ElementLength(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		if group.group.ElementLength() != group.elementLength {
 			t.Fatalf("expected encoded element length %d, but got %d", group.elementLength, group.group.ElementLength())
 		}
@@ -142,7 +142,7 @@ func TestGroup_ElementLength(t *testing.T) {
 }
 
 func TestHashFunc(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		if group.group.HashFunc() != group.hash {
 			t.Error(errExpectedEquality)
 		}
@@ -150,7 +150,7 @@ func TestHashFunc(t *testing.T) {
 }
 
 func TestHashToScalar(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		sv := decodeScalar(t, group.group, group.hashToCurve.hashToScalar)
 
 		s := group.group.HashToScalar(group.hashToCurve.input, group.hashToCurve.dst)
@@ -161,7 +161,7 @@ func TestHashToScalar(t *testing.T) {
 }
 
 func TestHashToScalar_NoDST(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		data := []byte("input data")
 
 		// Nil DST
@@ -181,7 +181,7 @@ func TestHashToScalar_NoDST(t *testing.T) {
 }
 
 func TestHashToGroup(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		ev := decodeElement(t, group.group, group.hashToCurve.hashToGroup)
 
 		e := group.group.HashToGroup(group.hashToCurve.input, group.hashToCurve.dst)
@@ -192,7 +192,7 @@ func TestHashToGroup(t *testing.T) {
 }
 
 func TestHashToGroup_NoDST(t *testing.T) {
-	testAll(t, func(group *testGroup) {
+	testAllGroups(t, func(group *testGroup) {
 		data := []byte("input data")
 
 		// Nil DST

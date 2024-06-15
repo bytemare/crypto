@@ -63,8 +63,8 @@ type Element interface {
 	// DecodeHex sets e to the decoding of the hex encoded element.
 	DecodeHex(h string) error
 
-	// BinaryMarshaler implementation.
-	encoding.BinaryMarshaler
+	// MarshalBinary returns a byte representation of the element.
+	MarshalBinary() []byte
 
 	// BinaryUnmarshaler implementation.
 	encoding.BinaryUnmarshaler
