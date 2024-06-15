@@ -160,12 +160,12 @@ func (e *Element) UnmarshalJSON(data []byte) error {
 
 // MarshalBinary returns the compressed byte encoding of the element.
 func (e *Element) MarshalBinary() ([]byte, error) {
-	return e.Element.MarshalBinary(), nil
+	return e.Element.Encode(), nil
 }
 
 // UnmarshalBinary sets e to the decoding of the byte encoded element.
 func (e *Element) UnmarshalBinary(data []byte) error {
-	if err := e.Element.UnmarshalBinary(data); err != nil {
+	if err := e.Element.Decode(data); err != nil {
 		return fmt.Errorf("element UnmarshalBinary: %w", err)
 	}
 

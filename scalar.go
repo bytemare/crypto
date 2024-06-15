@@ -192,12 +192,12 @@ func (s *Scalar) UnmarshalJSON(data []byte) error {
 
 // MarshalBinary implements the encoding.BinaryMarshaler interface.
 func (s *Scalar) MarshalBinary() ([]byte, error) {
-	return s.Scalar.MarshalBinary(), nil
+	return s.Scalar.Encode(), nil
 }
 
 // UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
 func (s *Scalar) UnmarshalBinary(data []byte) error {
-	if err := s.Scalar.UnmarshalBinary(data); err != nil {
+	if err := s.Scalar.Decode(data); err != nil {
 		return fmt.Errorf("scalar UnmarshalBinary: %w", err)
 	}
 

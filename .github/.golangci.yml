@@ -23,7 +23,7 @@ linters:
     - exportloopref
     - forbidigo
     - forcetypeassert
-    - funlencd
+    #- funlencd
     - gci
     #- gochecknoglobals
     #- gochecknoinits

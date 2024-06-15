@@ -360,17 +360,3 @@ func (s *Scalar) DecodeHex(h string) error {
 
 	return s.Decode(b)
 }
-
-// MarshalBinary returns the compressed byte encoding of the scalar.
-func (s *Scalar) MarshalBinary() []byte {
-	return s.Encode()
-}
-
-// UnmarshalBinary sets e to the decoding of the byte encoded scalar.
-func (s *Scalar) UnmarshalBinary(data []byte) error {
-	if err := s.Decode(data); err != nil {
-		return fmt.Errorf("edwards25519: %w", err)
-	}
-
-	return nil
-}

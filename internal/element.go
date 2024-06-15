@@ -9,10 +9,6 @@
 // Package internal defines simple and abstract APIs to group Elements and Scalars.
 package internal
 
-import (
-	"encoding"
-)
-
 // Element interface abstracts common operations on an Element in a prime-order Group.
 type Element interface {
 	// Base sets the element to the group's base point a.k.a. canonical generator.
@@ -62,10 +58,4 @@ type Element interface {
 
 	// DecodeHex sets e to the decoding of the hex encoded element.
 	DecodeHex(h string) error
-
-	// MarshalBinary returns a byte representation of the element.
-	MarshalBinary() []byte
-
-	// BinaryUnmarshaler implementation.
-	encoding.BinaryUnmarshaler
 }

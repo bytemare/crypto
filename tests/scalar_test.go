@@ -214,16 +214,6 @@ func TestScalar_Decode_OutOfBounds(t *testing.T) {
 	testAllGroups(t, func(group *testGroup) {
 		decodeErrPrefix := "scalar Decode: "
 		unmarshallBinaryErrPrefix := "scalar UnmarshalBinary: "
-		switch group.group {
-		case crypto.Ristretto255Sha512:
-			unmarshallBinaryErrPrefix += "ristretto: "
-		case crypto.P256Sha256, crypto.P384Sha384, crypto.P521Sha512:
-			unmarshallBinaryErrPrefix += "nist: "
-		case crypto.Edwards25519Sha512:
-			unmarshallBinaryErrPrefix += "edwards25519: "
-		case crypto.Secp256k1:
-			break
-		}
 
 		// Decode invalid length
 		errMessage := "invalid scalar length"
