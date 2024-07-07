@@ -106,6 +106,8 @@ linters-settings:
     #  - io/ioutil.ReadFile
     #  - io.Copy(*bytes.Buffer)
     #  - io.Copy(os.Stdout)
+  exhaustive:
+    default-signifies-exhaustive: true
   funlen:
     lines: 100
     statements: 50
@@ -149,7 +151,9 @@ linters-settings:
   gosimple:
     checks: [ "all" ]
   govet:
-    check-shadowing: true
+    settings:
+      shadow:
+        strict: true
     disable-all: true
     enable:
       - asmdecl
@@ -209,8 +213,6 @@ linters-settings:
   prealloc:
     simple: false
     for-loops: true
-  unused:
-    check-exported: false
   whitespace:
     multi-if: false
     multi-func: false
@@ -231,7 +233,7 @@ issues:
   # But independently from this option we use default exclude patterns,
   # it can be disabled by `exclude-use-default: false`. To list all
   # excluded by default patterns execute `golangci-lint run --help`
-  exclude:
+  #exclude:
     #- "should have a package comment, unless it's in another file for this package"
     #- "do not define dynamic errors, use wrapped static errors instead"
     #- "missing cases in switch of type Group: maxID"
