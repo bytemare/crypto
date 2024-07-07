@@ -106,6 +106,8 @@ linters-settings:
     #  - io/ioutil.ReadFile
     #  - io.Copy(*bytes.Buffer)
     #  - io.Copy(os.Stdout)
+  exhaustive:
+    default-signifies-exhaustive: true
   funlen:
     lines: 100
     statements: 50
@@ -149,7 +151,9 @@ linters-settings:
   gosimple:
     checks: [ "all" ]
   govet:
-    check-shadowing: true
+    settings:
+      shadow:
+        strict: true
     disable-all: true
     enable:
       - asmdecl
