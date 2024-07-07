@@ -1,5 +1,5 @@
 # Prime-order Elliptic Curve Groups
-[![CI](https://github.com/bytemare/crypto/actions/workflows/ci.yml/badge.svg)](https://github.com/bytemare/crypto/actions/workflows/ci.yml)
+[![CI](https://github.com/bytemare/crypto/actions/workflows/code-scan.yml/badge.svg)](https://github.com/bytemare/crypto/actions/workflows/code-scan.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/bytemare/crypto.svg)](https://pkg.go.dev/github.com/bytemare/crypto)
 [![codecov](https://codecov.io/gh/bytemare/crypto/branch/main/graph/badge.svg?token=5bQfB0OctA)](https://codecov.io/gh/bytemare/crypto)
 
