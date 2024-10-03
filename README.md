@@ -1,3 +1,7 @@
+> [!WARNING]  
+> This package has moved to [github.com/bytemare/ecc](https://github.com/bytemare/ecc). This one is outdated, archived, and won't be maintained.
+
+<!---
 # Prime-order Elliptic Curve Groups
 [![CI](https://github.com/bytemare/crypto/actions/workflows/code-scan.yml/badge.svg)](https://github.com/bytemare/crypto/actions/workflows/code-scan.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/bytemare/crypto.svg)](https://pkg.go.dev/github.com/bytemare/crypto)
@@ -121,3 +125,4 @@ Please read [CONTRIBUTING.md](.github/CONTRIBUTING.md) for details on the code o
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+---> 
